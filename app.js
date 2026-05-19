@@ -244,6 +244,11 @@
     return Math.min(max, Math.max(min, n));
   }
 
+  function easeOutCubic(value) {
+    const t = clamp(value, 0, 1);
+    return 1 - Math.pow(1 - t, 3);
+  }
+
   function round(value, digits = 2) {
     const n = Number(value);
     if (!Number.isFinite(n)) return 0;
@@ -1040,7 +1045,8 @@
     context.textBaseline = "alphabetic";
 
     const maxWidth = Math.max(100, settings.maxWidth || 1580);
-    const lines = wrapTextLines(context, text, maxWidth, letterSpacing);
+    const layoutText = settings.animation === "scaleInChars" ? allText : text;
+    const lines = wrapTextLines(context, layoutText, maxWidth, letterSpacing);
     const lineHeight = Math.max(1, (settings.fontSize || 86) * (settings.lineHeight || 1.25));
     const totalHeight = lineHeight * Math.max(1, lines.length);
     const startY = -totalHeight / 2 + lineHeight * 0.85;
@@ -1053,9 +1059,32 @@
       if (settings.align === "center") xLine -= lineWidth / 2;
       if (settings.align === "right") xLine -= lineWidth;
 
+      const isScaleInChars = settings.animation === "scaleInChars";
       const shouldJumpChars = ["jumpTypewriter", "jumpReveal", "jumpInOut"].includes(settings.animation);
 
-      if (shouldJumpChars) {
+      if (isScaleInChars) {
+        const cps = Math.max(1, settings.cps || 24);
+        const growDuration = clamp(4 / cps, 0.12, 0.48);
+        let cursorX = xLine;
+        splitChars(line).forEach((char) => {
+          const charWidth = context.measureText(char).width;
+          const charStart = globalCharIndex / cps;
+          const charElapsed = elapsed - charStart;
+
+          if (charElapsed >= 0) {
+            const scaleProgress = easeOutCubic(charElapsed / growDuration);
+            const charScale = 0.18 + 0.82 * scaleProgress;
+            context.save();
+            context.translate(cursorX + charWidth / 2, yLine);
+            context.scale(charScale, charScale);
+            drawStyledText(context, char, -charWidth / 2, 0, settings, 0);
+            context.restore();
+          }
+
+          cursorX += charWidth + letterSpacing;
+          globalCharIndex += 1;
+        });
+      } else if (shouldJumpChars) {
         let jumpEdgePower = 1;
 
         if (settings.animation === "jumpInOut") {

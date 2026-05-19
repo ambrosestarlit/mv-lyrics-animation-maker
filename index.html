@@ -94,10 +94,12 @@
           <ul>
             <li>通常表示：フレーズ全体をそのまま表示します。</li>
             <li>タイプライター表示：文字を順番に表示します。</li>
+            <li>一文字ずつ拡大表示：登場時のみ、文字が小さいサイズから設定サイズへ1文字ずつ拡大しながら表示されます。</li>
             <li>ジャンプしながらタイプライター表示：文字を順番に表示しながら、1文字ずつ波打つようにジャンプします。</li>
             <li>ジャンプしながら表示：全文表示した状態で、1文字ずつ波打つようにジャンプします。</li>
             <li>登場時と退場時だけジャンプ：表示開始・終了付近だけ、1文字ずつ波打つようにジャンプします。</li>
             <li>ジャンプの大きさ・速さ、タイプライター速度はスライダーで調整できます。</li>
+            <li>一文字ずつ拡大表示の出現テンポも、タイプライター速度で調整できます。</li>
           </ul>
         </section>
 
@@ -134,7 +136,8 @@
           <ul>
             <li>長尺・高FPS・大きな文字装飾は、ブラウザのメモリ使用量が増えます。</li>
             <li>書き出し中はページを閉じたり、再読み込みしないでください。</li>
-                      </ul>
+            <li>ローカルで直接開くより、GitHub PagesなどHTTP環境での利用を推奨します。</li>
+          </ul>
         </section>
       </div>
     </section>
@@ -231,6 +234,7 @@
               <select id="defaultAnimationInput">
                 <option value="normal">通常表示</option>
                 <option value="typewriter">タイプライター表示</option>
+                <option value="scaleInChars">一文字ずつ拡大表示</option>
                 <option value="jumpTypewriter">ジャンプしながらタイプライター表示</option>
                 <option value="jumpReveal">ジャンプしながら表示</option>
                 <option value="jumpInOut">登場時と退場時だけジャンプ</option>
@@ -346,6 +350,7 @@
               <select id="cueAnimationInput">
                 <option value="normal">通常表示</option>
                 <option value="typewriter">タイプライター表示</option>
+                <option value="scaleInChars">一文字ずつ拡大表示</option>
                 <option value="jumpTypewriter">ジャンプしながらタイプライター表示</option>
                 <option value="jumpReveal">ジャンプしながら表示</option>
                 <option value="jumpInOut">登場時と退場時だけジャンプ</option>
