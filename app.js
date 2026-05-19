@@ -7,11 +7,13 @@
   const CACHE_STORE_NAME = "projects";
   const CACHE_KEY = "autosave";
   const PRESET_STORAGE_KEY = "mv-lyrics-animation-maker-presets";
-  const DEFAULT_UI_LANGUAGE = ((navigator.language || "ja").toLowerCase().startsWith("ja") ? "ja" : "en");
+  const browserLanguage = (navigator.language || "ja").toLowerCase();
+  const DEFAULT_UI_LANGUAGE = browserLanguage.startsWith("ko") ? "ko" : (browserLanguage.startsWith("ja") ? "ja" : "en");
 
   const FONT_OPTIONS = [
-    { label: "システムゴシック", labelEn: "System Gothic", value: "\"Yu Gothic UI\", \"Yu Gothic\", \"Hiragino Sans\", \"Meiryo\", sans-serif" },
-    { label: "Noto Sans JP", value: "\"Noto Sans JP\", sans-serif" },
+    { label: "システムゴシック", labelEn: "System Gothic", labelKo: "System Gothic", value: "\"Yu Gothic UI\", \"Yu Gothic\", \"Hiragino Sans\", \"Meiryo\", sans-serif" },
+    { label: "Noto Sans KR", labelEn: "Noto Sans KR", labelKo: "Noto Sans KR", value: "\"Noto Sans KR\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif" },
+    { label: "Noto Sans JP", labelEn: "Noto Sans JP", labelKo: "Noto Sans JP", value: "\"Noto Sans JP\", sans-serif" },
     { label: "Zen Kaku Gothic New", value: "\"Zen Kaku Gothic New\", sans-serif" },
     { label: "BIZ UDPGothic", value: "\"BIZ UDPGothic\", sans-serif" },
     { label: "BIZ UDGothic", value: "\"BIZ UDGothic\", sans-serif" },
@@ -297,11 +299,37 @@
       preparing: "Preparing export... {done} / {total}", pngGenerating: "Generating PNG... {done} / {total}", zipGenerating: "Creating ZIP... {percent}%", exportComplete: "Done: exported {count} frames.", exportFailed: "Export failed.", srtComplete: "Done: exported {count} SRT subtitles.", srtEmpty: "There are no placed phrases to export.",
       failedReadJson: "Could not load the JSON file.", cacheSaved: "Saved to cache.", cacheSaveFailed: "Could not save cache. Please check browser storage limits.", cacheLoadFailed: "Could not restore cache.", cacheMissing: "No saved cache was found.", jszipMissing: "JSZip could not be loaded. Please check your internet connection or the CDN.", pngFailed: "Failed to generate PNG.", exportFailedRetry: "Export failed. Try reducing the number of frames and run again.",
       presetAutoName: "Preset {count}", loadedLyrics: "No active lyrics"
+
+    },
+    ko: {
+      appTitle: "MV Lyrics Animation Maker",
+      appSubtitle: "음성에 맞춰 가사를 배치하고 투명 PNG 시퀀스를 내보내는 MV 제작 지원 도구입니다.",
+      language: "Language / 언어",
+      manual: "사용 설명서", manualTitle: "사용 설명서", close: "닫기", chooseFile: "파일 선택", noFileSelected: "선택된 파일 없음", selectedFile: "선택 중: {name}",
+      saveJson: "JSON 저장", loadJson: "JSON 불러오기", saveCache: "캐시 저장", loadCache: "캐시 복원",
+      secAssets: "소재 불러오기", secDefaults: "기본 설정", secLyricsList: "가사 버튼 목록", secEntered: "입력된 프레이즈", secSelected: "선택 중인 프레이즈 설정", secExport: "내보내기",
+      audioFile: "오디오 파일", audioNotLoaded: "오디오 미불러옴", audioLoaded: "오디오 불러옴", loadedFile: "불러옴: {name}", clear: "해제",
+      lyricsTxt: "가사 TXT", lyricsHint: "TXT의 한 줄을 하나의 프레이즈 버튼으로 만듭니다. 빈 줄은 자동으로 제외됩니다.",
+      previewBgColor: "미리보기 배경색", bgFit: "배경 이미지 표시", fitCover: "화면 채우기", fitContain: "전체 표시", fitStretch: "늘이기", previewBgImage: "미리보기 배경 이미지", bgScale: "배경 이미지 크기", bgOffsetX: "배경 이미지 이동 X", bgOffsetY: "배경 이미지 이동 Y", clearBgImage: "배경 이미지 해제", bgHint: "배경색과 배경 이미지는 미리보기 확인용입니다. 투명 PNG 내보내기에는 포함되지 않습니다.",
+      defaultFont: "기본 폰트", defaultSize: "기본 크기", defaultDuration: "초기 표시 시간", autoChain: "이전 프레이즈 종료 자동 조정", yes: "켜기", no: "끄기", defaultAnimation: "초기 애니메이션", defaultAlign: "초기 정렬", applyDefaults: "선택 중인 프레이즈에 기본 설정 적용",
+      animNormal: "일반 표시", animTypewriter: "타자기 표시", animScaleReveal: "확대하며 표시", animJumpTypewriter: "점프하며 타자기 표시", animJumpReveal: "점프하며 표시", animJumpInOut: "등장/퇴장 시에만 점프",
+      alignLeft: "왼쪽 정렬", alignCenter: "가운데 정렬", alignRight: "오른쪽 정렬",
+      lyricsNotLoaded: "가사 미불러옴", clearList: "목록 지우기", lyricsButtonEmpty: "가사 TXT를 불러오면 여기에 한 줄씩 버튼이 추가됩니다.", enteredEmpty: "아직 입력된 프레이즈가 없습니다. 오디오 재생 중에 가사 버튼을 눌러 주세요.",
+      inputAtCurrent: "클릭하면 현재 시간에 입력", enteredAt: "입력됨 {time} / 다시 클릭하면 취소", linesCount: "{count}줄",
+      previewCanvas: "Preview Canvas", previewCanvasSub: "1920 × 1080 / transparent export", noActiveLyrics: "표시 중인 가사 없음", previewAtCurrentTime: "현재 시간으로 미리보기", previewSeconds: "미리보기 초", update: "갱신", transportHint: "오디오 재생 중 왼쪽의 가사 버튼을 누르면 해당 시각에 가사 큐가 생성됩니다.",
+      selectedEmpty: "입력된 프레이즈를 선택해 주세요.", presetTitle: "프레이즈 설정 프리셋", presetName: "프리셋 이름", presetPlaceholder: "예: 후렴 중앙 점프", registeredPresets: "등록된 프리셋", selectPreset: "프리셋 선택", noPreset: "등록된 프리셋 없음", saveCurrentAsPreset: "현재 설정 등록", applySelectedPreset: "선택한 프리셋 적용", delete: "삭제", presetHint: "가사 본문, 시작 시간, 종료 시간은 포함하지 않고 외형과 애니메이션 설정만 저장합니다.",
+      lyricText: "가사 텍스트", startSec: "시작 초", endSec: "종료 초", animation: "애니메이션", textAlign: "문자 정렬", positionX: "위치 X", positionY: "위치 Y", wrapWidth: "줄바꿈 폭", font: "폰트", fontSize: "폰트 크기", textColor: "문자색", lineHeight: "줄 간격", letterSpacing: "자간", letterSpacingPan: "자간 이동", textPanX: "문자 PAN 이동 X", textPanY: "문자 PAN 이동 Y", textScale: "문자 크기 배율", scalePan: "크기 이동", textRotation: "문자 회전", rotationPan: "회전 이동", typewriterSpeed: "타자기 속도", scaleRevealMin: "확대 표시 최소 크기", scaleRevealSpeed: "확대 표시 속도", jumpSize: "점프 크기", jumpSpeed: "점프 속도", fadeIn: "페이드 인", fadeOut: "페이드 아웃", stroke: "외곽선", dropShadow: "드롭 섀도", fadeInSec: "페이드 인 초", fadeOutSec: "페이드 아웃 초", strokeColor: "외곽선 색", strokeWidth: "외곽선 두께", shadowColor: "그림자 색", shadowBlur: "그림자 흐림", shadowX: "그림자 X", shadowY: "그림자 Y", duplicate: "복제",
+      export: "내보내기", fps: "FPS", prefix: "접두사", setEndFromAudio: "오디오 길이를 종료 초로 설정", exportZip: "투명 PNG 시퀀스 ZIP 내보내기", exportSrt: "SRT 자막 내보내기",
+      preparing: "내보내기 준비 중... {done} / {total}", pngGenerating: "PNG 생성 중... {done} / {total}", zipGenerating: "ZIP 생성 중... {percent}%", exportComplete: "완료: {count}장을 내보냈습니다.", exportFailed: "내보내기에 실패했습니다.", srtComplete: "완료: SRT 자막 {count}개를 내보냈습니다.", srtEmpty: "내보낼 수 있는 입력된 프레이즈가 없습니다.",
+      failedReadJson: "JSON을 불러올 수 없습니다.", cacheSaved: "캐시에 저장했습니다.", cacheSaveFailed: "캐시 저장에 실패했습니다. 브라우저 저장 용량을 확인해 주세요.", cacheLoadFailed: "캐시 복원에 실패했습니다.", cacheMissing: "저장된 캐시가 없습니다.", jszipMissing: "JSZip을 불러올 수 없습니다. 인터넷 연결 또는 CDN 로딩을 확인해 주세요.", pngFailed: "PNG 생성에 실패했습니다.", exportFailedRetry: "내보내기에 실패했습니다. 프레임 수를 줄인 뒤 다시 시도해 주세요.",
+      presetAutoName: "프리셋 {count}", loadedLyrics: "표시 중인 가사 없음"
     }
   };
 
   function currentLang() {
-    return state.uiLanguage === "en" ? "en" : "ja";
+    if (state.uiLanguage === "ko") return "ko";
+    if (state.uiLanguage === "en") return "en";
+    return "ja";
   }
 
   function t(key, vars = {}) {
@@ -563,11 +591,64 @@
     `;
   }
 
+
+  function manualHtmlKo() {
+    return `
+      <p class="manual-note">※한국어 번역에는 AI 번역을 사용했습니다. 일부 어색한 표현이 있을 수 있으니 양해 부탁드립니다.</p>
+
+      <h3>이 도구에 대하여</h3>
+      <p>오디오에 맞춰 가사 프레이즈를 배치하고, 문자 애니메이션이 적용된 투명 PNG 시퀀스를 내보내기 위한 MV 제작 지원 도구입니다. 배경색과 배경 이미지는 확인용이며, 내보내기에는 포함되지 않습니다.</p>
+
+      <h3>1. 소재 불러오기</h3>
+      <ol>
+        <li><strong>오디오 파일</strong>에서 음악이나 임시 음원을 불러옵니다.</li>
+        <li><strong>가사 TXT</strong>를 불러옵니다. TXT의 한 줄이 하나의 가사 버튼이 됩니다.</li>
+        <li>미리보기 확인용으로 배경색이나 배경 이미지를 설정할 수 있습니다. 배경 이미지는 크기, X 위치, Y 위치를 조정할 수 있습니다.</li>
+      </ol>
+
+      <h3>2. 가사 타이밍 입력</h3>
+      <ol>
+        <li>오디오를 재생합니다.</li>
+        <li>원하는 타이밍에 왼쪽의 가사 버튼을 클릭하면 그 시각에 프레이즈가 배치됩니다.</li>
+        <li>배치된 가사 버튼은 회색으로 표시됩니다. 다시 클릭하면 배치를 취소할 수 있습니다.</li>
+        <li>입력된 프레이즈 목록에서 프레이즈를 선택하면 오른쪽에서 세부 설정을 편집할 수 있습니다.</li>
+      </ol>
+
+      <h3>3. 프레이즈 설정</h3>
+      <p>선택 중인 프레이즈마다 다음 항목을 설정할 수 있습니다.</p>
+      <ul>
+        <li>시작 초 / 종료 초 / 가사 텍스트</li>
+        <li>폰트, 폰트 크기, 문자색, 줄 간격, 자간</li>
+        <li>위치 X/Y, 문자 PAN 이동 X/Y, 크기 이동, 회전 이동</li>
+        <li>일반 표시, 타자기 표시, 확대하며 표시, 점프 계열 애니메이션</li>
+        <li>확대 표시의 최소 크기와 속도</li>
+        <li>페이드 인 / 페이드 아웃</li>
+        <li>외곽선, 드롭 섀도</li>
+      </ul>
+
+      <h3>4. 프리셋</h3>
+      <p><strong>현재 설정 등록</strong>으로 선택 중인 프레이즈의 외형과 애니메이션 설정을 저장할 수 있습니다. 가사 본문과 타이밍은 저장하지 않으므로 여러 프레이즈에 같은 연출을 적용하기 쉽습니다.</p>
+
+      <h3>5. 내보내기</h3>
+      <ol>
+        <li>FPS, 접두사, 시작 초, 종료 초를 설정합니다.</li>
+        <li><strong>투명 PNG 시퀀스 ZIP 내보내기</strong>를 누르면 가사 레이어만 투명 PNG 시퀀스로 저장됩니다.</li>
+        <li><strong>SRT 자막 내보내기</strong>를 누르면 입력된 프레이즈의 시작 초, 종료 초, 가사 본문을 바탕으로 .srt 자막 파일을 저장합니다.</li>
+      </ol>
+
+      <p class="manual-note">긴 시간이나 높은 FPS로 내보내면 PNG 수가 많아져 브라우저 메모리 사용량이 증가합니다. 오류가 발생하면 내보내기 범위를 짧게 하거나 FPS를 낮춰 주세요.</p>
+    `;
+  }
+
   function updateManualContent() {
     if (!manualModalBody || !manualModalTitle) return;
     manualModalTitle.textContent = t("manualTitle");
     closeManualFooterBtn.textContent = t("close");
-    manualModalBody.innerHTML = currentLang() === "en" ? manualHtmlEn() : manualHtmlJa();
+    if (currentLang() === "ko") {
+      manualModalBody.innerHTML = manualHtmlKo();
+    } else {
+      manualModalBody.innerHTML = currentLang() === "en" ? manualHtmlEn() : manualHtmlJa();
+    }
   }
 
   function openManual() {
@@ -591,7 +672,7 @@
   }
 
   function applyLanguage(lang) {
-    state.uiLanguage = lang === "en" ? "en" : "ja";
+    state.uiLanguage = ["ja", "en", "ko"].includes(lang) ? lang : "ja";
     const defaultFont = defaultFontFamilyInput.value;
     const cueFont = cueFontFamilyInput.value;
     populateFontSelect(defaultFontFamilyInput);
@@ -741,7 +822,7 @@
     FONT_OPTIONS.forEach((font) => {
       const option = document.createElement("option");
       option.value = font.value;
-      option.textContent = currentLang() === "en" ? (font.labelEn || font.label) : font.label;
+      option.textContent = currentLang() === "ko" ? (font.labelKo || font.labelEn || font.label) : (currentLang() === "en" ? (font.labelEn || font.label) : font.label);
       select.append(option);
     });
     if (selected) select.value = selected;
@@ -1253,7 +1334,13 @@
   }
 
   function splitChars(text) {
-    return Array.from(String(text || ""));
+    const value = String(text || "");
+    if (window.Intl && typeof Intl.Segmenter === "function") {
+      const locale = currentLang() === "ko" ? "ko" : (currentLang() === "en" ? "en" : "ja");
+      const segmenter = new Intl.Segmenter(locale, { granularity: "grapheme" });
+      return Array.from(segmenter.segment(value), (item) => item.segment);
+    }
+    return Array.from(value);
   }
 
   function visibleTextByCount(text, count) {
@@ -1577,7 +1664,7 @@
     state = {
       ...next,
       ...project,
-      uiLanguage: project.uiLanguage === "en" ? "en" : (project.uiLanguage === "ja" ? "ja" : next.uiLanguage),
+      uiLanguage: ["ja", "en", "ko"].includes(project.uiLanguage) ? project.uiLanguage : next.uiLanguage,
       previewBackgroundScale: clamp(project.previewBackgroundScale ?? next.previewBackgroundScale, 1, 100),
       previewBackgroundOffsetX: clamp(project.previewBackgroundOffsetX ?? next.previewBackgroundOffsetX, -1920, 1920),
       previewBackgroundOffsetY: clamp(project.previewBackgroundOffsetY ?? next.previewBackgroundOffsetY, -1080, 1080),
