@@ -6,6 +6,7 @@
   const CACHE_DB_NAME = "mv-lyrics-animation-maker";
   const CACHE_STORE_NAME = "projects";
   const CACHE_KEY = "autosave";
+  const PRESET_STORAGE_KEY = "mv-lyrics-animation-maker-presets";
 
   const FONT_OPTIONS = [
     { label: "システムゴシック", value: "\"Yu Gothic UI\", \"Yu Gothic\", \"Hiragino Sans\", \"Meiryo\", sans-serif" },
@@ -61,6 +62,7 @@
 
   const defaultFontFamilyInput = $("#defaultFontFamilyInput");
   const defaultFontSizeInput = $("#defaultFontSizeInput");
+  const defaultFontSizeOutput = $("#defaultFontSizeOutput");
   const defaultDurationInput = $("#defaultDurationInput");
   const defaultAnimationInput = $("#defaultAnimationInput");
   const defaultAlignInput = $("#defaultAlignInput");
@@ -80,6 +82,11 @@
 
   const selectedEmptyMessage = $("#selectedEmptyMessage");
   const cueEditor = $("#cueEditor");
+  const presetNameInput = $("#presetNameInput");
+  const presetSelect = $("#presetSelect");
+  const savePresetBtn = $("#savePresetBtn");
+  const applyPresetBtn = $("#applyPresetBtn");
+  const deletePresetBtn = $("#deletePresetBtn");
   const cueTextInput = $("#cueTextInput");
   const cueStartInput = $("#cueStartInput");
   const cueEndInput = $("#cueEndInput");
@@ -93,6 +100,7 @@
   const cueMaxWidthOutput = $("#cueMaxWidthOutput");
   const cueFontFamilyInput = $("#cueFontFamilyInput");
   const cueFontSizeInput = $("#cueFontSizeInput");
+  const cueFontSizeOutput = $("#cueFontSizeOutput");
   const cueColorInput = $("#cueColorInput");
   const cueLineHeightInput = $("#cueLineHeightInput");
   const cueCpsInput = $("#cueCpsInput");
@@ -109,8 +117,10 @@
   const cueFadeOutDurationInput = $("#cueFadeOutDurationInput");
   const cueStrokeColorInput = $("#cueStrokeColorInput");
   const cueStrokeWidthInput = $("#cueStrokeWidthInput");
+  const cueStrokeWidthOutput = $("#cueStrokeWidthOutput");
   const cueShadowColorInput = $("#cueShadowColorInput");
   const cueShadowBlurInput = $("#cueShadowBlurInput");
+  const cueShadowBlurOutput = $("#cueShadowBlurOutput");
   const cueShadowOffsetXInput = $("#cueShadowOffsetXInput");
   const cueShadowOffsetYInput = $("#cueShadowOffsetYInput");
   const duplicateCueBtn = $("#duplicateCueBtn");
@@ -173,6 +183,7 @@
     cues: [],
     selectedCueId: null,
     lastCreatedCueId: null,
+    presets: readStoredPresets(),
     defaults: {
       fontFamily: FONT_OPTIONS[1].value,
       fontSize: 86,
@@ -216,6 +227,72 @@
 
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
+  }
+
+  function safeArray(value) {
+    return Array.isArray(value) ? value : [];
+  }
+
+  function normalizePreset(preset) {
+    if (!preset || typeof preset !== "object") return null;
+    const name = String(preset.name || "").trim();
+    const settings = preset.settings && typeof preset.settings === "object" ? preset.settings : null;
+    if (!name || !settings) return null;
+
+    const base = defaultStyle();
+    return {
+      id: preset.id || uniqueId("preset"),
+      name,
+      createdAt: Number(preset.createdAt) || Date.now(),
+      updatedAt: Number(preset.updatedAt) || Date.now(),
+      settings: {
+        ...base,
+        ...clone(settings),
+        stroke: { ...base.stroke, ...(settings.stroke || {}) },
+        shadow: { ...base.shadow, ...(settings.shadow || {}) }
+      }
+    };
+  }
+
+  function mergePresets(...presetLists) {
+    const map = new Map();
+    presetLists.flatMap((list) => safeArray(list)).forEach((preset) => {
+      const normalized = normalizePreset(preset);
+      if (!normalized) return;
+      const key = normalized.id || normalized.name;
+      const current = map.get(key);
+      if (!current || normalized.updatedAt >= current.updatedAt) {
+        map.set(key, normalized);
+      }
+    });
+    return [...map.values()].sort((a, b) => a.name.localeCompare(b.name, "ja"));
+  }
+
+  function readStoredPresets() {
+    try {
+      return mergePresets(JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY) || "[]"));
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function saveStoredPresets() {
+    try {
+      localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(state.presets || []));
+    } catch (_) {
+      // ローカル保存できない環境でも、プロジェクト内のプリセットは維持する
+    }
+  }
+
+  function applyStyleToCue(cue, style) {
+    if (!cue || !style) return;
+    const base = defaultStyle();
+    cue.settings = {
+      ...base,
+      ...clone(style),
+      stroke: { ...base.stroke, ...(style.stroke || {}) },
+      shadow: { ...base.shadow, ...(style.shadow || {}) }
+    };
   }
 
   function fileToDataUrl(file) {
@@ -308,6 +385,7 @@
   function syncDefaultControls() {
     defaultFontFamilyInput.value = state.defaults.fontFamily;
     defaultFontSizeInput.value = String(state.defaults.fontSize);
+    defaultFontSizeOutput.textContent = `${defaultFontSizeInput.value}px`;
     defaultDurationInput.value = String(state.defaults.duration);
     defaultAnimationInput.value = state.defaults.animation;
     defaultAlignInput.value = state.defaults.align;
@@ -319,6 +397,32 @@
     previewBgFitSelect.value = state.previewBackgroundFit || "cover";
     previewBgScaleInput.value = String(clamp(state.previewBackgroundScale ?? 100, 10, 300));
     previewBgScaleOutput.textContent = `${previewBgScaleInput.value}%`;
+  }
+
+  function renderPresetControls() {
+    if (!presetSelect) return;
+    const currentValue = presetSelect.value;
+    presetSelect.innerHTML = "";
+
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = state.presets?.length ? "プリセットを選択" : "プリセット未登録";
+    presetSelect.append(emptyOption);
+
+    (state.presets || []).forEach((preset) => {
+      const option = document.createElement("option");
+      option.value = preset.id;
+      option.textContent = preset.name;
+      presetSelect.append(option);
+    });
+
+    if (currentValue && (state.presets || []).some((preset) => preset.id === currentValue)) {
+      presetSelect.value = currentValue;
+    }
+
+    const hasPreset = Boolean(presetSelect.value);
+    applyPresetBtn.disabled = !hasPreset || !selectedCue();
+    deletePresetBtn.disabled = !hasPreset;
   }
 
   function updateDefaultStateFromControls() {
@@ -467,6 +571,7 @@
     if (!cue) {
       selectedEmptyMessage.classList.remove("hidden");
       cueEditor.classList.add("hidden");
+      renderPresetControls();
       suppressEditorEvents = false;
       return;
     }
@@ -506,6 +611,7 @@
     cueShadowOffsetYInput.value = String(clamp(s.shadow?.offsetY ?? 0, -120, 120));
 
     updateRangeOutputs();
+    renderPresetControls();
     suppressEditorEvents = false;
   }
 
@@ -513,9 +619,12 @@
     cueXOutput.textContent = `${cueXInput.value}px`;
     cueYOutput.textContent = `${cueYInput.value}px`;
     cueMaxWidthOutput.textContent = `${cueMaxWidthInput.value}px`;
+    cueFontSizeOutput.textContent = `${cueFontSizeInput.value}px`;
     cueCpsOutput.textContent = `${cueCpsInput.value} cps`;
     cueJumpSizeOutput.textContent = `${cueJumpSizeInput.value}px`;
     cueJumpSpeedOutput.textContent = `${cueJumpSpeedInput.value}`;
+    cueShadowBlurOutput.textContent = `${cueShadowBlurInput.value}px`;
+    cueStrokeWidthOutput.textContent = `${cueStrokeWidthInput.value}px`;
   }
 
   function updateCueFromEditor() {
@@ -566,6 +675,70 @@
     renderLyricButtons();
     renderCueList();
     renderCurrentPreview();
+  }
+
+  function getNextPresetName() {
+    const count = (state.presets || []).length + 1;
+    return `プリセット${String(count).padStart(2, "0")}`;
+  }
+
+  function saveSelectedCueAsPreset() {
+    const cue = selectedCue();
+    if (!cue) return;
+
+    const selectedPreset = (state.presets || []).find((preset) => preset.id === presetSelect.value) || null;
+    const name = (presetNameInput.value || selectedPreset?.name || getNextPresetName()).trim();
+    if (!name) return;
+
+    const now = Date.now();
+    const settings = clone(cue.settings || createCueStyle());
+    const existing = selectedPreset || (state.presets || []).find((preset) => preset.name === name) || null;
+
+    if (existing) {
+      existing.name = name;
+      existing.settings = settings;
+      existing.updatedAt = now;
+      if (!existing.createdAt) existing.createdAt = now;
+      presetSelect.value = existing.id;
+    } else {
+      const preset = {
+        id: uniqueId("preset"),
+        name,
+        settings,
+        createdAt: now,
+        updatedAt: now
+      };
+      state.presets.push(preset);
+      presetSelect.value = preset.id;
+    }
+
+    state.presets = mergePresets(state.presets);
+    const saved = state.presets.find((preset) => preset.name === name);
+    if (saved) presetSelect.value = saved.id;
+    saveStoredPresets();
+    renderPresetControls();
+    presetNameInput.value = name;
+  }
+
+  function applySelectedPresetToCue() {
+    const cue = selectedCue();
+    const preset = (state.presets || []).find((item) => item.id === presetSelect.value);
+    if (!cue || !preset) return;
+
+    applyStyleToCue(cue, preset.settings);
+    presetNameInput.value = preset.name;
+    syncCueEditor();
+    renderCueList();
+    renderCurrentPreview();
+  }
+
+  function deleteSelectedPreset() {
+    const presetId = presetSelect.value;
+    if (!presetId) return;
+    state.presets = (state.presets || []).filter((preset) => preset.id !== presetId);
+    presetSelect.value = "";
+    saveStoredPresets();
+    renderPresetControls();
   }
 
   function applyDefaultsToSelected() {
@@ -895,6 +1068,7 @@
       ...project,
       previewBackgroundScale: clamp(project.previewBackgroundScale ?? next.previewBackgroundScale, 10, 300),
       defaults: { ...next.defaults, ...(project.defaults || {}) },
+      presets: mergePresets(next.presets, project.presets),
       lyrics: Array.isArray(project.lyrics) ? project.lyrics : [],
       cues: Array.isArray(project.cues) ? project.cues : []
     };
@@ -921,6 +1095,9 @@
       cueId: lyric.cueId || null
     }));
 
+    state.presets = mergePresets(state.presets);
+    saveStoredPresets();
+
     if (state.selectedCueId && !state.cues.some((cue) => cue.id === state.selectedCueId)) {
       state.selectedCueId = state.cues[0]?.id || null;
     }
@@ -935,6 +1112,7 @@
     await hydrateAssets();
     syncPreviewBackgroundControls();
     syncDefaultControls();
+    renderPresetControls();
     updatePreviewRangeMax();
     renderAll();
   }
@@ -1164,6 +1342,14 @@
 
     duplicateCueBtn.addEventListener("click", duplicateSelectedCue);
     deleteCueBtn.addEventListener("click", () => deleteCue());
+    savePresetBtn.addEventListener("click", saveSelectedCueAsPreset);
+    applyPresetBtn.addEventListener("click", applySelectedPresetToCue);
+    deletePresetBtn.addEventListener("click", deleteSelectedPreset);
+    presetSelect.addEventListener("change", () => {
+      const preset = (state.presets || []).find((item) => item.id === presetSelect.value);
+      presetNameInput.value = preset?.name || "";
+      renderPresetControls();
+    });
 
     setExportEndFromAudioBtn.addEventListener("click", () => {
       if (Number.isFinite(audioPlayer.duration) && audioPlayer.duration > 0) {

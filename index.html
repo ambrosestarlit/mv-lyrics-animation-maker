@@ -83,10 +83,10 @@
               <span>基本フォント</span>
               <select id="defaultFontFamilyInput"></select>
             </label>
-            <label class="field">
-              <span>基本サイズ</span>
-              <input id="defaultFontSizeInput" type="number" min="10" max="300" step="1" value="86" />
-            </label>
+            <div class="range-field">
+              <div class="range-head"><span>基本サイズ</span><output id="defaultFontSizeOutput"></output></div>
+              <input id="defaultFontSizeInput" type="range" min="10" max="300" step="1" value="86" />
+            </div>
           </div>
           <div class="grid-2">
             <label class="field">
@@ -178,6 +178,26 @@
         <summary>選択中フレーズ設定</summary>
         <div id="selectedEmptyMessage" class="empty-message">入力済みフレーズを選択してください。</div>
         <div id="cueEditor" class="control-stack hidden">
+          <div class="preset-box">
+            <div class="preset-title">フレーズ設定プリセット</div>
+            <div class="grid-2">
+              <label class="field">
+                <span>プリセット名</span>
+                <input id="presetNameInput" type="text" placeholder="例：サビ中央ジャンプ" />
+              </label>
+              <label class="field">
+                <span>登録済みプリセット</span>
+                <select id="presetSelect"></select>
+              </label>
+            </div>
+            <div class="button-row">
+              <button id="savePresetBtn" type="button">現在設定を登録</button>
+              <button id="applyPresetBtn" type="button">選択プリセットを適用</button>
+              <button id="deletePresetBtn" type="button" class="danger">削除</button>
+            </div>
+            <p class="hint">歌詞本文・開始秒・終了秒は含めず、見た目とアニメーション設定だけを保存します。</p>
+          </div>
+
           <label class="field">
             <span>歌詞テキスト</span>
             <textarea id="cueTextInput" rows="3"></textarea>
@@ -231,10 +251,10 @@
               <span>フォント</span>
               <select id="cueFontFamilyInput"></select>
             </label>
-            <label class="field">
-              <span>フォントサイズ</span>
-              <input id="cueFontSizeInput" type="number" min="10" max="300" step="1" />
-            </label>
+            <div class="range-field">
+              <div class="range-head"><span>フォントサイズ</span><output id="cueFontSizeOutput"></output></div>
+              <input id="cueFontSizeInput" type="range" min="10" max="300" step="1" />
+            </div>
           </div>
           <div class="grid-2">
             <label class="field">
@@ -283,10 +303,10 @@
               <span>フチ色</span>
               <input id="cueStrokeColorInput" type="color" />
             </label>
-            <label class="field">
-              <span>フチ太さ</span>
-              <input id="cueStrokeWidthInput" type="number" min="0" max="80" step="1" />
-            </label>
+            <div class="range-field">
+              <div class="range-head"><span>フチ太さ</span><output id="cueStrokeWidthOutput"></output></div>
+              <input id="cueStrokeWidthInput" type="range" min="0" max="80" step="1" />
+            </div>
           </div>
 
           <div class="grid-2">
@@ -294,10 +314,10 @@
               <span>影色</span>
               <input id="cueShadowColorInput" type="color" />
             </label>
-            <label class="field">
-              <span>影ぼかし</span>
-              <input id="cueShadowBlurInput" type="number" min="0" max="120" step="1" />
-            </label>
+            <div class="range-field">
+              <div class="range-head"><span>影ぼかし</span><output id="cueShadowBlurOutput"></output></div>
+              <input id="cueShadowBlurInput" type="range" min="0" max="120" step="1" />
+            </div>
           </div>
           <div class="grid-2">
             <label class="field">
