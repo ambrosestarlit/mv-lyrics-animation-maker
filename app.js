@@ -45,10 +45,6 @@
 
   const $ = (selector) => document.querySelector(selector);
 
-  const helpOpenBtn = $("#helpOpenBtn");
-  const helpCloseBtn = $("#helpCloseBtn");
-  const helpModal = $("#helpModal");
-
   const canvas = $("#previewCanvas");
   const ctx = canvas.getContext("2d", { alpha: true });
 
@@ -107,6 +103,22 @@
   const cueFontSizeOutput = $("#cueFontSizeOutput");
   const cueColorInput = $("#cueColorInput");
   const cueLineHeightInput = $("#cueLineHeightInput");
+  const cueLetterSpacingInput = $("#cueLetterSpacingInput");
+  const cueLetterSpacingOutput = $("#cueLetterSpacingOutput");
+  const cueLetterSpacingPanInput = $("#cueLetterSpacingPanInput");
+  const cueLetterSpacingPanOutput = $("#cueLetterSpacingPanOutput");
+  const cuePanXInput = $("#cuePanXInput");
+  const cuePanXOutput = $("#cuePanXOutput");
+  const cuePanYInput = $("#cuePanYInput");
+  const cuePanYOutput = $("#cuePanYOutput");
+  const cueScaleInput = $("#cueScaleInput");
+  const cueScaleOutput = $("#cueScaleOutput");
+  const cueScalePanInput = $("#cueScalePanInput");
+  const cueScalePanOutput = $("#cueScalePanOutput");
+  const cueRotationInput = $("#cueRotationInput");
+  const cueRotationOutput = $("#cueRotationOutput");
+  const cueRotationPanInput = $("#cueRotationPanInput");
+  const cueRotationPanOutput = $("#cueRotationPanOutput");
   const cueCpsInput = $("#cueCpsInput");
   const cueCpsOutput = $("#cueCpsOutput");
   const cueJumpSizeInput = $("#cueJumpSizeInput");
@@ -152,6 +164,14 @@
     fontSize: 86,
     lineHeight: 1.25,
     color: "#ffffff",
+    letterSpacing: 0,
+    letterSpacingPan: 0,
+    panX: 0,
+    panY: 0,
+    scale: 100,
+    scalePan: 0,
+    rotation: 0,
+    rotationPan: 0,
     animation: "typewriter",
     cps: 24,
     jumpSize: 28,
@@ -598,6 +618,14 @@
     cueFontSizeInput.value = String(clamp(s.fontSize, 10, 300));
     cueColorInput.value = s.color || "#ffffff";
     cueLineHeightInput.value = String(clamp(s.lineHeight, 0.5, 3));
+    cueLetterSpacingInput.value = String(clamp(s.letterSpacing ?? 0, -20, 120));
+    cueLetterSpacingPanInput.value = String(clamp(s.letterSpacingPan ?? 0, -120, 120));
+    cuePanXInput.value = String(clamp(s.panX ?? 0, -1920, 1920));
+    cuePanYInput.value = String(clamp(s.panY ?? 0, -1080, 1080));
+    cueScaleInput.value = String(clamp(s.scale ?? 100, 10, 400));
+    cueScalePanInput.value = String(clamp(s.scalePan ?? 0, -300, 300));
+    cueRotationInput.value = String(clamp(s.rotation ?? 0, -360, 360));
+    cueRotationPanInput.value = String(clamp(s.rotationPan ?? 0, -720, 720));
     cueCpsInput.value = String(clamp(s.cps, 1, 120));
     cueJumpSizeInput.value = String(clamp(s.jumpSize, 0, 160));
     cueJumpSpeedInput.value = String(clamp(s.jumpSpeed, 1, 20));
@@ -624,6 +652,14 @@
     cueYOutput.textContent = `${cueYInput.value}px`;
     cueMaxWidthOutput.textContent = `${cueMaxWidthInput.value}px`;
     cueFontSizeOutput.textContent = `${cueFontSizeInput.value}px`;
+    cueLetterSpacingOutput.textContent = `${cueLetterSpacingInput.value}px`;
+    cueLetterSpacingPanOutput.textContent = `${cueLetterSpacingPanInput.value}px`;
+    cuePanXOutput.textContent = `${cuePanXInput.value}px`;
+    cuePanYOutput.textContent = `${cuePanYInput.value}px`;
+    cueScaleOutput.textContent = `${cueScaleInput.value}%`;
+    cueScalePanOutput.textContent = `${cueScalePanInput.value}%`;
+    cueRotationOutput.textContent = `${cueRotationInput.value}°`;
+    cueRotationPanOutput.textContent = `${cueRotationPanInput.value}°`;
     cueCpsOutput.textContent = `${cueCpsInput.value} cps`;
     cueJumpSizeOutput.textContent = `${cueJumpSizeInput.value}px`;
     cueJumpSpeedOutput.textContent = `${cueJumpSpeedInput.value}`;
@@ -650,6 +686,14 @@
     s.fontSize = Math.round(clamp(cueFontSizeInput.value, 10, 300));
     s.color = cueColorInput.value;
     s.lineHeight = round(clamp(cueLineHeightInput.value, 0.5, 3), 2);
+    s.letterSpacing = Math.round(clamp(cueLetterSpacingInput.value, -20, 120));
+    s.letterSpacingPan = Math.round(clamp(cueLetterSpacingPanInput.value, -120, 120));
+    s.panX = Math.round(clamp(cuePanXInput.value, -1920, 1920));
+    s.panY = Math.round(clamp(cuePanYInput.value, -1080, 1080));
+    s.scale = Math.round(clamp(cueScaleInput.value, 10, 400));
+    s.scalePan = Math.round(clamp(cueScalePanInput.value, -300, 300));
+    s.rotation = Math.round(clamp(cueRotationInput.value, -360, 360));
+    s.rotationPan = Math.round(clamp(cueRotationPanInput.value, -720, 720));
     s.cps = Math.round(clamp(cueCpsInput.value, 1, 120));
     s.jumpSize = Math.round(clamp(cueJumpSizeInput.value, 0, 160));
     s.jumpSpeed = round(clamp(cueJumpSpeedInput.value, 1, 20), 1);
@@ -840,7 +884,13 @@
     return chars.slice(0, Math.max(0, count)).join("");
   }
 
-  function wrapTextLines(context, text, maxWidth) {
+  function measureTextWidth(context, text, letterSpacing = 0) {
+    const chars = splitChars(text);
+    if (!chars.length) return 0;
+    return chars.reduce((sum, char) => sum + context.measureText(char).width, 0) + Math.max(0, chars.length - 1) * letterSpacing;
+  }
+
+  function wrapTextLines(context, text, maxWidth, letterSpacing = 0) {
     const sourceLines = String(text || "").split(/\n/);
     const lines = [];
 
@@ -850,7 +900,7 @@
 
       chars.forEach((char) => {
         const testLine = line + char;
-        if (line && context.measureText(testLine).width > maxWidth) {
+        if (line && measureTextWidth(context, testLine, letterSpacing) > maxWidth) {
           lines.push(line);
           line = char;
         } else {
@@ -876,7 +926,7 @@
     return alpha;
   }
 
-  function drawStyledText(context, text, x, y, settings) {
+  function drawStyledText(context, text, x, y, settings, letterSpacing = 0) {
     if (!text) return;
 
     context.save();
@@ -893,26 +943,40 @@
       context.shadowOffsetY = 0;
     }
 
-    if (settings.stroke?.enabled && Number(settings.stroke.width) > 0) {
-      context.lineJoin = "round";
-      context.miterLimit = 2;
-      context.strokeStyle = settings.stroke.color || "#111827";
-      context.lineWidth = Number(settings.stroke.width) || 0;
-      context.strokeText(text, x, y);
+    context.lineJoin = "round";
+    context.miterLimit = 2;
+    context.strokeStyle = settings.stroke?.color || "#111827";
+    context.lineWidth = Number(settings.stroke?.width) || 0;
+    context.fillStyle = settings.color || "#ffffff";
+
+    const drawOne = (value, drawX) => {
+      if (settings.stroke?.enabled && Number(settings.stroke.width) > 0) {
+        context.strokeText(value, drawX, y);
+      }
+      context.fillText(value, drawX, y);
+    };
+
+    if (Number(letterSpacing) === 0) {
+      drawOne(text, x);
+    } else {
+      let cursorX = x;
+      splitChars(text).forEach((char) => {
+        drawOne(char, cursorX);
+        cursorX += context.measureText(char).width + Number(letterSpacing || 0);
+      });
     }
 
-    context.fillStyle = settings.color || "#ffffff";
-    context.fillText(text, x, y);
     context.restore();
   }
 
   function drawCue(context, cue, time) {
     if (time < cue.start || time > cue.end) return;
-    const settings = cue.settings || createCueStyle();
+    const settings = { ...defaultStyle(), ...(cue.settings || {}), stroke: { ...defaultStyle().stroke, ...(cue.settings?.stroke || {}) }, shadow: { ...defaultStyle().shadow, ...(cue.settings?.shadow || {}) } };
     const alpha = getCueAlpha(cue, time);
     if (alpha <= 0) return;
 
     const elapsed = Math.max(0, time - cue.start);
+    const progress = clamp((time - cue.start) / Math.max(0.01, cue.end - cue.start), 0, 1);
     const allText = String(cue.text || "");
     let text = allText;
     if (settings.animation === "typewriter" || settings.animation === "jumpTypewriter") {
@@ -920,37 +984,65 @@
       text = visibleTextByCount(allText, visibleCount);
     }
 
+    const x = (settings.x ?? 960) + (settings.panX || 0) * progress;
+    const y = (settings.y ?? 540) + (settings.panY || 0) * progress;
+    const scale = clamp((settings.scale ?? 100) + (settings.scalePan || 0) * progress, 1, 400) / 100;
+    const rotation = ((settings.rotation || 0) + (settings.rotationPan || 0) * progress) * Math.PI / 180;
+    const letterSpacing = clamp((settings.letterSpacing || 0) + (settings.letterSpacingPan || 0) * progress, -100, 240);
+
     context.save();
     context.globalAlpha *= alpha;
+    context.translate(x, y);
+    context.rotate(rotation);
+    context.scale(scale, scale);
     context.font = `700 ${Math.max(1, settings.fontSize || 86)}px ${settings.fontFamily || FONT_OPTIONS[1].value}`;
     context.textBaseline = "alphabetic";
 
     const maxWidth = Math.max(100, settings.maxWidth || 1580);
-    const lines = wrapTextLines(context, text, maxWidth);
+    const lines = wrapTextLines(context, text, maxWidth, letterSpacing);
     const lineHeight = Math.max(1, (settings.fontSize || 86) * (settings.lineHeight || 1.25));
     const totalHeight = lineHeight * Math.max(1, lines.length);
-    const startY = (settings.y || 540) - totalHeight / 2 + lineHeight * 0.85;
+    const startY = -totalHeight / 2 + lineHeight * 0.85;
 
     let globalCharIndex = 0;
     lines.forEach((line, lineIndex) => {
-      const y = startY + lineIndex * lineHeight;
-      const lineWidth = context.measureText(line).width;
-      let x = settings.x || 960;
-      if (settings.align === "center") x -= lineWidth / 2;
-      if (settings.align === "right") x -= lineWidth;
+      const yLine = startY + lineIndex * lineHeight;
+      const lineWidth = measureTextWidth(context, line, letterSpacing);
+      let xLine = 0;
+      if (settings.align === "center") xLine -= lineWidth / 2;
+      if (settings.align === "right") xLine -= lineWidth;
 
-      if (settings.animation === "jumpTypewriter") {
-        let cursorX = x;
-        splitChars(line).forEach((char) => {
-          const charWidth = context.measureText(char).width;
-          const wave = Math.abs(Math.sin(elapsed * (settings.jumpSpeed || 8) + globalCharIndex * 0.65));
-          const jumpY = y - wave * (settings.jumpSize || 0);
-          drawStyledText(context, char, cursorX, jumpY, settings);
-          cursorX += charWidth;
-          globalCharIndex += 1;
-        });
+      const shouldJumpChars = ["jumpTypewriter", "jumpReveal", "jumpInOut"].includes(settings.animation);
+
+      if (shouldJumpChars) {
+        let jumpEdgePower = 1;
+        if (settings.animation === "jumpInOut") {
+          const duration = Math.max(0.01, cue.end - cue.start);
+          const inDuration = Math.min(duration / 2, Math.max(0.08, settings.fadeInDuration || 0.3));
+          const outDuration = Math.min(duration / 2, Math.max(0.08, settings.fadeOutDuration || 0.35));
+          const introPower = elapsed < inDuration ? 1 - clamp(elapsed / inDuration, 0, 1) : 0;
+          const outroElapsed = Math.max(0, cue.end - time);
+          const outroPower = outroElapsed < outDuration ? 1 - clamp(outroElapsed / outDuration, 0, 1) : 0;
+          jumpEdgePower = Math.max(introPower, outroPower);
+        }
+
+        if (jumpEdgePower > 0.001) {
+          let cursorX = xLine;
+          splitChars(line).forEach((char) => {
+            const charWidth = context.measureText(char).width;
+            const wave = Math.abs(Math.sin(elapsed * (settings.jumpSpeed || 8) + globalCharIndex * 0.65));
+            const jumpY = yLine - wave * (settings.jumpSize || 0) * jumpEdgePower;
+            drawStyledText(context, char, cursorX, jumpY, settings, 0);
+            cursorX += charWidth + letterSpacing;
+            globalCharIndex += 1;
+          });
+        } else {
+          drawStyledText(context, line, xLine, yLine, settings, letterSpacing);
+          globalCharIndex += splitChars(line).length;
+        }
       } else {
-        drawStyledText(context, line, x, y, settings);
+        drawStyledText(context, line, xLine, yLine, settings, letterSpacing);
+        globalCharIndex += splitChars(line).length;
       }
     });
 
@@ -1199,8 +1291,9 @@
       for (let i = 0; i < frameCount; i += 1) {
         const time = start + i / fps;
         renderFrame(time, { includePreviewBackground: false });
-        const base64 = canvas.toDataURL("image/png").split(",")[1];
-        zip.file(`${prefix}_${String(i).padStart(5, "0")}.png`, base64, { base64: true });
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+        if (!blob) throw new Error("PNG生成に失敗しました。");
+        zip.file(`${prefix}_${String(i).padStart(5, "0")}.png`, blob);
 
         if (i % 5 === 0 || i === frameCount - 1) {
           exportProgress.textContent = `PNG生成中... ${i + 1} / ${frameCount}`;
@@ -1223,28 +1316,7 @@
     }
   }
 
-  function openHelpModal() {
-    helpModal.classList.remove("hidden");
-    helpModal.setAttribute("aria-hidden", "false");
-    document.body.classList.add("modal-open");
-  }
-
-  function closeHelpModal() {
-    helpModal.classList.add("hidden");
-    helpModal.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("modal-open");
-  }
-
   function bindEvents() {
-    helpOpenBtn.addEventListener("click", openHelpModal);
-    helpCloseBtn.addEventListener("click", closeHelpModal);
-    helpModal.addEventListener("click", (event) => {
-      if (event.target === helpModal) closeHelpModal();
-    });
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && !helpModal.classList.contains("hidden")) closeHelpModal();
-    });
-
     audioInput.addEventListener("change", async () => {
       const file = audioInput.files?.[0];
       if (!file) return;
@@ -1346,6 +1418,14 @@
       cueFontSizeInput,
       cueColorInput,
       cueLineHeightInput,
+      cueLetterSpacingInput,
+      cueLetterSpacingPanInput,
+      cuePanXInput,
+      cuePanYInput,
+      cueScaleInput,
+      cueScalePanInput,
+      cueRotationInput,
+      cueRotationPanInput,
       cueCpsInput,
       cueJumpSizeInput,
       cueJumpSpeedInput,

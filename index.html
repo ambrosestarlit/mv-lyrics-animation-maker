@@ -16,7 +16,6 @@
       <p>音声に合わせて歌詞を打ち込み、透過PNG連番を書き出すMV作成支援ツール</p>
     </div>
     <div class="header-actions">
-      <button id="helpOpenBtn" type="button">取扱説明</button>
       <button id="saveJsonBtn" type="button">JSON保存</button>
       <label class="file-button">
         JSON読込
@@ -109,6 +108,8 @@
                 <option value="normal">通常表示</option>
                 <option value="typewriter">タイプライター表示</option>
                 <option value="jumpTypewriter">ジャンプしながらタイプライター表示</option>
+                <option value="jumpReveal">ジャンプしながら表示</option>
+                <option value="jumpInOut">登場時と退場時だけジャンプ</option>
               </select>
             </label>
             <label class="field">
@@ -222,6 +223,8 @@
                 <option value="normal">通常表示</option>
                 <option value="typewriter">タイプライター表示</option>
                 <option value="jumpTypewriter">ジャンプしながらタイプライター表示</option>
+                <option value="jumpReveal">ジャンプしながら表示</option>
+                <option value="jumpInOut">登場時と退場時だけジャンプ</option>
               </select>
             </label>
             <label class="field">
@@ -266,6 +269,39 @@
               <span>行間</span>
               <input id="cueLineHeightInput" type="number" min="0.5" max="3" step="0.05" />
             </label>
+          </div>
+
+          <div class="range-field">
+            <div class="range-head"><span>字間</span><output id="cueLetterSpacingOutput"></output></div>
+            <input id="cueLetterSpacingInput" type="range" min="-20" max="120" step="1" />
+          </div>
+          <div class="range-field">
+            <div class="range-head"><span>字間移動</span><output id="cueLetterSpacingPanOutput"></output></div>
+            <input id="cueLetterSpacingPanInput" type="range" min="-120" max="120" step="1" />
+          </div>
+          <div class="range-field">
+            <div class="range-head"><span>文字PAN移動X</span><output id="cuePanXOutput"></output></div>
+            <input id="cuePanXInput" type="range" min="-1920" max="1920" step="1" />
+          </div>
+          <div class="range-field">
+            <div class="range-head"><span>文字PAN移動Y</span><output id="cuePanYOutput"></output></div>
+            <input id="cuePanYInput" type="range" min="-1080" max="1080" step="1" />
+          </div>
+          <div class="range-field">
+            <div class="range-head"><span>文字サイズ倍率</span><output id="cueScaleOutput"></output></div>
+            <input id="cueScaleInput" type="range" min="10" max="400" step="1" />
+          </div>
+          <div class="range-field">
+            <div class="range-head"><span>サイズ移動</span><output id="cueScalePanOutput"></output></div>
+            <input id="cueScalePanInput" type="range" min="-300" max="300" step="1" />
+          </div>
+          <div class="range-field">
+            <div class="range-head"><span>文字回転</span><output id="cueRotationOutput"></output></div>
+            <input id="cueRotationInput" type="range" min="-360" max="360" step="1" />
+          </div>
+          <div class="range-field">
+            <div class="range-head"><span>回転移動</span><output id="cueRotationPanOutput"></output></div>
+            <input id="cueRotationPanInput" type="range" min="-720" max="720" step="1" />
           </div>
 
           <div class="range-field">
@@ -368,83 +404,6 @@
       </details>
     </aside>
   </main>
-
-  <div id="helpModal" class="modal-overlay hidden" aria-hidden="true">
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
-      <div class="modal-header">
-        <div>
-          <h2 id="helpModalTitle">取扱説明</h2>
-          <p>MV用の歌詞アニメーションを作成し、透過PNG連番として書き出すためのブラウザアプリです。</p>
-        </div>
-        <button id="helpCloseBtn" type="button" class="modal-close" aria-label="取扱説明を閉じる">×</button>
-      </div>
-
-      <div class="modal-body">
-        <section class="manual-section">
-          <h3>基本の流れ</h3>
-          <ol>
-            <li>「音声ファイル」から曲や仮音声を読み込みます。</li>
-            <li>「歌詞TXT」から歌詞を読み込みます。TXTは1行につき1フレーズとして扱われ、左側に歌詞ボタンが作成されます。</li>
-            <li>音声を再生し、歌詞を出したいタイミングで歌詞ボタンをクリックします。</li>
-            <li>クリックした歌詞が入力済みフレーズになり、ボタンはグレーアウトします。</li>
-            <li>入力済みの歌詞ボタンをもう一度クリックすると、そのフレーズをキャンセルして打ち直せます。</li>
-            <li>右側の「選択中フレーズ設定」で位置、フォント、サイズ、アニメーション、縁取り、影などを調整します。</li>
-            <li>「透過PNG連番ZIPを書き出し」から、背景なしの連番PNGをZIPで出力します。</li>
-          </ol>
-        </section>
-
-        <section class="manual-section">
-          <h3>歌詞TXTの作り方</h3>
-          <p>1行が1つの歌詞ボタンになります。空行は読み込み時に自動で除外されます。</p>
-          <pre class="manual-code">春の光が窓を照らして
-君の声が少し近くなる
-何度でもここから始めよう</pre>
-        </section>
-
-        <section class="manual-section">
-          <h3>プレビュー背景について</h3>
-          <p>背景色と背景画像は、歌詞の見え方を確認するためのプレビュー専用です。透過PNG書き出しには反映されません。</p>
-          <p>「背景画像サイズ」は、プレビュー内で背景画像だけを拡大縮小します。プレビュー自体の拡大率ではありません。</p>
-        </section>
-
-        <section class="manual-section">
-          <h3>フレーズ設定</h3>
-          <ul>
-            <li>開始秒・終了秒：歌詞を表示する時間を指定します。</li>
-            <li>位置X・位置Y：画面内の表示位置を調整します。</li>
-            <li>文字揃え：左寄せ、中央寄せ、右寄せを選べます。</li>
-            <li>フォント・フォントサイズ：フレーズごとに変更できます。</li>
-            <li>タイプライター速度：1秒あたりに表示する文字数を調整します。</li>
-            <li>ジャンプの大きさ・速さ：ジャンプしながらタイプライター表示の動きを調整します。</li>
-            <li>フェードイン・フェードアウト：チェックを入れると表示開始・終了時にフェードします。</li>
-            <li>縁取り・ドロップシャドウ：色、太さ、ぼかし、影の位置を調整できます。</li>
-          </ul>
-        </section>
-
-        <section class="manual-section">
-          <h3>設定の引き継ぎとプリセット</h3>
-          <p>次の歌詞を入力するときは、選択中または直前に入力したフレーズの設定を引き継ぎます。似た演出を続けたい時に便利です。</p>
-          <p>よく使う見た目は「フレーズ設定プリセット」に登録できます。プリセットには歌詞本文、開始秒、終了秒は含めず、見た目とアニメーション設定だけを保存します。</p>
-        </section>
-
-        <section class="manual-section">
-          <h3>保存と復元</h3>
-          <ul>
-            <li>JSON保存：現在のプロジェクトをJSONファイルとして保存します。</li>
-            <li>JSON読込：保存済みJSONから作業状態を復元します。</li>
-            <li>キャッシュ保存：ブラウザ内に一時保存します。</li>
-            <li>キャッシュ復元：ブラウザ内に保存した内容を復元します。</li>
-          </ul>
-        </section>
-
-        <section class="manual-section">
-          <h3>透過PNG連番書き出し</h3>
-          <p>FPS、開始秒、終了秒、ファイル名の接頭辞を指定して書き出します。出力されるPNGは透過背景です。動画編集ソフトで背景映像の上に重ねて使用できます。</p>
-          <p>長い範囲や高FPSで書き出すと枚数が多くなるため、処理に時間がかかる場合があります。</p>
-        </section>
-      </div>
-    </div>
-  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="app.js"></script>
