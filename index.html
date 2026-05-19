@@ -16,7 +16,18 @@
       <p>音声に合わせて歌詞を打ち込み、透過PNG連番を書き出すMV作成支援ツール</p>
     </div>
     <div class="header-actions">
-      <button id="manualOpenBtn" type="button">取扱説明</button>
+      
+      <label class="field header-language">
+        
+        <span id="langLabel">Language / 言語</span>
+        
+        <select id="uiLanguageSelect">
+          <option value="ja">日本語</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+      <button id="openManualBtn" type="button">取扱説明</button>
+      
       <button id="saveJsonBtn" type="button">JSON保存</button>
       <label class="file-button">
         JSON読込
@@ -27,140 +38,32 @@
     </div>
   </header>
 
-
-  <div id="manualModal" class="modal hidden" aria-hidden="true">
-    <div class="modal-backdrop" data-manual-close></div>
-    <section class="manual-dialog" role="dialog" aria-modal="true" aria-labelledby="manualTitle">
-      <div class="manual-header">
-        <div>
-          <h2 id="manualTitle">取扱説明</h2>
-          <p>MV用の歌詞アニメーションを作成し、透過PNG連番として書き出すためのブラウザツールです。</p>
-        </div>
-        <button id="manualCloseBtn" type="button" class="manual-close" aria-label="取扱説明を閉じる">×</button>
-      </div>
-
-      <div class="manual-body">
-        <section>
-          <h3>1. 基本の流れ</h3>
-          <ol>
-            <li>「音声ファイル」から楽曲や仮音源を読み込みます。</li>
-            <li>「歌詞TXT」から歌詞を読み込みます。TXTの1行が1つの歌詞ボタンになります。</li>
-            <li>音声を再生し、歌詞を入れたいタイミングで左側の歌詞ボタンをクリックします。</li>
-            <li>入力済みの歌詞はグレー表示になります。もう一度クリックするとキャンセルできます。</li>
-            <li>中央のプレビューで確認しながら、右側で選択中フレーズの見た目や動きを調整します。</li>
-            <li>完成したら「透過PNG連番ZIP書き出し」で書き出します。</li>
-          </ol>
-        </section>
-
-        <section>
-          <h3>2. 歌詞TXTの作り方</h3>
-          <p>1行につき1フレーズとして登録されます。空行は読み飛ばされます。</p>
-          <pre>君の声が光になる
-夜を越えて届いていく
-まだ名前のない明日へ</pre>
-        </section>
-
-        <section>
-          <h3>3. 歌詞の入力・キャンセル</h3>
-          <ul>
-            <li>音声の現在時刻に合わせて歌詞ボタンを押すと、その時刻にフレーズが配置されます。</li>
-            <li>配置済みの歌詞ボタンをもう一度押すと、そのフレーズの配置を取り消します。</li>
-            <li>入力済みフレーズは下の一覧から選択でき、開始秒・終了秒も手動調整できます。</li>
-            <li>直前に使ったフレーズ設定は、次に入れる歌詞へ引き継がれます。</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3>4. プレビュー背景</h3>
-          <ul>
-            <li>背景色と背景画像は、編集時の確認用です。</li>
-            <li>背景画像は表示サイズ、X移動、Y移動で位置を調整できます。</li>
-            <li>背景画像は透過PNG書き出しには含まれません。</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3>5. フレーズ別設定</h3>
-          <ul>
-            <li>フォント、フォントサイズ、文字色、行間、字間をフレーズごとに変更できます。</li>
-            <li>位置X・位置Y、文字PAN X/Y、サイズ移動、回転、回転移動を設定できます。</li>
-            <li>左寄せ・中央寄せ・右寄せを選べます。</li>
-            <li>縁取り、縁取り色、フチ太さ、ドロップシャドウ、影ぼかし、影X/Yを調整できます。</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3>6. アニメーション</h3>
-          <ul>
-            <li>通常表示：フレーズ全体をそのまま表示します。</li>
-            <li>タイプライター表示：文字を順番に表示します。</li>
-            <li>一文字ずつ拡大表示：登場時のみ、文字が小さいサイズから設定サイズへ1文字ずつ拡大しながら表示されます。</li>
-            <li>ジャンプしながらタイプライター表示：文字を順番に表示しながら、1文字ずつ波打つようにジャンプします。</li>
-            <li>ジャンプしながら表示：全文表示した状態で、1文字ずつ波打つようにジャンプします。</li>
-            <li>登場時と退場時だけジャンプ：表示開始・終了付近だけ、1文字ずつ波打つようにジャンプします。</li>
-            <li>ジャンプの大きさ・速さ、タイプライター速度はスライダーで調整できます。</li>
-            <li>一文字ずつ拡大表示の出現テンポも、タイプライター速度で調整できます。</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3>7. フェード・プリセット</h3>
-          <ul>
-            <li>フェードイン、フェードアウトはチェックボックスで適用できます。</li>
-            <li>選択中フレーズの見た目・動きはプリセット登録できます。</li>
-            <li>プリセットには歌詞本文・開始秒・終了秒は含まれません。別フレーズへの使い回し用です。</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3>8. 保存と復元</h3>
-          <ul>
-            <li>JSON保存：プロジェクトをファイルとして保存します。</li>
-            <li>JSON読込：保存したJSONから編集状態を復元します。</li>
-            <li>キャッシュ保存：ブラウザ内に一時保存します。</li>
-            <li>キャッシュ復元：ブラウザ内に保存した内容を復元します。</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3>9. 書き出し</h3>
-          <ul>
-            <li>「書き出し開始秒」「書き出し終了秒」「FPS」「ファイル名接頭辞」を設定します。</li>
-            <li>「透過PNG連番ZIP書き出し」を押すと、背景なしの透過PNGがZIPで保存されます。</li>
-            <li>書き出した連番PNGは動画編集ソフトなどで読み込んでMV制作に使用できます。</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3>10. 注意点</h3>
-          <ul>
-            <li>長尺・高FPS・大きな文字装飾は、ブラウザのメモリ使用量が増えます。</li>
-            <li>書き出し中はページを閉じたり、再読み込みしないでください。</li>
-            <li>ローカルで直接開くより、GitHub PagesなどHTTP環境での利用を推奨します。</li>
-          </ul>
-        </section>
-      </div>
-    </section>
-  </div>
-
   <main class="app-layout">
     <aside class="panel left-panel">
       <details open>
         <summary>素材読み込み</summary>
         <div class="control-stack">
-          <label class="field">
+          <div class="field">
             <span>音声ファイル</span>
-            <input id="audioInput" type="file" accept="audio/*" />
-          </label>
+            <div class="custom-file-row">
+              <label class="file-button custom-file-button" for="audioInput"><span id="audioChooseLabel">ファイルを選択</span></label>
+              <span id="audioChosenLabel" class="file-select-status">選択されていません</span>
+            </div>
+            <input id="audioInput" class="visually-hidden-file" type="file" accept="audio/*" />
+          </div>
           <div class="asset-status-row">
             <div id="audioFileInfo" class="asset-status">音声未読込</div>
             <button id="clearAudioBtn" type="button">解除</button>
           </div>
 
-          <label class="field">
+          <div class="field">
             <span>歌詞TXT</span>
-            <input id="lyricsInput" type="file" accept="text/plain,.txt" />
-          </label>
+            <div class="custom-file-row">
+              <label class="file-button custom-file-button" for="lyricsInput"><span id="lyricsChooseLabel">ファイルを選択</span></label>
+              <span id="lyricsChosenLabel" class="file-select-status">選択されていません</span>
+            </div>
+            <input id="lyricsInput" class="visually-hidden-file" type="file" accept="text/plain,.txt" />
+          </div>
           <p class="hint">TXTの1行を1フレーズとして歌詞ボタンにします。空行は自動除外します。</p>
 
           <div class="grid-2">
@@ -177,10 +80,14 @@
               </select>
             </label>
           </div>
-          <label class="field">
+          <div class="field">
             <span>プレビュー背景画像</span>
-            <input id="previewBgImageInput" type="file" accept="image/*" />
-          </label>
+            <div class="custom-file-row">
+              <label class="file-button custom-file-button" for="previewBgImageInput"><span id="previewBgChooseLabel">ファイルを選択</span></label>
+              <span id="previewBgChosenLabel" class="file-select-status">選択されていません</span>
+            </div>
+            <input id="previewBgImageInput" class="visually-hidden-file" type="file" accept="image/*" />
+          </div>
           <div class="range-field">
             <div class="range-head"><span>背景画像サイズ</span><output id="previewBgScaleOutput">100%</output></div>
             <input id="previewBgScaleInput" type="range" min="1" max="100" step="1" value="100" />
@@ -234,7 +141,6 @@
               <select id="defaultAnimationInput">
                 <option value="normal">通常表示</option>
                 <option value="typewriter">タイプライター表示</option>
-                <option value="scaleInChars">一文字ずつ拡大表示</option>
                 <option value="jumpTypewriter">ジャンプしながらタイプライター表示</option>
                 <option value="jumpReveal">ジャンプしながら表示</option>
                 <option value="jumpInOut">登場時と退場時だけジャンプ</option>
@@ -350,7 +256,6 @@
               <select id="cueAnimationInput">
                 <option value="normal">通常表示</option>
                 <option value="typewriter">タイプライター表示</option>
-                <option value="scaleInChars">一文字ずつ拡大表示</option>
                 <option value="jumpTypewriter">ジャンプしながらタイプライター表示</option>
                 <option value="jumpReveal">ジャンプしながら表示</option>
                 <option value="jumpInOut">登場時と退場時だけジャンプ</option>
@@ -533,6 +438,20 @@
       </details>
     </aside>
   </main>
+
+
+  <div id="manualModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="manualModalTitle">
+    <div class="manual-modal">
+      <div class="manual-modal-header">
+        <h2 id="manualModalTitle">取扱説明</h2>
+        <button id="closeManualBtn" type="button" class="modal-close-button" aria-label="Close">×</button>
+      </div>
+      <div id="manualModalBody" class="manual-modal-body"></div>
+      <div class="manual-modal-footer">
+        <button id="closeManualFooterBtn" type="button">閉じる</button>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="app.js"></script>
