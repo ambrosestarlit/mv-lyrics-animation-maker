@@ -45,6 +45,10 @@
 
   const $ = (selector) => document.querySelector(selector);
 
+  const helpOpenBtn = $("#helpOpenBtn");
+  const helpCloseBtn = $("#helpCloseBtn");
+  const helpModal = $("#helpModal");
+
   const canvas = $("#previewCanvas");
   const ctx = canvas.getContext("2d", { alpha: true });
 
@@ -1219,7 +1223,28 @@
     }
   }
 
+  function openHelpModal() {
+    helpModal.classList.remove("hidden");
+    helpModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  }
+
+  function closeHelpModal() {
+    helpModal.classList.add("hidden");
+    helpModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  }
+
   function bindEvents() {
+    helpOpenBtn.addEventListener("click", openHelpModal);
+    helpCloseBtn.addEventListener("click", closeHelpModal);
+    helpModal.addEventListener("click", (event) => {
+      if (event.target === helpModal) closeHelpModal();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !helpModal.classList.contains("hidden")) closeHelpModal();
+    });
+
     audioInput.addEventListener("change", async () => {
       const file = audioInput.files?.[0];
       if (!file) return;
