@@ -57,6 +57,10 @@
   const previewBgFitSelect = $("#previewBgFitSelect");
   const previewBgScaleInput = $("#previewBgScaleInput");
   const previewBgScaleOutput = $("#previewBgScaleOutput");
+  const previewBgOffsetXInput = $("#previewBgOffsetXInput");
+  const previewBgOffsetXOutput = $("#previewBgOffsetXOutput");
+  const previewBgOffsetYInput = $("#previewBgOffsetYInput");
+  const previewBgOffsetYOutput = $("#previewBgOffsetYOutput");
   const previewBgImageInput = $("#previewBgImageInput");
   const clearPreviewBgImageBtn = $("#clearPreviewBgImageBtn");
 
@@ -151,6 +155,9 @@
   const exportProgress = $("#exportProgress");
 
   const saveJsonBtn = $("#saveJsonBtn");
+  const manualOpenBtn = $("#manualOpenBtn");
+  const manualModal = $("#manualModal");
+  const manualCloseBtn = $("#manualCloseBtn");
   const loadJsonInput = $("#loadJsonInput");
   const saveCacheBtn = $("#saveCacheBtn");
   const loadCacheBtn = $("#loadCacheBtn");
@@ -201,6 +208,8 @@
     previewBackgroundColor: "#f6fbff",
     previewBackgroundFit: "cover",
     previewBackgroundScale: 100,
+    previewBackgroundOffsetX: 0,
+    previewBackgroundOffsetY: 0,
     previewBackgroundImageDataUrl: null,
     previewBackgroundImage: null,
     lyrics: [],
@@ -360,6 +369,34 @@
     });
   }
 
+  function collectUsedFontFamilies() {
+    const fonts = new Set();
+    if (state.defaults?.fontFamily) fonts.add(state.defaults.fontFamily);
+    state.cues.forEach((cue) => {
+      if (cue.settings?.fontFamily) fonts.add(cue.settings.fontFamily);
+    });
+    (state.presets || []).forEach((preset) => {
+      if (preset.settings?.fontFamily) fonts.add(preset.settings.fontFamily);
+    });
+    return [...fonts].filter(Boolean);
+  }
+
+  async function waitForUsedFonts() {
+    if (!document.fonts || typeof document.fonts.load !== "function") return;
+    const fonts = collectUsedFontFamilies();
+    if (!fonts.length) return;
+
+    try {
+      await Promise.all(fonts.flatMap((fontFamily) => [
+        document.fonts.load(`400 96px ${fontFamily}`),
+        document.fonts.load(`700 96px ${fontFamily}`)
+      ]));
+      if (document.fonts.ready) await document.fonts.ready;
+    } catch (error) {
+      console.warn("フォントの事前読み込みに失敗しました。", error);
+    }
+  }
+
   function createCueStyle(templateCue = null) {
     const base = defaultStyle();
     base.fontFamily = state.defaults.fontFamily || base.fontFamily;
@@ -419,8 +456,12 @@
   function syncPreviewBackgroundControls() {
     previewBgColorInput.value = state.previewBackgroundColor || "#f6fbff";
     previewBgFitSelect.value = state.previewBackgroundFit || "cover";
-    previewBgScaleInput.value = String(clamp(state.previewBackgroundScale ?? 100, 10, 300));
+    previewBgScaleInput.value = String(clamp(state.previewBackgroundScale ?? 100, 1, 100));
     previewBgScaleOutput.textContent = `${previewBgScaleInput.value}%`;
+    previewBgOffsetXInput.value = String(clamp(state.previewBackgroundOffsetX ?? 0, -1920, 1920));
+    previewBgOffsetXOutput.textContent = `${previewBgOffsetXInput.value}px`;
+    previewBgOffsetYInput.value = String(clamp(state.previewBackgroundOffsetY ?? 0, -1080, 1080));
+    previewBgOffsetYOutput.textContent = `${previewBgOffsetYInput.value}px`;
   }
 
   function renderPresetControls() {
@@ -837,13 +878,13 @@
     renderAll();
   }
 
-  function drawImageFit(context, image, fit, width, height, scalePercent = 100) {
+  function drawImageFit(context, image, fit, width, height, scalePercent = 100, offsetX = 0, offsetY = 0) {
     if (!image) return;
-    const scale = clamp(scalePercent, 10, 300) / 100;
+    const scale = clamp(scalePercent, 1, 100) / 100;
     if (fit === "stretch") {
-      const drawWidth = width * scale;
-      const drawHeight = height * scale;
-      context.drawImage(image, (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
+      const drawWidth = Math.min(image.width, width * scale);
+      const drawHeight = Math.min(image.height, height * scale);
+      context.drawImage(image, (width - drawWidth) / 2 + offsetX, (height - drawHeight) / 2 + offsetY, drawWidth, drawHeight);
       return;
     }
 
@@ -870,9 +911,9 @@
       }
     }
 
-    drawWidth *= scale;
-    drawHeight *= scale;
-    context.drawImage(image, (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
+    drawWidth = Math.min(image.width, drawWidth * scale);
+    drawHeight = Math.min(image.height, drawHeight * scale);
+    context.drawImage(image, (width - drawWidth) / 2 + offsetX, (height - drawHeight) / 2 + offsetY, drawWidth, drawHeight);
   }
 
   function splitChars(text) {
@@ -1016,13 +1057,22 @@
 
       if (shouldJumpChars) {
         let jumpEdgePower = 1;
+
         if (settings.animation === "jumpInOut") {
           const duration = Math.max(0.01, cue.end - cue.start);
-          const inDuration = Math.min(duration / 2, Math.max(0.08, settings.fadeInDuration || 0.3));
-          const outDuration = Math.min(duration / 2, Math.max(0.08, settings.fadeOutDuration || 0.35));
-          const introPower = elapsed < inDuration ? 1 - clamp(elapsed / inDuration, 0, 1) : 0;
-          const outroElapsed = Math.max(0, cue.end - time);
-          const outroPower = outroElapsed < outDuration ? 1 - clamp(outroElapsed / outDuration, 0, 1) : 0;
+          const baseInDuration = Math.max(0.65, (settings.fadeInDuration || 0.3) * 2.4);
+          const baseOutDuration = Math.max(0.65, (settings.fadeOutDuration || 0.35) * 2.4);
+          const inDuration = Math.min(duration / 2, baseInDuration);
+          const outDuration = Math.min(duration / 2, baseOutDuration);
+          const outroRemaining = Math.max(0, cue.end - time);
+
+          const introPower = elapsed < inDuration
+            ? Math.sin(clamp(elapsed / inDuration, 0, 1) * Math.PI)
+            : 0;
+          const outroPower = outroRemaining < outDuration
+            ? Math.sin((1 - clamp(outroRemaining / outDuration, 0, 1)) * Math.PI)
+            : 0;
+
           jumpEdgePower = Math.max(introPower, outroPower);
         }
 
@@ -1030,8 +1080,10 @@
           let cursorX = xLine;
           splitChars(line).forEach((char) => {
             const charWidth = context.measureText(char).width;
-            const wave = Math.abs(Math.sin(elapsed * (settings.jumpSpeed || 8) + globalCharIndex * 0.65));
-            const jumpY = yLine - wave * (settings.jumpSize || 0) * jumpEdgePower;
+            const wavePhase = elapsed * (settings.jumpSpeed || 8) + globalCharIndex * 0.65;
+            const wave = Math.abs(Math.sin(wavePhase));
+            const charJump = wave * (settings.jumpSize || 0) * jumpEdgePower;
+            const jumpY = yLine - charJump;
             drawStyledText(context, char, cursorX, jumpY, settings, 0);
             cursorX += charWidth + letterSpacing;
             globalCharIndex += 1;
@@ -1064,7 +1116,9 @@
           state.previewBackgroundFit || "cover",
           CANVAS_WIDTH,
           CANVAS_HEIGHT,
-          state.previewBackgroundScale ?? 100
+          state.previewBackgroundScale ?? 100,
+          state.previewBackgroundOffsetX ?? 0,
+          state.previewBackgroundOffsetY ?? 0
         );
       }
       ctx.restore();
@@ -1162,7 +1216,9 @@
     state = {
       ...next,
       ...project,
-      previewBackgroundScale: clamp(project.previewBackgroundScale ?? next.previewBackgroundScale, 10, 300),
+      previewBackgroundScale: clamp(project.previewBackgroundScale ?? next.previewBackgroundScale, 1, 100),
+      previewBackgroundOffsetX: clamp(project.previewBackgroundOffsetX ?? next.previewBackgroundOffsetX, -1920, 1920),
+      previewBackgroundOffsetY: clamp(project.previewBackgroundOffsetY ?? next.previewBackgroundOffsetY, -1080, 1080),
       defaults: { ...next.defaults, ...(project.defaults || {}) },
       presets: mergePresets(next.presets, project.presets),
       lyrics: Array.isArray(project.lyrics) ? project.lyrics : [],
@@ -1206,6 +1262,7 @@
 
     sortCues();
     await hydrateAssets();
+    await waitForUsedFonts();
     syncPreviewBackgroundControls();
     syncDefaultControls();
     renderPresetControls();
@@ -1222,6 +1279,23 @@
     anchor.click();
     anchor.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+
+  function openManualModal() {
+    if (!manualModal) return;
+    manualModal.classList.remove("hidden");
+    manualModal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    manualCloseBtn?.focus();
+  }
+
+  function closeManualModal() {
+    if (!manualModal) return;
+    manualModal.classList.add("hidden");
+    manualModal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    manualOpenBtn?.focus();
   }
 
   function downloadJson() {
@@ -1444,6 +1518,10 @@
     ];
     editorInputs.forEach((input) => input.addEventListener("input", updateCueFromEditor));
     editorInputs.forEach((input) => input.addEventListener("change", updateCueFromEditor));
+    cueFontFamilyInput.addEventListener("change", async () => {
+      await waitForUsedFonts();
+      renderCurrentPreview();
+    });
 
     duplicateCueBtn.addEventListener("click", duplicateSelectedCue);
     deleteCueBtn.addEventListener("click", () => deleteCue());
@@ -1464,6 +1542,18 @@
     exportZipBtn.addEventListener("click", exportTransparentPngZip);
 
     saveJsonBtn.addEventListener("click", downloadJson);
+    manualOpenBtn?.addEventListener("click", openManualModal);
+    manualCloseBtn?.addEventListener("click", closeManualModal);
+    manualModal?.addEventListener("click", (event) => {
+      if (event.target instanceof HTMLElement && event.target.hasAttribute("data-manual-close")) {
+        closeManualModal();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && manualModal && !manualModal.classList.contains("hidden")) {
+        closeManualModal();
+      }
+    });
     loadJsonInput.addEventListener("change", async () => {
       const file = loadJsonInput.files?.[0];
       if (!file) return;
