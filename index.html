@@ -16,18 +16,14 @@
       <p>音声に合わせて歌詞を打ち込み、透過PNG連番を書き出すMV作成支援ツール</p>
     </div>
     <div class="header-actions">
-      
+      <button id="openManualBtn" type="button">取扱説明</button>
       <label class="field header-language">
-        
         <span id="langLabel">Language / 言語</span>
-        
         <select id="uiLanguageSelect">
           <option value="ja">日本語</option>
           <option value="en">English</option>
         </select>
       </label>
-      <button id="openManualBtn" type="button">取扱説明</button>
-      
       <button id="saveJsonBtn" type="button">JSON保存</button>
       <label class="file-button">
         JSON読込
@@ -141,6 +137,7 @@
               <select id="defaultAnimationInput">
                 <option value="normal">通常表示</option>
                 <option value="typewriter">タイプライター表示</option>
+                <option value="scaleReveal">拡大しながら表示</option>
                 <option value="jumpTypewriter">ジャンプしながらタイプライター表示</option>
                 <option value="jumpReveal">ジャンプしながら表示</option>
                 <option value="jumpInOut">登場時と退場時だけジャンプ</option>
@@ -256,6 +253,7 @@
               <select id="cueAnimationInput">
                 <option value="normal">通常表示</option>
                 <option value="typewriter">タイプライター表示</option>
+                <option value="scaleReveal">拡大しながら表示</option>
                 <option value="jumpTypewriter">ジャンプしながらタイプライター表示</option>
                 <option value="jumpReveal">ジャンプしながら表示</option>
                 <option value="jumpInOut">登場時と退場時だけジャンプ</option>
@@ -341,6 +339,14 @@
           <div class="range-field">
             <div class="range-head"><span>タイプライター速度</span><output id="cueCpsOutput"></output></div>
             <input id="cueCpsInput" type="range" min="1" max="120" step="1" />
+          </div>
+          <div class="range-field">
+            <div class="range-head"><span>拡大表示の最小サイズ</span><output id="cueScaleRevealMinOutput"></output></div>
+            <input id="cueScaleRevealMinInput" type="range" min="1" max="100" step="1" />
+          </div>
+          <div class="range-field">
+            <div class="range-head"><span>拡大表示の速度</span><output id="cueScaleRevealSpeedOutput"></output></div>
+            <input id="cueScaleRevealSpeedInput" type="range" min="1" max="120" step="1" />
           </div>
           <div class="range-field">
             <div class="range-head"><span>ジャンプの大きさ</span><output id="cueJumpSizeOutput"></output></div>
@@ -432,7 +438,10 @@
             </label>
           </div>
           <button id="setExportEndFromAudioBtn" type="button">音声の長さを終了秒へ</button>
-          <button id="exportZipBtn" type="button" class="primary">透過PNG連番ZIPを書き出し</button>
+          <div class="button-row">
+            <button id="exportSrtBtn" type="button">SRT字幕を書き出し</button>
+            <button id="exportZipBtn" type="button" class="primary">透過PNG連番ZIPを書き出し</button>
+          </div>
           <div id="exportProgress" class="progress-text"></div>
         </div>
       </details>

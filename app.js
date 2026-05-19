@@ -139,6 +139,10 @@
   const cueRotationPanOutput = $("#cueRotationPanOutput");
   const cueCpsInput = $("#cueCpsInput");
   const cueCpsOutput = $("#cueCpsOutput");
+  const cueScaleRevealMinInput = $("#cueScaleRevealMinInput");
+  const cueScaleRevealMinOutput = $("#cueScaleRevealMinOutput");
+  const cueScaleRevealSpeedInput = $("#cueScaleRevealSpeedInput");
+  const cueScaleRevealSpeedOutput = $("#cueScaleRevealSpeedOutput");
   const cueJumpSizeInput = $("#cueJumpSizeInput");
   const cueJumpSizeOutput = $("#cueJumpSizeOutput");
   const cueJumpSpeedInput = $("#cueJumpSpeedInput");
@@ -165,6 +169,7 @@
   const exportStartInput = $("#exportStartInput");
   const exportEndInput = $("#exportEndInput");
   const setExportEndFromAudioBtn = $("#setExportEndFromAudioBtn");
+  const exportSrtBtn = $("#exportSrtBtn");
   const exportZipBtn = $("#exportZipBtn");
   const exportProgress = $("#exportProgress");
 
@@ -192,8 +197,10 @@
     rotationPan: 0,
     animation: "typewriter",
     cps: 24,
-    jumpSize: 28,
-    jumpSpeed: 8,
+    scaleRevealMin: 18,
+    scaleRevealSpeed: 24,
+    jumpSize: 17,
+    jumpSpeed: 1,
     fadeIn: true,
     fadeOut: true,
     fadeInDuration: 0.3,
@@ -256,15 +263,15 @@
       lyricsTxt: "歌詞TXT", lyricsHint: "TXTの1行を1フレーズとして歌詞ボタンにします。空行は自動除外します。",
       previewBgColor: "プレビュー背景色", bgFit: "背景画像の表示", fitCover: "画面いっぱい", fitContain: "全体表示", fitStretch: "引き伸ばし", previewBgImage: "プレビュー背景画像", bgScale: "背景画像サイズ", bgOffsetX: "背景画像移動X", bgOffsetY: "背景画像移動Y", clearBgImage: "背景画像を解除", bgHint: "背景色・背景画像はプレビュー確認用です。透過PNG書き出しには含まれません。",
       defaultFont: "基本フォント", defaultSize: "基本サイズ", defaultDuration: "初期表示秒数", autoChain: "前フレーズ終了を自動調整", yes: "する", no: "しない", defaultAnimation: "初期アニメーション", defaultAlign: "初期文字揃え", applyDefaults: "選択中のフレーズへ基本設定を反映",
-      animNormal: "通常表示", animTypewriter: "タイプライター表示", animJumpTypewriter: "ジャンプしながらタイプライター表示", animJumpReveal: "ジャンプしながら表示", animJumpInOut: "登場時と退場時だけジャンプ",
+      animNormal: "通常表示", animTypewriter: "タイプライター表示", animScaleReveal: "拡大しながら表示", animJumpTypewriter: "ジャンプしながらタイプライター表示", animJumpReveal: "ジャンプしながら表示", animJumpInOut: "登場時と退場時だけジャンプ",
       alignLeft: "左寄せ", alignCenter: "中央寄せ", alignRight: "右寄せ",
       lyricsNotLoaded: "歌詞未読込", clearList: "一覧クリア", lyricsButtonEmpty: "歌詞TXTを読み込むと、ここに1行ずつボタンが追加されます。", enteredEmpty: "入力済みフレーズはまだありません。音声再生中に歌詞ボタンを押してください。",
       inputAtCurrent: "クリックで現在時刻に入力", enteredAt: "入力済み {time} / 再クリックでキャンセル", linesCount: "{count}行",
       previewCanvas: "Preview Canvas", previewCanvasSub: "1920 × 1080 / export transparent", noActiveLyrics: "表示中の歌詞なし", previewAtCurrentTime: "現在時刻でプレビュー", previewSeconds: "プレビュー秒", update: "更新", transportHint: "音声再生中に左の歌詞ボタンを押すと、その時刻に歌詞キューを作成します。",
       selectedEmpty: "入力済みフレーズを選択してください。", presetTitle: "フレーズ設定プリセット", presetName: "プリセット名", presetPlaceholder: "例：サビ中央ジャンプ", registeredPresets: "登録済みプリセット", selectPreset: "プリセットを選択", noPreset: "プリセット未登録", saveCurrentAsPreset: "現在設定を登録", applySelectedPreset: "選択プリセットを適用", delete: "削除", presetHint: "歌詞本文・開始秒・終了秒は含めず、見た目とアニメーション設定だけを保存します。",
-      lyricText: "歌詞テキスト", startSec: "開始秒", endSec: "終了秒", animation: "アニメーション", textAlign: "文字揃え", positionX: "位置X", positionY: "位置Y", wrapWidth: "折り返し幅", font: "フォント", fontSize: "フォントサイズ", textColor: "文字色", lineHeight: "行間", letterSpacing: "字間", letterSpacingPan: "字間移動", textPanX: "文字PAN移動X", textPanY: "文字PAN移動Y", textScale: "文字サイズ倍率", scalePan: "サイズ移動", textRotation: "文字回転", rotationPan: "回転移動", typewriterSpeed: "タイプライター速度", jumpSize: "ジャンプの大きさ", jumpSpeed: "ジャンプの速さ", fadeIn: "フェードイン", fadeOut: "フェードアウト", stroke: "縁取り", dropShadow: "ドロップシャドウ", fadeInSec: "フェードイン秒", fadeOutSec: "フェードアウト秒", strokeColor: "フチ色", strokeWidth: "フチ太さ", shadowColor: "影色", shadowBlur: "影ぼかし", shadowX: "影X", shadowY: "影Y", duplicate: "複製",
-      export: "書き出し", fps: "FPS", prefix: "接頭辞", setEndFromAudio: "音声の長さを終了秒へ", exportZip: "透過PNG連番ZIPを書き出し",
-      preparing: "書き出し準備中... {done} / {total}", pngGenerating: "PNG生成中... {done} / {total}", zipGenerating: "ZIP生成中... {percent}%", exportComplete: "完了: {count}枚を書き出しました。", exportFailed: "書き出しに失敗しました。",
+      lyricText: "歌詞テキスト", startSec: "開始秒", endSec: "終了秒", animation: "アニメーション", textAlign: "文字揃え", positionX: "位置X", positionY: "位置Y", wrapWidth: "折り返し幅", font: "フォント", fontSize: "フォントサイズ", textColor: "文字色", lineHeight: "行間", letterSpacing: "字間", letterSpacingPan: "字間移動", textPanX: "文字PAN移動X", textPanY: "文字PAN移動Y", textScale: "文字サイズ倍率", scalePan: "サイズ移動", textRotation: "文字回転", rotationPan: "回転移動", typewriterSpeed: "タイプライター速度", scaleRevealMin: "拡大表示の最小サイズ", scaleRevealSpeed: "拡大表示の速度", jumpSize: "ジャンプの大きさ", jumpSpeed: "ジャンプの速さ", fadeIn: "フェードイン", fadeOut: "フェードアウト", stroke: "縁取り", dropShadow: "ドロップシャドウ", fadeInSec: "フェードイン秒", fadeOutSec: "フェードアウト秒", strokeColor: "フチ色", strokeWidth: "フチ太さ", shadowColor: "影色", shadowBlur: "影ぼかし", shadowX: "影X", shadowY: "影Y", duplicate: "複製",
+      export: "書き出し", fps: "FPS", prefix: "接頭辞", setEndFromAudio: "音声の長さを終了秒へ", exportZip: "透過PNG連番ZIPを書き出し", exportSrt: "SRT字幕を書き出し",
+      preparing: "書き出し準備中... {done} / {total}", pngGenerating: "PNG生成中... {done} / {total}", zipGenerating: "ZIP生成中... {percent}%", exportComplete: "完了: {count}枚を書き出しました。", exportFailed: "書き出しに失敗しました。", srtComplete: "完了: SRT字幕を{count}件を書き出しました。", srtEmpty: "書き出せる入力済みフレーズがありません。",
       failedReadJson: "JSONを読み込めませんでした。", cacheSaved: "キャッシュへ保存しました。", cacheSaveFailed: "キャッシュ保存に失敗しました。ブラウザの保存容量を確認してください。", cacheLoadFailed: "キャッシュ復元に失敗しました。", cacheMissing: "保存済みキャッシュがありません。", jszipMissing: "JSZipを読み込めませんでした。インターネット接続、またはCDNの読み込みを確認してください。", pngFailed: "PNG生成に失敗しました。", exportFailedRetry: "書き出しに失敗しました。枚数を減らして再試行してください。",
       presetAutoName: "プリセット{count}", loadedLyrics: "表示中の歌詞なし"
     },
@@ -279,15 +286,15 @@
       lyricsTxt: "Lyrics TXT", lyricsHint: "Each line in the TXT file becomes one lyric button. Blank lines are ignored.",
       previewBgColor: "Preview Background Color", bgFit: "Background Image Fit", fitCover: "Fill Screen", fitContain: "Contain", fitStretch: "Stretch", previewBgImage: "Preview Background Image", bgScale: "Background Image Scale", bgOffsetX: "Background Image Offset X", bgOffsetY: "Background Image Offset Y", clearBgImage: "Clear Background Image", bgHint: "Background color and image are for preview only and are not included in transparent PNG export.",
       defaultFont: "Default Font", defaultSize: "Default Size", defaultDuration: "Default Duration", autoChain: "Auto-adjust previous phrase end", yes: "On", no: "Off", defaultAnimation: "Default Animation", defaultAlign: "Default Alignment", applyDefaults: "Apply defaults to selected phrase",
-      animNormal: "Normal", animTypewriter: "Typewriter", animJumpTypewriter: "Jump + Typewriter", animJumpReveal: "Jump Reveal", animJumpInOut: "Jump on In/Out",
+      animNormal: "Normal", animTypewriter: "Typewriter", animScaleReveal: "Scale Reveal", animJumpTypewriter: "Jump + Typewriter", animJumpReveal: "Jump Reveal", animJumpInOut: "Jump on In/Out",
       alignLeft: "Left", alignCenter: "Center", alignRight: "Right",
       lyricsNotLoaded: "No lyrics loaded", clearList: "Clear List", lyricsButtonEmpty: "Load a lyrics TXT file to create one button per line here.", enteredEmpty: "No phrases placed yet. Press a lyric button while audio is playing.",
       inputAtCurrent: "Click to place at current time", enteredAt: "Placed {time} / click again to cancel", linesCount: "{count} lines",
       previewCanvas: "Preview Canvas", previewCanvasSub: "1920 × 1080 / transparent export", noActiveLyrics: "No active lyrics", previewAtCurrentTime: "Preview at Current Time", previewSeconds: "Preview Time", update: "Update", transportHint: "While audio is playing, press a lyric button on the left to create a lyric cue at that time.",
       selectedEmpty: "Select a placed phrase.", presetTitle: "Phrase Setting Presets", presetName: "Preset Name", presetPlaceholder: "e.g. Chorus Center Jump", registeredPresets: "Saved Presets", selectPreset: "Select a preset", noPreset: "No presets", saveCurrentAsPreset: "Save Current Settings", applySelectedPreset: "Apply Selected Preset", delete: "Delete", presetHint: "Only appearance and animation settings are saved. Lyric text and timing are not included.",
-      lyricText: "Lyric Text", startSec: "Start (sec)", endSec: "End (sec)", animation: "Animation", textAlign: "Alignment", positionX: "Position X", positionY: "Position Y", wrapWidth: "Wrap Width", font: "Font", fontSize: "Font Size", textColor: "Text Color", lineHeight: "Line Height", letterSpacing: "Letter Spacing", letterSpacingPan: "Letter Spacing Pan", textPanX: "Text Pan X", textPanY: "Text Pan Y", textScale: "Text Scale", scalePan: "Scale Pan", textRotation: "Text Rotation", rotationPan: "Rotation Pan", typewriterSpeed: "Typewriter Speed", jumpSize: "Jump Height", jumpSpeed: "Jump Speed", fadeIn: "Fade In", fadeOut: "Fade Out", stroke: "Stroke", dropShadow: "Drop Shadow", fadeInSec: "Fade In (sec)", fadeOutSec: "Fade Out (sec)", strokeColor: "Stroke Color", strokeWidth: "Stroke Width", shadowColor: "Shadow Color", shadowBlur: "Shadow Blur", shadowX: "Shadow X", shadowY: "Shadow Y", duplicate: "Duplicate",
-      export: "Export", fps: "FPS", prefix: "Prefix", setEndFromAudio: "Use Audio Length as End Time", exportZip: "Export Transparent PNG ZIP",
-      preparing: "Preparing export... {done} / {total}", pngGenerating: "Generating PNG... {done} / {total}", zipGenerating: "Creating ZIP... {percent}%", exportComplete: "Done: exported {count} frames.", exportFailed: "Export failed.",
+      lyricText: "Lyric Text", startSec: "Start (sec)", endSec: "End (sec)", animation: "Animation", textAlign: "Alignment", positionX: "Position X", positionY: "Position Y", wrapWidth: "Wrap Width", font: "Font", fontSize: "Font Size", textColor: "Text Color", lineHeight: "Line Height", letterSpacing: "Letter Spacing", letterSpacingPan: "Letter Spacing Pan", textPanX: "Text Pan X", textPanY: "Text Pan Y", textScale: "Text Scale", scalePan: "Scale Pan", textRotation: "Text Rotation", rotationPan: "Rotation Pan", typewriterSpeed: "Typewriter Speed", scaleRevealMin: "Scale Reveal Min Size", scaleRevealSpeed: "Scale Reveal Speed", jumpSize: "Jump Height", jumpSpeed: "Jump Speed", fadeIn: "Fade In", fadeOut: "Fade Out", stroke: "Stroke", dropShadow: "Drop Shadow", fadeInSec: "Fade In (sec)", fadeOutSec: "Fade Out (sec)", strokeColor: "Stroke Color", strokeWidth: "Stroke Width", shadowColor: "Shadow Color", shadowBlur: "Shadow Blur", shadowX: "Shadow X", shadowY: "Shadow Y", duplicate: "Duplicate",
+      export: "Export", fps: "FPS", prefix: "Prefix", setEndFromAudio: "Use Audio Length as End Time", exportZip: "Export Transparent PNG ZIP", exportSrt: "Export SRT Subtitles",
+      preparing: "Preparing export... {done} / {total}", pngGenerating: "Generating PNG... {done} / {total}", zipGenerating: "Creating ZIP... {percent}%", exportComplete: "Done: exported {count} frames.", exportFailed: "Export failed.", srtComplete: "Done: exported {count} SRT subtitles.", srtEmpty: "There are no placed phrases to export.",
       failedReadJson: "Could not load the JSON file.", cacheSaved: "Saved to cache.", cacheSaveFailed: "Could not save cache. Please check browser storage limits.", cacheLoadFailed: "Could not restore cache.", cacheMissing: "No saved cache was found.", jszipMissing: "JSZip could not be loaded. Please check your internet connection or the CDN.", pngFailed: "Failed to generate PNG.", exportFailedRetry: "Export failed. Try reducing the number of frames and run again.",
       presetAutoName: "Preset {count}", loadedLyrics: "No active lyrics"
     }
@@ -385,7 +392,7 @@
     setFieldLabel(autoChainSelect, "autoChain");
     setSelectOptions(autoChainSelect, { "1": t("yes"), "0": t("no") });
     setFieldLabel(defaultAnimationInput, "defaultAnimation");
-    setSelectOptions(defaultAnimationInput, { normal: t("animNormal"), typewriter: t("animTypewriter"), jumpTypewriter: t("animJumpTypewriter"), jumpReveal: t("animJumpReveal"), jumpInOut: t("animJumpInOut") });
+    setSelectOptions(defaultAnimationInput, { normal: t("animNormal"), typewriter: t("animTypewriter"), scaleReveal: t("animScaleReveal"), jumpTypewriter: t("animJumpTypewriter"), jumpReveal: t("animJumpReveal"), jumpInOut: t("animJumpInOut") });
     setFieldLabel(defaultAlignInput, "defaultAlign");
     setSelectOptions(defaultAlignInput, { left: t("alignLeft"), center: t("alignCenter"), right: t("alignRight") });
     setText(applyDefaultToSelectedBtn, "applyDefaults");
@@ -411,17 +418,17 @@
     setFieldLabel(cueStartInput, "startSec");
     setFieldLabel(cueEndInput, "endSec");
     setFieldLabel(cueAnimationInput, "animation");
-    setSelectOptions(cueAnimationInput, { normal: t("animNormal"), typewriter: t("animTypewriter"), jumpTypewriter: t("animJumpTypewriter"), jumpReveal: t("animJumpReveal"), jumpInOut: t("animJumpInOut") });
+    setSelectOptions(cueAnimationInput, { normal: t("animNormal"), typewriter: t("animTypewriter"), scaleReveal: t("animScaleReveal"), jumpTypewriter: t("animJumpTypewriter"), jumpReveal: t("animJumpReveal"), jumpInOut: t("animJumpInOut") });
     setFieldLabel(cueAlignInput, "textAlign");
     setSelectOptions(cueAlignInput, { left: t("alignLeft"), center: t("alignCenter"), right: t("alignRight") });
     setRangeLabel(cueXInput, "positionX"); setRangeLabel(cueYInput, "positionY"); setRangeLabel(cueMaxWidthInput, "wrapWidth");
     setFieldLabel(cueFontFamilyInput, "font"); setRangeLabel(cueFontSizeInput, "fontSize"); setFieldLabel(cueColorInput, "textColor"); setFieldLabel(cueLineHeightInput, "lineHeight");
-    setRangeLabel(cueLetterSpacingInput, "letterSpacing"); setRangeLabel(cueLetterSpacingPanInput, "letterSpacingPan"); setRangeLabel(cuePanXInput, "textPanX"); setRangeLabel(cuePanYInput, "textPanY"); setRangeLabel(cueScaleInput, "textScale"); setRangeLabel(cueScalePanInput, "scalePan"); setRangeLabel(cueRotationInput, "textRotation"); setRangeLabel(cueRotationPanInput, "rotationPan"); setRangeLabel(cueCpsInput, "typewriterSpeed"); setRangeLabel(cueJumpSizeInput, "jumpSize"); setRangeLabel(cueJumpSpeedInput, "jumpSpeed");
+    setRangeLabel(cueLetterSpacingInput, "letterSpacing"); setRangeLabel(cueLetterSpacingPanInput, "letterSpacingPan"); setRangeLabel(cuePanXInput, "textPanX"); setRangeLabel(cuePanYInput, "textPanY"); setRangeLabel(cueScaleInput, "textScale"); setRangeLabel(cueScalePanInput, "scalePan"); setRangeLabel(cueRotationInput, "textRotation"); setRangeLabel(cueRotationPanInput, "rotationPan"); setRangeLabel(cueCpsInput, "typewriterSpeed"); setRangeLabel(cueScaleRevealMinInput, "scaleRevealMin"); setRangeLabel(cueScaleRevealSpeedInput, "scaleRevealSpeed"); setRangeLabel(cueJumpSizeInput, "jumpSize"); setRangeLabel(cueJumpSpeedInput, "jumpSpeed");
     setTextNodeLabel(cueFadeInInput.closest('label'), "fadeIn"); setTextNodeLabel(cueFadeOutInput.closest('label'), "fadeOut"); setTextNodeLabel(cueStrokeEnabledInput.closest('label'), "stroke"); setTextNodeLabel(cueShadowEnabledInput.closest('label'), "dropShadow");
     setFieldLabel(cueFadeInDurationInput, "fadeInSec"); setFieldLabel(cueFadeOutDurationInput, "fadeOutSec"); setFieldLabel(cueStrokeColorInput, "strokeColor"); setRangeLabel(cueStrokeWidthInput, "strokeWidth"); setFieldLabel(cueShadowColorInput, "shadowColor"); setRangeLabel(cueShadowBlurInput, "shadowBlur"); setFieldLabel(cueShadowOffsetXInput, "shadowX"); setFieldLabel(cueShadowOffsetYInput, "shadowY");
     setText(duplicateCueBtn, "duplicate"); setText(deleteCueBtn, "delete");
 
-    setFieldLabel(exportFpsInput, "fps"); setFieldLabel(exportPrefixInput, "prefix"); setFieldLabel(exportStartInput, "startSec"); setFieldLabel(exportEndInput, "endSec"); setText(setExportEndFromAudioBtn, "setEndFromAudio"); setText(exportZipBtn, "exportZip");
+    setFieldLabel(exportFpsInput, "fps"); setFieldLabel(exportPrefixInput, "prefix"); setFieldLabel(exportStartInput, "startSec"); setFieldLabel(exportEndInput, "endSec"); setText(setExportEndFromAudioBtn, "setEndFromAudio"); setText(exportSrtBtn, "exportSrt"); setText(exportZipBtn, "exportZip");
   }
 
 
@@ -460,6 +467,7 @@
       <ul>
         <li><strong>通常表示</strong>：フレーズ全体をそのまま表示します。</li>
         <li><strong>タイプライター表示</strong>：文字が順番に表示されます。</li>
+        <li><strong>拡大しながら表示</strong>：登場時に1文字ずつ小さいサイズから設定サイズへ拡大しながら表示します。最小サイズと出現速度をスライダーで調整できます。</li>
         <li><strong>ジャンプしながらタイプライター表示</strong>：文字が順番に表示され、1文字ずつ波打つようにジャンプします。</li>
         <li><strong>ジャンプしながら表示</strong>：表示済みの文字全体に、1文字ずつ波打つジャンプを付けます。</li>
         <li><strong>登場時と退場時だけジャンプ</strong>：フレーズの出始めと消え際だけジャンプします。</li>
@@ -480,6 +488,7 @@
       <ol>
         <li>FPS、接頭辞、開始秒、終了秒を設定します。</li>
         <li><strong>透過PNG連番ZIPを書き出し</strong>を押すと、歌詞だけの透過PNG連番がZIPで保存されます。</li>
+        <li><strong>SRT字幕を書き出し</strong>を押すと、入力済みフレーズの開始秒・終了秒・歌詞本文をもとに.srt字幕ファイルを保存できます。</li>
         <li>背景色・背景画像は書き出しには含まれません。動画編集ソフト側で背景や映像素材と合成してください。</li>
       </ol>
 
@@ -525,6 +534,7 @@
       <ul>
         <li><strong>Normal</strong>: Shows the whole phrase normally.</li>
         <li><strong>Typewriter</strong>: Reveals characters one by one.</li>
+        <li><strong>Scale Reveal</strong>: Reveals characters one by one while scaling them up. You can adjust the starting size and reveal speed with sliders.</li>
         <li><strong>Jump + Typewriter</strong>: Reveals characters one by one while each character jumps in a wave.</li>
         <li><strong>Jump Reveal</strong>: Applies wave-like jumping to the displayed characters.</li>
         <li><strong>Jump on In/Out</strong>: Adds jumping only when the phrase appears and disappears.</li>
@@ -603,6 +613,11 @@
     const n = Number(value);
     if (!Number.isFinite(n)) return min;
     return Math.min(max, Math.max(min, n));
+  }
+
+  function easeOutCubic(value) {
+    const t = clamp(value, 0, 1);
+    return 1 - Math.pow(1 - t, 3);
   }
 
   function round(value, digits = 2) {
@@ -1003,6 +1018,8 @@
     cueRotationInput.value = String(clamp(s.rotation ?? 0, -360, 360));
     cueRotationPanInput.value = String(clamp(s.rotationPan ?? 0, -720, 720));
     cueCpsInput.value = String(clamp(s.cps, 1, 120));
+    cueScaleRevealMinInput.value = String(clamp(s.scaleRevealMin ?? 18, 1, 100));
+    cueScaleRevealSpeedInput.value = String(clamp(s.scaleRevealSpeed ?? s.cps ?? 24, 1, 120));
     cueJumpSizeInput.value = String(clamp(s.jumpSize, 0, 160));
     cueJumpSpeedInput.value = String(clamp(s.jumpSpeed, 1, 20));
     cueFadeInInput.checked = Boolean(s.fadeIn);
@@ -1037,6 +1054,8 @@
     cueRotationOutput.textContent = `${cueRotationInput.value}°`;
     cueRotationPanOutput.textContent = `${cueRotationPanInput.value}°`;
     cueCpsOutput.textContent = `${cueCpsInput.value} cps`;
+    cueScaleRevealMinOutput.textContent = `${cueScaleRevealMinInput.value}%`;
+    cueScaleRevealSpeedOutput.textContent = `${cueScaleRevealSpeedInput.value} cps`;
     cueJumpSizeOutput.textContent = `${cueJumpSizeInput.value}px`;
     cueJumpSpeedOutput.textContent = `${cueJumpSpeedInput.value}`;
     cueShadowBlurOutput.textContent = `${cueShadowBlurInput.value}px`;
@@ -1071,6 +1090,8 @@
     s.rotation = Math.round(clamp(cueRotationInput.value, -360, 360));
     s.rotationPan = Math.round(clamp(cueRotationPanInput.value, -720, 720));
     s.cps = Math.round(clamp(cueCpsInput.value, 1, 120));
+    s.scaleRevealMin = Math.round(clamp(cueScaleRevealMinInput.value, 1, 100));
+    s.scaleRevealSpeed = Math.round(clamp(cueScaleRevealSpeedInput.value, 1, 120));
     s.jumpSize = Math.round(clamp(cueJumpSizeInput.value, 0, 160));
     s.jumpSpeed = round(clamp(cueJumpSpeedInput.value, 1, 20), 1);
     s.fadeIn = cueFadeInInput.checked;
@@ -1215,40 +1236,20 @@
 
   function drawImageFit(context, image, fit, width, height, scalePercent = 100, offsetX = 0, offsetY = 0) {
     if (!image) return;
-    const scale = clamp(scalePercent, 1, 100) / 100;
-    if (fit === "stretch") {
-      const drawWidth = Math.min(image.width, width * scale);
-      const drawHeight = Math.min(image.height, height * scale);
-      context.drawImage(image, (width - drawWidth) / 2 + offsetX, (height - drawHeight) / 2 + offsetY, drawWidth, drawHeight);
-      return;
-    }
 
-    const imageRatio = image.width / image.height;
-    const canvasRatio = width / height;
-    let drawWidth;
-    let drawHeight;
+    // 背景画像サイズは「100% = 画像の原寸」として扱う。
+    // プレビュー用背景は書き出しに含めないため、見た目確認を優先して自然サイズ基準で描画する。
+    const scale = clamp(Number(scalePercent) || 100, 1, 100) / 100;
+    const drawWidth = image.width * scale;
+    const drawHeight = image.height * scale;
 
-    if (fit === "contain") {
-      if (imageRatio > canvasRatio) {
-        drawWidth = width;
-        drawHeight = width / imageRatio;
-      } else {
-        drawHeight = height;
-        drawWidth = height * imageRatio;
-      }
-    } else {
-      if (imageRatio > canvasRatio) {
-        drawHeight = height;
-        drawWidth = height * imageRatio;
-      } else {
-        drawWidth = width;
-        drawHeight = width / imageRatio;
-      }
-    }
-
-    drawWidth = Math.min(image.width, drawWidth * scale);
-    drawHeight = Math.min(image.height, drawHeight * scale);
-    context.drawImage(image, (width - drawWidth) / 2 + offsetX, (height - drawHeight) / 2 + offsetY, drawWidth, drawHeight);
+    context.drawImage(
+      image,
+      (width - drawWidth) / 2 + (Number(offsetX) || 0),
+      (height - drawHeight) / 2 + (Number(offsetY) || 0),
+      drawWidth,
+      drawHeight
+    );
   }
 
   function splitChars(text) {
@@ -1380,6 +1381,24 @@
     const totalHeight = lineHeight * Math.max(1, lines.length);
     const startY = -totalHeight / 2 + lineHeight * 0.85;
 
+    const totalVisibleChars = lines.reduce((sum, line) => sum + splitChars(line).length, 0);
+    const jumpInOutPowerForChar = (charIndex) => {
+      const duration = Math.max(0.01, cue.end - cue.start);
+      const speedFactor = clamp(settings.jumpSpeed || 8, 1, 20) / 8;
+      const charJumpDuration = clamp(0.34 / speedFactor, 0.12, 0.7);
+      const charDelay = clamp(0.045 / speedFactor, 0.012, 0.08);
+      const edgeDuration = Math.min(duration / 2, charJumpDuration + charDelay * Math.max(0, totalVisibleChars - 1));
+
+      const introLocal = (elapsed - charIndex * charDelay) / charJumpDuration;
+      const introPower = introLocal >= 0 && introLocal <= 1 ? Math.sin(Math.PI * introLocal) : 0;
+
+      const outroElapsed = time - (cue.end - edgeDuration);
+      const outroLocal = (outroElapsed - charIndex * charDelay) / charJumpDuration;
+      const outroPower = outroLocal >= 0 && outroLocal <= 1 ? Math.sin(Math.PI * outroLocal) : 0;
+
+      return Math.max(introPower, outroPower);
+    };
+
     let globalCharIndex = 0;
     lines.forEach((line, lineIndex) => {
       const yLine = startY + lineIndex * lineHeight;
@@ -1388,33 +1407,51 @@
       if (settings.align === "center") xLine -= lineWidth / 2;
       if (settings.align === "right") xLine -= lineWidth;
 
-      const shouldJumpChars = ["jumpTypewriter", "jumpReveal", "jumpInOut"].includes(settings.animation);
+      const shouldDrawChars = ["jumpTypewriter", "jumpReveal", "jumpInOut", "scaleReveal"].includes(settings.animation);
 
-      if (shouldJumpChars) {
-        let jumpEdgePower = 1;
-        if (settings.animation === "jumpInOut") {
-          const duration = Math.max(0.01, cue.end - cue.start);
-          const inDuration = Math.min(duration / 2, Math.max(0.08, settings.fadeInDuration || 0.3));
-          const outDuration = Math.min(duration / 2, Math.max(0.08, settings.fadeOutDuration || 0.35));
-          const introPower = elapsed < inDuration ? 1 - clamp(elapsed / inDuration, 0, 1) : 0;
-          const outroElapsed = Math.max(0, cue.end - time);
-          const outroPower = outroElapsed < outDuration ? 1 - clamp(outroElapsed / outDuration, 0, 1) : 0;
-          jumpEdgePower = Math.max(introPower, outroPower);
-        }
+      if (shouldDrawChars) {
+        let cursorX = xLine;
+        let hasJumpInOutMotion = false;
+        const chars = splitChars(line);
 
-        if (jumpEdgePower > 0.001) {
-          let cursorX = xLine;
-          splitChars(line).forEach((char) => {
-            const charWidth = context.measureText(char).width;
-            const wave = Math.abs(Math.sin(elapsed * (settings.jumpSpeed || 8) + globalCharIndex * 0.65));
-            const jumpY = yLine - wave * (settings.jumpSize || 0) * jumpEdgePower;
+        chars.forEach((char) => {
+          const charWidth = context.measureText(char).width;
+          let wavePower = 0;
+
+          if (settings.animation === "scaleReveal") {
+            const revealSpeed = Math.max(1, settings.scaleRevealSpeed ?? settings.cps ?? 24);
+            const minScale = clamp(settings.scaleRevealMin ?? 18, 1, 100) / 100;
+            const localProgress = elapsed * revealSpeed - globalCharIndex;
+            if (localProgress >= 0) {
+              const revealProgress = easeOutCubic(clamp(localProgress, 0, 1));
+              const charScale = minScale + (1 - minScale) * revealProgress;
+              const prevAlpha = context.globalAlpha;
+              context.globalAlpha *= revealProgress;
+              context.save();
+              context.translate(cursorX + charWidth / 2, yLine);
+              context.scale(charScale, charScale);
+              drawStyledText(context, char, -charWidth / 2, 0, settings, 0);
+              context.restore();
+              context.globalAlpha = prevAlpha;
+            }
+          } else {
+            if (settings.animation === "jumpInOut") {
+              wavePower = jumpInOutPowerForChar(globalCharIndex);
+              hasJumpInOutMotion = hasJumpInOutMotion || wavePower > 0.001;
+            } else {
+              wavePower = Math.abs(Math.sin(elapsed * (settings.jumpSpeed || 8) + globalCharIndex * 0.65));
+            }
+
+            const jumpY = yLine - wavePower * (settings.jumpSize || 0);
             drawStyledText(context, char, cursorX, jumpY, settings, 0);
-            cursorX += charWidth + letterSpacing;
-            globalCharIndex += 1;
-          });
-        } else {
-          drawStyledText(context, line, xLine, yLine, settings, letterSpacing);
-          globalCharIndex += splitChars(line).length;
+          }
+          cursorX += charWidth + letterSpacing;
+          globalCharIndex += 1;
+        });
+
+        if (settings.animation === "jumpInOut" && !hasJumpInOutMotion) {
+          // Keep the same per-character drawing path even while still,
+          // so this animation never falls back to whole-line jumping.
         }
       } else {
         drawStyledText(context, line, xLine, yLine, settings, letterSpacing);
@@ -1655,6 +1692,51 @@
     }
   }
 
+
+  function formatSrtTimestamp(seconds) {
+    const totalMs = Math.max(0, Math.round((Number(seconds) || 0) * 1000));
+    const ms = totalMs % 1000;
+    const totalSeconds = Math.floor(totalMs / 1000);
+    const sec = totalSeconds % 60;
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const min = totalMinutes % 60;
+    const hour = Math.floor(totalMinutes / 60);
+    return `${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")},${String(ms).padStart(3, "0")}`;
+  }
+
+  function cleanSrtText(text) {
+    return String(text || "")
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n")
+      .split("\n")
+      .map((line) => line.trim())
+      .join("\n")
+      .trim();
+  }
+
+  function exportSrtFile() {
+    const prefix = (exportPrefixInput.value || "lyrics").replace(/[\\/:*?"<>|]/g, "_");
+    const cues = state.cues
+      .filter((cue) => cleanSrtText(cue.text) && Number(cue.end) > Number(cue.start))
+      .slice()
+      .sort((a, b) => a.start - b.start || a.end - b.end);
+
+    if (!cues.length) {
+      alert(t("srtEmpty"));
+      return;
+    }
+
+    const body = cues.map((cue, index) => [
+      String(index + 1),
+      `${formatSrtTimestamp(cue.start)} --> ${formatSrtTimestamp(cue.end)}`,
+      cleanSrtText(cue.text)
+    ].join("\r\n")).join("\r\n\r\n") + "\r\n";
+
+    const blob = new Blob(["\uFEFF", body], { type: "text/plain;charset=utf-8" });
+    downloadBlob(blob, `${prefix}.srt`);
+    exportProgress.textContent = t("srtComplete", { count: cues.length });
+  }
+
   async function exportTransparentPngZip() {
     if (!window.JSZip) {
       alert(t("jszipMissing"));
@@ -1774,6 +1856,18 @@
       renderCurrentPreview();
     });
 
+    previewBgOffsetXInput.addEventListener("input", () => {
+      state.previewBackgroundOffsetX = Math.round(clamp(previewBgOffsetXInput.value, -1920, 1920));
+      previewBgOffsetXOutput.textContent = `${state.previewBackgroundOffsetX}px`;
+      renderCurrentPreview();
+    });
+
+    previewBgOffsetYInput.addEventListener("input", () => {
+      state.previewBackgroundOffsetY = Math.round(clamp(previewBgOffsetYInput.value, -1080, 1080));
+      previewBgOffsetYOutput.textContent = `${state.previewBackgroundOffsetY}px`;
+      renderCurrentPreview();
+    });
+
     previewBgImageInput.addEventListener("change", async () => {
       const file = previewBgImageInput.files?.[0];
       if (!file) return;
@@ -1831,6 +1925,8 @@
       cueRotationInput,
       cueRotationPanInput,
       cueCpsInput,
+      cueScaleRevealMinInput,
+      cueScaleRevealSpeedInput,
       cueJumpSizeInput,
       cueJumpSpeedInput,
       cueFadeInInput,
@@ -1865,6 +1961,7 @@
         exportEndInput.value = String(round(audioPlayer.duration, 2));
       }
     });
+    exportSrtBtn?.addEventListener("click", exportSrtFile);
     exportZipBtn.addEventListener("click", exportTransparentPngZip);
 
     saveJsonBtn.addEventListener("click", downloadJson);
