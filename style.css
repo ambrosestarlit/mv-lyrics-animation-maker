@@ -712,3 +712,23 @@ summary {
 .compact-range-field {
   align-self: end;
 }
+
+.download-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent-dark);
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #fff;
+  padding: 0.62rem 0.85rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.download-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(72, 134, 180, 0.14);
+}
