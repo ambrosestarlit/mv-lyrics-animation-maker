@@ -132,6 +132,9 @@
   const cueFontSizeOutput = $("#cueFontSizeOutput");
   const cueColorInput = $("#cueColorInput");
   const cueLineHeightInput = $("#cueLineHeightInput");
+  const inlineStyleTitle = $("#inlineStyleTitle");
+  const inlineStyleList = $("#inlineStyleList");
+  const addInlineStyleBtn = $("#addInlineStyleBtn");
   const cueLetterSpacingInput = $("#cueLetterSpacingInput");
   const cueLetterSpacingOutput = $("#cueLetterSpacingOutput");
   const cueLetterSpacingPanInput = $("#cueLetterSpacingPanInput");
@@ -286,7 +289,7 @@
       inputAtCurrent: "クリックで現在時刻に入力", enteredAt: "入力済み {time} / 再クリックでキャンセル", linesCount: "{count}行",
       previewCanvas: "Preview Canvas", previewCanvasSub: "1920 × 1080 / export transparent", noActiveLyrics: "表示中の歌詞なし", previewAtCurrentTime: "現在時刻でプレビュー", previewSeconds: "プレビュー秒", update: "更新", transportHint: "音声再生中に左の歌詞ボタンを押すと、その時刻に歌詞キューを作成します。",
       selectedEmpty: "入力済みフレーズを選択してください。", presetTitle: "フレーズ設定プリセット", presetName: "プリセット名", presetPlaceholder: "例：サビ中央ジャンプ", registeredPresets: "登録済みプリセット", selectPreset: "プリセットを選択", noPreset: "プリセット未登録", saveCurrentAsPreset: "現在設定を登録", applySelectedPreset: "選択プリセットを適用", delete: "削除", presetHint: "歌詞本文・開始秒・終了秒は含めず、見た目とアニメーション設定だけを保存します。",
-      lyricText: "歌詞テキスト", startSec: "開始秒", endSec: "終了秒", animation: "アニメーション", textAlign: "文字揃え", positionX: "位置X", positionY: "位置Y", wrapWidth: "折り返し幅", font: "フォント", fontSize: "フォントサイズ", textColor: "文字色", lineHeight: "行間", letterSpacing: "字間", letterSpacingPan: "字間移動", textPanX: "文字PAN移動X", textPanY: "文字PAN移動Y", textScale: "文字サイズ倍率", scalePan: "サイズ移動", textRotation: "文字回転", rotationPan: "回転移動", typewriterSpeed: "タイプライター速度", scaleRevealMin: "拡大表示の最小サイズ", scaleRevealSpeed: "拡大表示の速度", jumpSize: "ジャンプの大きさ", jumpSpeed: "ジャンプの速さ", fadeIn: "フェードイン", fadeOut: "フェードアウト", stroke: "縁取り", dropShadow: "ドロップシャドウ", fadeInSec: "フェードイン秒", fadeOutSec: "フェードアウト秒", strokeColor: "フチ色", strokeWidth: "フチ太さ", shadowColor: "影色", shadowBlur: "影ぼかし", shadowX: "影X", shadowY: "影Y", duplicate: "複製",
+      lyricText: "歌詞テキスト", startSec: "開始秒", endSec: "終了秒", animation: "アニメーション", textAlign: "文字揃え", positionX: "位置X", positionY: "位置Y", wrapWidth: "折り返し幅", font: "フォント", fontSize: "フォントサイズ", textColor: "文字色", lineHeight: "行間", letterSpacing: "字間", letterSpacingPan: "字間移動", textPanX: "文字PAN移動X", textPanY: "文字PAN移動Y", textScale: "文字サイズ倍率", scalePan: "サイズ移動", textRotation: "文字回転", rotationPan: "回転移動", typewriterSpeed: "タイプライター速度", scaleRevealMin: "拡大表示の最小サイズ", scaleRevealSpeed: "拡大表示の速度", jumpSize: "ジャンプの大きさ", jumpSpeed: "ジャンプの速さ", fadeIn: "フェードイン", fadeOut: "フェードアウト", stroke: "縁取り", dropShadow: "ドロップシャドウ", fadeInSec: "フェードイン秒", fadeOutSec: "フェードアウト秒", strokeColor: "フチ色", strokeWidth: "フチ太さ", shadowColor: "影色", shadowBlur: "影ぼかし", shadowX: "影X", shadowY: "影Y", inlineStyleTitle: "フォントの指定", inlineStyleHint: "指定した文字列だけ、フォント・色・サイズ・フチ・影を変更できます。複数指定はコンマで区切ってください。", inlineStyleEmpty: "指定フォントはまだありません。+ボタンで追加できます。", inlineStyleItem: "指定 {number}", inlineStyleTargets: "指定したい文字列", inlineStyleTargetsPlaceholder: "例：赤い, 海", inlineStyleFont: "指定したいフォント", inlineStyleColor: "色の選択", inlineStyleSize: "サイズ", inlineStyleStrokeColor: "フチ色", inlineStyleStrokeWidth: "フチ太さ", inlineStyleShadowColor: "影色", inlineStyleShadowBlur: "影ぼかし", addInlineStyle: "+ 追加", duplicate: "複製",
       export: "書き出し", fps: "FPS", prefix: "接頭辞", setEndFromAudio: "音声の長さを終了秒へ", exportZip: "透過PNG連番ZIPを書き出し", exportSrt: "SRT字幕を書き出し",
       preparing: "書き出し準備中... {done} / {total}", pngGenerating: "PNG生成中... {done} / {total}", zipGenerating: "ZIP生成中... {percent}%", exportComplete: "完了: {count}枚を書き出しました。", exportFailed: "書き出しに失敗しました。", srtComplete: "完了: SRT字幕を{count}件を書き出しました。", srtEmpty: "書き出せる入力済みフレーズがありません。",
       failedReadJson: "JSONを読み込めませんでした。", cacheSaved: "キャッシュへ保存しました。", cacheSaveFailed: "キャッシュ保存に失敗しました。ブラウザの保存容量を確認してください。", cacheLoadFailed: "キャッシュ復元に失敗しました。", cacheMissing: "保存済みキャッシュがありません。", jszipMissing: "JSZipを読み込めませんでした。インターネット接続、またはCDNの読み込みを確認してください。", pngFailed: "PNG生成に失敗しました。", exportFailedRetry: "書き出しに失敗しました。枚数を減らして再試行してください。",
@@ -310,7 +313,7 @@
       inputAtCurrent: "Click to place at current time", enteredAt: "Placed {time} / click again to cancel", linesCount: "{count} lines",
       previewCanvas: "Preview Canvas", previewCanvasSub: "1920 × 1080 / transparent export", noActiveLyrics: "No active lyrics", previewAtCurrentTime: "Preview at Current Time", previewSeconds: "Preview Time", update: "Update", transportHint: "While audio is playing, press a lyric button on the left to create a lyric cue at that time.",
       selectedEmpty: "Select a placed phrase.", presetTitle: "Phrase Setting Presets", presetName: "Preset Name", presetPlaceholder: "e.g. Chorus Center Jump", registeredPresets: "Saved Presets", selectPreset: "Select a preset", noPreset: "No presets", saveCurrentAsPreset: "Save Current Settings", applySelectedPreset: "Apply Selected Preset", delete: "Delete", presetHint: "Only appearance and animation settings are saved. Lyric text and timing are not included.",
-      lyricText: "Lyric Text", startSec: "Start (sec)", endSec: "End (sec)", animation: "Animation", textAlign: "Alignment", positionX: "Position X", positionY: "Position Y", wrapWidth: "Wrap Width", font: "Font", fontSize: "Font Size", textColor: "Text Color", lineHeight: "Line Height", letterSpacing: "Letter Spacing", letterSpacingPan: "Letter Spacing Pan", textPanX: "Text Pan X", textPanY: "Text Pan Y", textScale: "Text Scale", scalePan: "Scale Pan", textRotation: "Text Rotation", rotationPan: "Rotation Pan", typewriterSpeed: "Typewriter Speed", scaleRevealMin: "Scale Reveal Min Size", scaleRevealSpeed: "Scale Reveal Speed", jumpSize: "Jump Height", jumpSpeed: "Jump Speed", fadeIn: "Fade In", fadeOut: "Fade Out", stroke: "Stroke", dropShadow: "Drop Shadow", fadeInSec: "Fade In (sec)", fadeOutSec: "Fade Out (sec)", strokeColor: "Stroke Color", strokeWidth: "Stroke Width", shadowColor: "Shadow Color", shadowBlur: "Shadow Blur", shadowX: "Shadow X", shadowY: "Shadow Y", duplicate: "Duplicate",
+      lyricText: "Lyric Text", startSec: "Start (sec)", endSec: "End (sec)", animation: "Animation", textAlign: "Alignment", positionX: "Position X", positionY: "Position Y", wrapWidth: "Wrap Width", font: "Font", fontSize: "Font Size", textColor: "Text Color", lineHeight: "Line Height", letterSpacing: "Letter Spacing", letterSpacingPan: "Letter Spacing Pan", textPanX: "Text Pan X", textPanY: "Text Pan Y", textScale: "Text Scale", scalePan: "Scale Pan", textRotation: "Text Rotation", rotationPan: "Rotation Pan", typewriterSpeed: "Typewriter Speed", scaleRevealMin: "Scale Reveal Min Size", scaleRevealSpeed: "Scale Reveal Speed", jumpSize: "Jump Height", jumpSpeed: "Jump Speed", fadeIn: "Fade In", fadeOut: "Fade Out", stroke: "Stroke", dropShadow: "Drop Shadow", fadeInSec: "Fade In (sec)", fadeOutSec: "Fade Out (sec)", strokeColor: "Stroke Color", strokeWidth: "Stroke Width", shadowColor: "Shadow Color", shadowBlur: "Shadow Blur", shadowX: "Shadow X", shadowY: "Shadow Y", inlineStyleTitle: "Font Assignment", inlineStyleHint: "Change the font, color, size, stroke, and shadow only for specified text. Separate multiple strings with commas.", inlineStyleEmpty: "No font assignments yet. Use the + button to add one.", inlineStyleItem: "Assignment {number}", inlineStyleTargets: "Target Text", inlineStyleTargetsPlaceholder: "e.g. red, sea", inlineStyleFont: "Assigned Font", inlineStyleColor: "Color", inlineStyleSize: "Size", inlineStyleStrokeColor: "Stroke Color", inlineStyleStrokeWidth: "Stroke Width", inlineStyleShadowColor: "Shadow Color", inlineStyleShadowBlur: "Shadow Blur", addInlineStyle: "+ Add", duplicate: "Duplicate",
       export: "Export", fps: "FPS", prefix: "Prefix", setEndFromAudio: "Use Audio Length as End Time", exportZip: "Export Transparent PNG ZIP", exportSrt: "Export SRT Subtitles",
       preparing: "Preparing export... {done} / {total}", pngGenerating: "Generating PNG... {done} / {total}", zipGenerating: "Creating ZIP... {percent}%", exportComplete: "Done: exported {count} frames.", exportFailed: "Export failed.", srtComplete: "Done: exported {count} SRT subtitles.", srtEmpty: "There are no placed phrases to export.",
       failedReadJson: "Could not load the JSON file.", cacheSaved: "Saved to cache.", cacheSaveFailed: "Could not save cache. Please check browser storage limits.", cacheLoadFailed: "Could not restore cache.", cacheMissing: "No saved cache was found.", jszipMissing: "JSZip could not be loaded. Please check your internet connection or the CDN.", pngFailed: "Failed to generate PNG.", exportFailedRetry: "Export failed. Try reducing the number of frames and run again.",
@@ -335,7 +338,7 @@
       inputAtCurrent: "클릭하면 현재 시간에 입력", enteredAt: "입력됨 {time} / 다시 클릭하면 취소", linesCount: "{count}줄",
       previewCanvas: "Preview Canvas", previewCanvasSub: "1920 × 1080 / transparent export", noActiveLyrics: "표시 중인 가사 없음", previewAtCurrentTime: "현재 시간으로 미리보기", previewSeconds: "미리보기 초", update: "갱신", transportHint: "오디오 재생 중 왼쪽의 가사 버튼을 누르면 해당 시각에 가사 큐가 생성됩니다.",
       selectedEmpty: "입력된 프레이즈를 선택해 주세요.", presetTitle: "프레이즈 설정 프리셋", presetName: "프리셋 이름", presetPlaceholder: "예: 후렴 중앙 점프", registeredPresets: "등록된 프리셋", selectPreset: "프리셋 선택", noPreset: "등록된 프리셋 없음", saveCurrentAsPreset: "현재 설정 등록", applySelectedPreset: "선택한 프리셋 적용", delete: "삭제", presetHint: "가사 본문, 시작 시간, 종료 시간은 포함하지 않고 외형과 애니메이션 설정만 저장합니다.",
-      lyricText: "가사 텍스트", startSec: "시작 초", endSec: "종료 초", animation: "애니메이션", textAlign: "문자 정렬", positionX: "위치 X", positionY: "위치 Y", wrapWidth: "줄바꿈 폭", font: "폰트", fontSize: "폰트 크기", textColor: "문자색", lineHeight: "줄 간격", letterSpacing: "자간", letterSpacingPan: "자간 이동", textPanX: "문자 PAN 이동 X", textPanY: "문자 PAN 이동 Y", textScale: "문자 크기 배율", scalePan: "크기 이동", textRotation: "문자 회전", rotationPan: "회전 이동", typewriterSpeed: "타자기 속도", scaleRevealMin: "확대 표시 최소 크기", scaleRevealSpeed: "확대 표시 속도", jumpSize: "점프 크기", jumpSpeed: "점프 속도", fadeIn: "페이드 인", fadeOut: "페이드 아웃", stroke: "외곽선", dropShadow: "드롭 섀도", fadeInSec: "페이드 인 초", fadeOutSec: "페이드 아웃 초", strokeColor: "외곽선 색", strokeWidth: "외곽선 두께", shadowColor: "그림자 색", shadowBlur: "그림자 흐림", shadowX: "그림자 X", shadowY: "그림자 Y", duplicate: "복제",
+      lyricText: "가사 텍스트", startSec: "시작 초", endSec: "종료 초", animation: "애니메이션", textAlign: "문자 정렬", positionX: "위치 X", positionY: "위치 Y", wrapWidth: "줄바꿈 폭", font: "폰트", fontSize: "폰트 크기", textColor: "문자색", lineHeight: "줄 간격", letterSpacing: "자간", letterSpacingPan: "자간 이동", textPanX: "문자 PAN 이동 X", textPanY: "문자 PAN 이동 Y", textScale: "문자 크기 배율", scalePan: "크기 이동", textRotation: "문자 회전", rotationPan: "회전 이동", typewriterSpeed: "타자기 속도", scaleRevealMin: "확대 표시 최소 크기", scaleRevealSpeed: "확대 표시 속도", jumpSize: "점프 크기", jumpSpeed: "점프 속도", fadeIn: "페이드 인", fadeOut: "페이드 아웃", stroke: "외곽선", dropShadow: "드롭 섀도", fadeInSec: "페이드 인 초", fadeOutSec: "페이드 아웃 초", strokeColor: "외곽선 색", strokeWidth: "외곽선 두께", shadowColor: "그림자 색", shadowBlur: "그림자 흐림", shadowX: "그림자 X", shadowY: "그림자 Y", inlineStyleTitle: "폰트 지정", inlineStyleHint: "지정한 문자열에만 폰트, 색상, 크기, 외곽선, 그림자를 변경할 수 있습니다. 여러 항목은 쉼표로 구분하세요.", inlineStyleEmpty: "아직 폰트 지정이 없습니다. + 버튼으로 추가할 수 있습니다.", inlineStyleItem: "지정 {number}", inlineStyleTargets: "지정할 문자열", inlineStyleTargetsPlaceholder: "예: 빨간, 바다", inlineStyleFont: "지정할 폰트", inlineStyleColor: "색상 선택", inlineStyleSize: "크기", inlineStyleStrokeColor: "외곽선 색", inlineStyleStrokeWidth: "외곽선 두께", inlineStyleShadowColor: "그림자 색", inlineStyleShadowBlur: "그림자 흐림", addInlineStyle: "+ 추가", duplicate: "복제",
       export: "내보내기", fps: "FPS", prefix: "접두사", setEndFromAudio: "오디오 길이를 종료 초로 설정", exportZip: "투명 PNG 시퀀스 ZIP 내보내기", exportSrt: "SRT 자막 내보내기",
       preparing: "내보내기 준비 중... {done} / {total}", pngGenerating: "PNG 생성 중... {done} / {total}", zipGenerating: "ZIP 생성 중... {percent}%", exportComplete: "완료: {count}장을 내보냈습니다.", exportFailed: "내보내기에 실패했습니다.", srtComplete: "완료: SRT 자막 {count}개를 내보냈습니다.", srtEmpty: "내보낼 수 있는 입력된 프레이즈가 없습니다.",
       failedReadJson: "JSON을 불러올 수 없습니다.", cacheSaved: "캐시에 저장했습니다.", cacheSaveFailed: "캐시 저장에 실패했습니다. 브라우저 저장 용량을 확인해 주세요.", cacheLoadFailed: "캐시 복원에 실패했습니다.", cacheMissing: "저장된 캐시가 없습니다.", jszipMissing: "JSZip을 불러올 수 없습니다. 인터넷 연결 또는 CDN 로딩을 확인해 주세요.", pngFailed: "PNG 생성에 실패했습니다.", exportFailedRetry: "내보내기에 실패했습니다. 프레임 수를 줄인 뒤 다시 시도해 주세요.",
@@ -477,6 +480,7 @@
     setSelectOptions(cueAlignInput, { left: t("alignLeft"), center: t("alignCenter"), right: t("alignRight") });
     setRangeLabel(cueXInput, "positionX"); setRangeLabel(cueYInput, "positionY"); setRangeLabel(cueMaxWidthInput, "wrapWidth");
     setFieldLabel(cueFontFamilyInput, "font"); setRangeLabel(cueFontSizeInput, "fontSize"); setFieldLabel(cueColorInput, "textColor"); setFieldLabel(cueLineHeightInput, "lineHeight");
+    setText(inlineStyleTitle, "inlineStyleTitle"); setText(addInlineStyleBtn, "addInlineStyle"); setText(document.querySelector(".inline-style-hint"), "inlineStyleHint");
     setRangeLabel(cueLetterSpacingInput, "letterSpacing"); setRangeLabel(cueLetterSpacingPanInput, "letterSpacingPan"); setRangeLabel(cuePanXInput, "textPanX"); setRangeLabel(cuePanYInput, "textPanY"); setRangeLabel(cueScaleInput, "textScale"); setRangeLabel(cueScalePanInput, "scalePan"); setRangeLabel(cueRotationInput, "textRotation"); setRangeLabel(cueRotationPanInput, "rotationPan"); setRangeLabel(cueCpsInput, "typewriterSpeed"); setRangeLabel(cueScaleRevealMinInput, "scaleRevealMin"); setRangeLabel(cueScaleRevealSpeedInput, "scaleRevealSpeed"); setRangeLabel(cueJumpSizeInput, "jumpSize"); setRangeLabel(cueJumpSpeedInput, "jumpSpeed");
     setTextNodeLabel(cueFadeInInput.closest('label'), "fadeIn"); setTextNodeLabel(cueFadeOutInput.closest('label'), "fadeOut"); setTextNodeLabel(cueStrokeEnabledInput.closest('label'), "stroke"); setTextNodeLabel(cueShadowEnabledInput.closest('label'), "dropShadow");
     setFieldLabel(cueFadeInDurationInput, "fadeInSec"); setFieldLabel(cueFadeOutDurationInput, "fadeOutSec"); setFieldLabel(cueStrokeColorInput, "strokeColor"); setRangeLabel(cueStrokeWidthInput, "strokeWidth"); setFieldLabel(cueShadowColorInput, "shadowColor"); setRangeLabel(cueShadowBlurInput, "shadowBlur"); setFieldLabel(cueShadowOffsetXInput, "shadowX"); setFieldLabel(cueShadowOffsetYInput, "shadowY");
@@ -513,6 +517,7 @@
       <ul>
         <li>開始秒・終了秒、歌詞テキストを編集できます。</li>
         <li>位置X/Y、折り返し幅、フォント、フォントサイズ、文字色、行間、字間を調整できます。</li>
+        <li><strong>フォントの指定</strong>では、1フレーズ中の指定文字列だけフォント・色・サイズ・フチ・影を変更できます。複数の文字列はコンマで区切れます。</li>
         <li>文字PAN移動、サイズ移動、文字回転、回転移動、字間移動を使って、時間経過に合わせた動きを付けられます。</li>
         <li>フェードイン、フェードアウト、縁取り、ドロップシャドウを設定できます。</li>
       </ul>
@@ -580,6 +585,7 @@
       <ul>
         <li>Edit start time, end time, and lyric text.</li>
         <li>Adjust position X/Y, wrap width, font, font size, text color, line height, and letter spacing.</li>
+        <li>Use <strong>Font Assignment</strong> to change only specific text strings inside one phrase. You can assign font, color, and size, and separate multiple target strings with commas.</li>
         <li>Add motion over time with text pan, scale pan, rotation, rotation pan, and letter spacing pan.</li>
         <li>Enable fade in, fade out, stroke, and drop shadow.</li>
       </ul>
@@ -645,6 +651,7 @@
       <ul>
         <li>시작 초 / 종료 초 / 가사 텍스트</li>
         <li>폰트, 폰트 크기, 문자색, 줄 간격, 자간</li>
+        <li><strong>폰트 지정</strong>에서 한 프레이즈 안의 특정 문자열만 폰트, 색상, 크기를 변경할 수 있습니다. 여러 문자열은 쉼표로 구분할 수 있습니다.</li>
         <li>위치 X/Y, 문자 PAN 이동 X/Y, 크기 이동, 회전 이동</li>
         <li>일반 표시, 타자기 표시, 확대하며 표시, 점프 계열 애니메이션</li>
         <li>확대 표시의 최소 크기와 속도</li>
@@ -860,6 +867,7 @@
     defaultFontFamilyInput.value = defaultFont || state.defaults.fontFamily;
     cueFontFamilyInput.value = cueFont || (selectedCue()?.settings?.fontFamily || state.defaults.fontFamily);
     updateStaticText();
+    renderInlineStyleEditor();
     renderAll();
   }
 
@@ -903,6 +911,223 @@
     return Array.isArray(value) ? value : [];
   }
 
+
+  function normalizeInlineStyle(style) {
+    if (!style || typeof style !== "object") return null;
+    return {
+      id: style.id || uniqueId("inline_style"),
+      targets: String(style.targets || ""),
+      fontFamily: style.fontFamily || FONT_OPTIONS[1].value,
+      color: style.color || "#ffffff",
+      fontSize: Math.round(clamp(style.fontSize ?? 86, 10, 300)),
+      strokeColor: style.strokeColor || "#111827",
+      strokeWidth: Math.round(clamp(style.strokeWidth ?? 0, 0, 40)),
+      shadowColor: style.shadowColor || "#000000",
+      shadowBlur: Math.round(clamp(style.shadowBlur ?? 0, 0, 120))
+    };
+  }
+
+  function ensureCueInlineStyles(cue) {
+    if (!cue) return [];
+    cue.settings = cue.settings || createCueStyle();
+    cue.settings.inlineStyles = safeArray(cue.settings.inlineStyles).map(normalizeInlineStyle).filter(Boolean);
+    return cue.settings.inlineStyles;
+  }
+
+  function splitInlineTargets(value) {
+    return String(value || "")
+      .split(/[,、，]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  function fontStringForSettings(settings) {
+    return `700 ${Math.max(1, settings.fontSize || 86)}px ${settings.fontFamily || FONT_OPTIONS[1].value}`;
+  }
+
+  function mergeInlineSettings(settings, inlineStyle) {
+    if (!inlineStyle) return settings;
+    return {
+      ...settings,
+      fontFamily: inlineStyle.fontFamily || settings.fontFamily,
+      color: inlineStyle.color || settings.color,
+      fontSize: Math.round(clamp(inlineStyle.fontSize ?? settings.fontSize ?? 86, 10, 300)),
+      stroke: {
+        ...(settings.stroke || {}),
+        enabled: Number(inlineStyle.strokeWidth ?? settings.stroke?.width ?? 0) > 0,
+        color: inlineStyle.strokeColor || settings.stroke?.color || "#111827",
+        width: Math.round(clamp(inlineStyle.strokeWidth ?? settings.stroke?.width ?? 0, 0, 40))
+      },
+      shadow: {
+        ...(settings.shadow || {}),
+        enabled: Number(inlineStyle.shadowBlur ?? settings.shadow?.blur ?? 0) > 0,
+        color: inlineStyle.shadowColor || settings.shadow?.color || "#000000",
+        blur: Math.round(clamp(inlineStyle.shadowBlur ?? settings.shadow?.blur ?? 0, 0, 120)),
+        offsetX: settings.shadow?.offsetX || 0,
+        offsetY: settings.shadow?.offsetY || 0
+      }
+    };
+  }
+
+  function inlineStyleMapForText(text, settings) {
+    const chars = splitChars(text);
+    const map = Array(chars.length).fill(null);
+    const inlineStyles = safeArray(settings?.inlineStyles).map(normalizeInlineStyle).filter(Boolean);
+    if (!chars.length || !inlineStyles.length) return map;
+
+    inlineStyles.forEach((style) => {
+      splitInlineTargets(style.targets).forEach((target) => {
+        const targetChars = splitChars(target);
+        if (!targetChars.length || targetChars.length > chars.length) return;
+        for (let i = 0; i <= chars.length - targetChars.length; i += 1) {
+          let matched = true;
+          for (let j = 0; j < targetChars.length; j += 1) {
+            if (chars[i + j] !== targetChars[j]) {
+              matched = false;
+              break;
+            }
+          }
+          if (matched) {
+            for (let j = 0; j < targetChars.length; j += 1) {
+              map[i + j] = style;
+            }
+          }
+        }
+      });
+    });
+    return map;
+  }
+
+  function renderInlineStyleEditor() {
+    if (!inlineStyleList) return;
+    const cue = selectedCue();
+    inlineStyleList.innerHTML = "";
+    if (!cue) return;
+    const inlineStyles = ensureCueInlineStyles(cue);
+    if (!inlineStyles.length) {
+      const empty = document.createElement("div");
+      empty.className = "inline-style-empty";
+      empty.textContent = t("inlineStyleEmpty");
+      inlineStyleList.append(empty);
+      return;
+    }
+
+    inlineStyles.forEach((style, index) => {
+      const item = document.createElement("div");
+      item.className = "inline-style-item";
+      item.dataset.id = style.id;
+      item.innerHTML = `
+        <div class="inline-style-item-head">
+          <span class="inline-style-item-title">${t("inlineStyleItem", { number: index + 1 })}</span>
+          <button type="button" class="danger mini-button inline-style-delete">${t("delete")}</button>
+        </div>
+        <label class="field">
+          <span>${t("inlineStyleTargets")}</span>
+          <input class="inline-style-targets" type="text" value="" placeholder="${t("inlineStyleTargetsPlaceholder")}" />
+        </label>
+        <div class="grid-2">
+          <label class="field">
+            <span>${t("inlineStyleFont")}</span>
+            <select class="inline-style-font"></select>
+          </label>
+          <label class="field">
+            <span>${t("inlineStyleColor")}</span>
+            <input class="inline-style-color" type="color" value="${style.color || "#ffffff"}" />
+          </label>
+        </div>
+        <div class="range-field">
+          <div class="range-head"><span>${t("inlineStyleSize")}</span><output class="inline-style-size-output">${Math.round(style.fontSize || 86)}px</output></div>
+          <input class="inline-style-size" type="range" min="10" max="300" step="1" value="${Math.round(clamp(style.fontSize || 86, 10, 300))}" />
+        </div>
+        <div class="grid-2">
+          <label class="field">
+            <span>${t("inlineStyleStrokeColor")}</span>
+            <input class="inline-style-stroke-color" type="color" value="${style.strokeColor || "#111827"}" />
+          </label>
+          <div class="range-field compact-range-field">
+            <div class="range-head"><span>${t("inlineStyleStrokeWidth")}</span><output class="inline-style-stroke-width-output">${Math.round(style.strokeWidth || 0)}px</output></div>
+            <input class="inline-style-stroke-width" type="range" min="0" max="40" step="1" value="${Math.round(clamp(style.strokeWidth || 0, 0, 40))}" />
+          </div>
+        </div>
+        <div class="grid-2">
+          <label class="field">
+            <span>${t("inlineStyleShadowColor")}</span>
+            <input class="inline-style-shadow-color" type="color" value="${style.shadowColor || "#000000"}" />
+          </label>
+          <div class="range-field compact-range-field">
+            <div class="range-head"><span>${t("inlineStyleShadowBlur")}</span><output class="inline-style-shadow-blur-output">${Math.round(style.shadowBlur || 0)}px</output></div>
+            <input class="inline-style-shadow-blur" type="range" min="0" max="120" step="1" value="${Math.round(clamp(style.shadowBlur || 0, 0, 120))}" />
+          </div>
+        </div>
+      `;
+      const targetsInput = item.querySelector(".inline-style-targets");
+      targetsInput.value = style.targets || "";
+      const fontSelect = item.querySelector(".inline-style-font");
+      populateFontSelect(fontSelect);
+      fontSelect.value = style.fontFamily || cue.settings.fontFamily || state.defaults.fontFamily;
+      const colorInput = item.querySelector(".inline-style-color");
+      const sizeInput = item.querySelector(".inline-style-size");
+      const sizeOutput = item.querySelector(".inline-style-size-output");
+      const strokeColorInput = item.querySelector(".inline-style-stroke-color");
+      const strokeWidthInput = item.querySelector(".inline-style-stroke-width");
+      const strokeWidthOutput = item.querySelector(".inline-style-stroke-width-output");
+      const shadowColorInput = item.querySelector(".inline-style-shadow-color");
+      const shadowBlurInput = item.querySelector(".inline-style-shadow-blur");
+      const shadowBlurOutput = item.querySelector(".inline-style-shadow-blur-output");
+      const updateStyle = () => {
+        const targetStyle = ensureCueInlineStyles(cue).find((entry) => entry.id === style.id);
+        if (!targetStyle) return;
+        targetStyle.targets = targetsInput.value;
+        targetStyle.fontFamily = fontSelect.value || cue.settings.fontFamily || state.defaults.fontFamily;
+        targetStyle.color = colorInput.value || "#ffffff";
+        targetStyle.fontSize = Math.round(clamp(sizeInput.value, 10, 300));
+        targetStyle.strokeColor = strokeColorInput.value || "#111827";
+        targetStyle.strokeWidth = Math.round(clamp(strokeWidthInput.value, 0, 40));
+        targetStyle.shadowColor = shadowColorInput.value || "#000000";
+        targetStyle.shadowBlur = Math.round(clamp(shadowBlurInput.value, 0, 120));
+        sizeOutput.textContent = `${targetStyle.fontSize}px`;
+        strokeWidthOutput.textContent = `${targetStyle.strokeWidth}px`;
+        shadowBlurOutput.textContent = `${targetStyle.shadowBlur}px`;
+        renderCurrentPreview();
+      };
+      targetsInput.addEventListener("input", updateStyle);
+      fontSelect.addEventListener("input", updateStyle);
+      colorInput.addEventListener("input", updateStyle);
+      sizeInput.addEventListener("input", updateStyle);
+      strokeColorInput.addEventListener("input", updateStyle);
+      strokeWidthInput.addEventListener("input", updateStyle);
+      shadowColorInput.addEventListener("input", updateStyle);
+      shadowBlurInput.addEventListener("input", updateStyle);
+      item.querySelector(".inline-style-delete").addEventListener("click", () => {
+        cue.settings.inlineStyles = ensureCueInlineStyles(cue).filter((entry) => entry.id !== style.id);
+        renderInlineStyleEditor();
+        renderCurrentPreview();
+      });
+      inlineStyleList.append(item);
+    });
+  }
+
+  function addInlineStyleToSelectedCue() {
+    const cue = selectedCue();
+    if (!cue) return;
+    const inlineStyles = ensureCueInlineStyles(cue);
+    const settings = cue.settings || createCueStyle();
+    inlineStyles.push(normalizeInlineStyle({
+      id: uniqueId("inline_style"),
+      targets: "",
+      fontFamily: settings.fontFamily || state.defaults.fontFamily,
+      color: settings.color || "#ffffff",
+      fontSize: settings.fontSize || state.defaults.fontSize,
+      strokeColor: settings.stroke?.color || "#111827",
+      strokeWidth: settings.stroke?.width || 0,
+      shadowColor: settings.shadow?.color || "#000000",
+      shadowBlur: settings.shadow?.blur || 0
+    }));
+    cue.settings.inlineStyles = inlineStyles;
+    renderInlineStyleEditor();
+    renderCurrentPreview();
+  }
+
   function normalizePreset(preset) {
     if (!preset || typeof preset !== "object") return null;
     const name = String(preset.name || "").trim();
@@ -918,6 +1143,7 @@
       settings: {
         ...base,
         ...clone(settings),
+        inlineStyles: safeArray(settings.inlineStyles).map(normalizeInlineStyle).filter(Boolean),
         stroke: { ...base.stroke, ...(settings.stroke || {}) },
         shadow: { ...base.shadow, ...(settings.shadow || {}) }
       }
@@ -960,6 +1186,7 @@
     cue.settings = {
       ...base,
       ...clone(style),
+      inlineStyles: safeArray(style.inlineStyles).map(normalizeInlineStyle).filter(Boolean),
       stroke: { ...base.stroke, ...(style.stroke || {}) },
       shadow: { ...base.shadow, ...(style.shadow || {}) }
     };
@@ -1019,6 +1246,7 @@
 
     const template = clone(templateCue.settings);
     const next = { ...base, ...template };
+    next.inlineStyles = safeArray(template.inlineStyles).map(normalizeInlineStyle).filter(Boolean);
     next.stroke = { ...base.stroke, ...(template.stroke || {}) };
     next.shadow = { ...base.shadow, ...(template.shadow || {}) };
     return next;
@@ -1249,6 +1477,7 @@
       selectedEmptyMessage.classList.remove("hidden");
       cueEditor.classList.add("hidden");
       renderPresetControls();
+      if (inlineStyleList) inlineStyleList.innerHTML = "";
       suppressEditorEvents = false;
       return;
     }
@@ -1258,6 +1487,7 @@
 
     const s = cue.settings || createCueStyle();
     cue.settings = s;
+    s.inlineStyles = safeArray(s.inlineStyles).map(normalizeInlineStyle).filter(Boolean);
 
     cueTextInput.value = cue.text || "";
     cueStartInput.value = String(round(cue.start, 2));
@@ -1299,6 +1529,7 @@
 
     updateRangeOutputs();
     renderPresetControls();
+    renderInlineStyleEditor();
     suppressEditorEvents = false;
   }
 
@@ -1343,6 +1574,7 @@
     s.fontSize = Math.round(clamp(cueFontSizeInput.value, 10, 300));
     s.color = cueColorInput.value;
     s.lineHeight = round(clamp(cueLineHeightInput.value, 0.5, 3), 2);
+    s.inlineStyles = safeArray(s.inlineStyles).map(normalizeInlineStyle).filter(Boolean);
     s.letterSpacing = Math.round(clamp(cueLetterSpacingInput.value, -20, 120));
     s.letterSpacingPan = Math.round(clamp(cueLetterSpacingPanInput.value, -120, 120));
     s.panX = Math.round(clamp(cuePanXInput.value, -CANVAS_WIDTH, CANVAS_WIDTH));
@@ -1534,13 +1766,27 @@
     return chars.slice(0, Math.max(0, count)).join("");
   }
 
-  function measureTextWidth(context, text, letterSpacing = 0) {
+  function measureTextWidth(context, text, letterSpacing = 0, settings = null) {
     const chars = splitChars(text);
     if (!chars.length) return 0;
-    return chars.reduce((sum, char) => sum + context.measureText(char).width, 0) + Math.max(0, chars.length - 1) * letterSpacing;
+    if (!settings || !safeArray(settings.inlineStyles).length) {
+      return chars.reduce((sum, char) => sum + context.measureText(char).width, 0) + Math.max(0, chars.length - 1) * letterSpacing;
+    }
+
+    const previousFont = context.font;
+    const inlineMap = inlineStyleMapForText(text, settings);
+    let width = 0;
+    chars.forEach((char, index) => {
+      const charSettings = mergeInlineSettings(settings, inlineMap[index]);
+      context.font = fontStringForSettings(charSettings);
+      width += context.measureText(char).width;
+      if (index < chars.length - 1) width += Number(letterSpacing || 0);
+    });
+    context.font = previousFont;
+    return width;
   }
 
-  function wrapTextLines(context, text, maxWidth, letterSpacing = 0) {
+  function wrapTextLines(context, text, maxWidth, letterSpacing = 0, settings = null) {
     const sourceLines = String(text || "").split(/\n/);
     const lines = [];
 
@@ -1550,7 +1796,7 @@
 
       chars.forEach((char) => {
         const testLine = line + char;
-        if (line && measureTextWidth(context, testLine, letterSpacing) > maxWidth) {
+        if (line && measureTextWidth(context, testLine, letterSpacing, settings) > maxWidth) {
           lines.push(line);
           line = char;
         } else {
@@ -1576,11 +1822,7 @@
     return alpha;
   }
 
-  function drawStyledText(context, text, x, y, settings, letterSpacing = 0) {
-    if (!text) return;
-
-    context.save();
-    context.textAlign = "left";
+  function applyTextPaint(context, settings) {
     if (settings.shadow?.enabled) {
       context.shadowColor = settings.shadow.color || "#000000";
       context.shadowBlur = settings.shadow.blur || 0;
@@ -1598,25 +1840,162 @@
     context.strokeStyle = settings.stroke?.color || "#111827";
     context.lineWidth = Number(settings.stroke?.width) || 0;
     context.fillStyle = settings.color || "#ffffff";
+    context.font = fontStringForSettings(settings);
+  }
 
-    const drawOne = (value, drawX) => {
-      if (settings.stroke?.enabled && Number(settings.stroke.width) > 0) {
-        context.strokeText(value, drawX, y);
+  function clearTextShadow(context) {
+    context.shadowColor = "transparent";
+    context.shadowBlur = 0;
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = 0;
+  }
+
+  function hasVisibleShadow(settings) {
+    const shadow = settings?.shadow || {};
+    return Boolean(shadow.enabled) && (
+      Number(shadow.blur || 0) > 0 ||
+      Number(shadow.offsetX || 0) !== 0 ||
+      Number(shadow.offsetY || 0) !== 0
+    );
+  }
+
+  function drawStyledTextLayer(context, text, x, y, settings, letterSpacing = 0, layer = "fill") {
+    if (!text) return;
+
+    context.save();
+    context.textAlign = "left";
+    context.lineJoin = "round";
+    context.miterLimit = 2;
+
+    const chars = splitChars(text);
+    const inlineMap = inlineStyleMapForText(text, settings);
+    let cursorX = x;
+
+    chars.forEach((char, index) => {
+      const charSettings = mergeInlineSettings(settings, inlineMap[index]);
+      context.font = fontStringForSettings(charSettings);
+      const charWidth = context.measureText(char).width;
+
+      if (layer === "shadow") {
+        if (hasVisibleShadow(charSettings)) {
+          const shadow = charSettings.shadow || {};
+          context.shadowColor = shadow.color || "#000000";
+          context.shadowBlur = Number(shadow.blur || 0);
+          context.shadowOffsetX = Number(shadow.offsetX || 0);
+          context.shadowOffsetY = Number(shadow.offsetY || 0);
+          context.fillStyle = shadow.color || "#000000";
+          context.fillText(char, cursorX, y);
+        }
+      } else if (layer === "stroke") {
+        clearTextShadow(context);
+        if (charSettings.stroke?.enabled && Number(charSettings.stroke.width) > 0) {
+          context.strokeStyle = charSettings.stroke.color || "#111827";
+          context.lineWidth = Number(charSettings.stroke.width) || 0;
+          context.strokeText(char, cursorX, y);
+        }
+      } else {
+        clearTextShadow(context);
+        context.fillStyle = charSettings.color || "#ffffff";
+        context.fillText(char, cursorX, y);
       }
-      context.fillText(value, drawX, y);
-    };
 
-    if (Number(letterSpacing) === 0) {
-      drawOne(text, x);
+      cursorX += charWidth + Number(letterSpacing || 0);
+    });
+
+    context.restore();
+  }
+
+
+  function drawSingleCharLayer(context, char, x, y, settings, layer = "fill") {
+    if (!char) return;
+    context.save();
+    context.textAlign = "left";
+    context.textBaseline = "alphabetic";
+    context.lineJoin = "round";
+    context.miterLimit = 2;
+    context.font = fontStringForSettings(settings);
+
+    if (layer === "shadow") {
+      if (hasVisibleShadow(settings)) {
+        const shadow = settings.shadow || {};
+        context.shadowColor = shadow.color || "#000000";
+        context.shadowBlur = Number(shadow.blur || 0);
+        context.shadowOffsetX = Number(shadow.offsetX || 0);
+        context.shadowOffsetY = Number(shadow.offsetY || 0);
+        context.fillStyle = shadow.color || "#000000";
+        context.fillText(char, x, y);
+      }
+    } else if (layer === "stroke") {
+      clearTextShadow(context);
+      if (settings.stroke?.enabled && Number(settings.stroke.width) > 0) {
+        context.strokeStyle = settings.stroke.color || "#111827";
+        context.lineWidth = Number(settings.stroke.width) || 0;
+        context.strokeText(char, x, y);
+      }
     } else {
-      let cursorX = x;
-      splitChars(text).forEach((char) => {
-        drawOne(char, cursorX);
-        cursorX += context.measureText(char).width + Number(letterSpacing || 0);
-      });
+      clearTextShadow(context);
+      context.fillStyle = settings.color || "#ffffff";
+      context.fillText(char, x, y);
     }
 
     context.restore();
+  }
+
+
+
+  function paintSingleGlyphLayer(context, char, x, y, settings, layer = "fill") {
+    context.textAlign = "left";
+    context.textBaseline = "alphabetic";
+    context.lineJoin = "round";
+    context.miterLimit = 2;
+    context.font = fontStringForSettings(settings);
+
+    if (layer === "shadow") {
+      if (!hasVisibleShadow(settings)) return;
+      const shadow = settings.shadow || {};
+      context.shadowColor = shadow.color || "#000000";
+      context.shadowBlur = Number(shadow.blur || 0);
+      context.shadowOffsetX = Number(shadow.offsetX || 0);
+      context.shadowOffsetY = Number(shadow.offsetY || 0);
+      context.fillStyle = shadow.color || "#000000";
+      context.fillText(char, x, y);
+      return;
+    }
+
+    clearTextShadow(context);
+    if (layer === "stroke") {
+      if (settings.stroke?.enabled && Number(settings.stroke.width) > 0) {
+        context.strokeStyle = settings.stroke.color || "#111827";
+        context.lineWidth = Number(settings.stroke.width) || 0;
+        context.strokeText(char, x, y);
+      }
+      return;
+    }
+
+    context.fillStyle = settings.color || "#ffffff";
+    context.fillText(char, x, y);
+  }
+
+  function drawScaleRevealGlyphLayer(context, plan, layer) {
+    const alpha = clamp(plan.alpha ?? 1, 0, 1);
+    if (alpha <= 0) return;
+
+    const previousAlpha = context.globalAlpha;
+    context.save();
+    context.globalAlpha = previousAlpha * alpha;
+    context.translate(plan.centerX, plan.baselineY);
+    context.scale(plan.scale, plan.scale);
+    paintSingleGlyphLayer(context, plan.char, -plan.width / 2, 0, plan.settings, layer);
+    context.restore();
+    context.globalAlpha = previousAlpha;
+  }
+
+  function drawStyledText(context, text, x, y, settings, letterSpacing = 0) {
+    // Shadow is always rendered first as the bottom-most layer.
+    // This prevents a later character's shadow from covering another character's stroke/fill.
+    drawStyledTextLayer(context, text, x, y, settings, letterSpacing, "shadow");
+    drawStyledTextLayer(context, text, x, y, settings, letterSpacing, "stroke");
+    drawStyledTextLayer(context, text, x, y, settings, letterSpacing, "fill");
   }
 
   function drawCue(context, cue, time) {
@@ -1645,11 +2024,11 @@
     context.translate(x, y);
     context.rotate(rotation);
     context.scale(scale, scale);
-    context.font = `700 ${Math.max(1, settings.fontSize || 86)}px ${settings.fontFamily || FONT_OPTIONS[1].value}`;
+    context.font = fontStringForSettings(settings);
     context.textBaseline = "alphabetic";
 
     const maxWidth = Math.max(100, settings.maxWidth || 1580);
-    const lines = wrapTextLines(context, text, maxWidth, letterSpacing);
+    const lines = wrapTextLines(context, text, maxWidth, letterSpacing, settings);
     const lineHeight = Math.max(1, (settings.fontSize || 86) * (settings.lineHeight || 1.25));
     const totalHeight = lineHeight * Math.max(1, lines.length);
     const startY = -totalHeight / 2 + lineHeight * 0.85;
@@ -1675,7 +2054,7 @@
     let globalCharIndex = 0;
     lines.forEach((line, lineIndex) => {
       const yLine = startY + lineIndex * lineHeight;
-      const lineWidth = measureTextWidth(context, line, letterSpacing);
+      const lineWidth = measureTextWidth(context, line, letterSpacing, settings);
       let xLine = 0;
       if (settings.align === "center") xLine -= lineWidth / 2;
       if (settings.align === "right") xLine -= lineWidth;
@@ -1683,31 +2062,58 @@
       const shouldDrawChars = ["jumpTypewriter", "jumpReveal", "jumpInOut", "scaleReveal"].includes(settings.animation);
 
       if (shouldDrawChars) {
-        let cursorX = xLine;
-        let hasJumpInOutMotion = false;
         const chars = splitChars(line);
+        const inlineMap = inlineStyleMapForText(line, settings);
 
-        chars.forEach((char) => {
-          const charWidth = context.measureText(char).width;
-          let wavePower = 0;
+        if (settings.animation === "scaleReveal") {
+          const revealSpeed = Math.max(1, settings.scaleRevealSpeed ?? settings.cps ?? 24);
+          const minScale = clamp(settings.scaleRevealMin ?? 18, 1, 100) / 100;
+          let cursorX = xLine;
+          const plans = [];
 
-          if (settings.animation === "scaleReveal") {
-            const revealSpeed = Math.max(1, settings.scaleRevealSpeed ?? settings.cps ?? 24);
-            const minScale = clamp(settings.scaleRevealMin ?? 18, 1, 100) / 100;
+          chars.forEach((char, charIndexInLine) => {
+            const charSettings = mergeInlineSettings(settings, inlineMap[charIndexInLine]);
+            context.font = fontStringForSettings(charSettings);
+            const charWidth = context.measureText(char).width;
             const localProgress = elapsed * revealSpeed - globalCharIndex;
+
             if (localProgress >= 0) {
               const revealProgress = easeOutCubic(clamp(localProgress, 0, 1));
-              const charScale = minScale + (1 - minScale) * revealProgress;
-              const prevAlpha = context.globalAlpha;
-              context.globalAlpha *= revealProgress;
-              context.save();
-              context.translate(cursorX + charWidth / 2, yLine);
-              context.scale(charScale, charScale);
-              drawStyledText(context, char, -charWidth / 2, 0, settings, 0);
-              context.restore();
-              context.globalAlpha = prevAlpha;
+              plans.push({
+                char,
+                settings: charSettings,
+                width: charWidth,
+                centerX: cursorX + charWidth / 2,
+                baselineY: yLine,
+                scale: minScale + (1 - minScale) * revealProgress,
+                alpha: revealProgress
+              });
             }
-          } else {
+
+            cursorX += charWidth + letterSpacing;
+            globalCharIndex += 1;
+          });
+
+          // Rebuild this animation from scratch:
+          // 1) decide every glyph's final position first
+          // 2) render all shadows at the bottom
+          // 3) render all strokes
+          // 4) render all fills
+          // This prevents shadows from covering other glyphs and prevents glyphs from collapsing into one point.
+          ["shadow", "stroke", "fill"].forEach((layer) => {
+            plans.forEach((plan) => drawScaleRevealGlyphLayer(context, plan, layer));
+          });
+        } else {
+          let cursorX = xLine;
+          let hasJumpInOutMotion = false;
+          const charDraws = [];
+
+          chars.forEach((char, charIndexInLine) => {
+            const charSettings = mergeInlineSettings(settings, inlineMap[charIndexInLine]);
+            context.font = fontStringForSettings(charSettings);
+            const charWidth = context.measureText(char).width;
+            let wavePower = 0;
+
             if (settings.animation === "jumpInOut") {
               wavePower = jumpInOutPowerForChar(globalCharIndex);
               hasJumpInOutMotion = hasJumpInOutMotion || wavePower > 0.001;
@@ -1715,16 +2121,35 @@
               wavePower = Math.abs(Math.sin(elapsed * (settings.jumpSpeed || 8) + globalCharIndex * 0.65));
             }
 
-            const jumpY = yLine - wavePower * (settings.jumpSize || 0);
-            drawStyledText(context, char, cursorX, jumpY, settings, 0);
-          }
-          cursorX += charWidth + letterSpacing;
-          globalCharIndex += 1;
-        });
+            charDraws.push({
+              char,
+              settings: charSettings,
+              x: cursorX,
+              y: yLine - wavePower * (settings.jumpSize || 0),
+              alpha: 1
+            });
 
-        if (settings.animation === "jumpInOut" && !hasJumpInOutMotion) {
-          // Keep the same per-character drawing path even while still,
-          // so this animation never falls back to whole-line jumping.
+            cursorX += charWidth + letterSpacing;
+            globalCharIndex += 1;
+          });
+
+          const drawCharLayer = (entry, layer) => {
+            const prevAlpha = context.globalAlpha;
+            context.save();
+            context.globalAlpha = prevAlpha * clamp(entry.alpha ?? 1, 0, 1);
+            paintSingleGlyphLayer(context, entry.char, entry.x, entry.y, entry.settings, layer);
+            context.restore();
+            context.globalAlpha = prevAlpha;
+          };
+
+          ["shadow", "stroke", "fill"].forEach((layer) => {
+            charDraws.forEach((entry) => drawCharLayer(entry, layer));
+          });
+
+          if (settings.animation === "jumpInOut" && !hasJumpInOutMotion) {
+            // Keep the same per-character drawing path even while still,
+            // so this animation never falls back to whole-line jumping.
+          }
         }
       } else {
         drawStyledText(context, line, xLine, yLine, settings, letterSpacing);
@@ -1917,6 +2342,7 @@
     renderPresetControls();
     updatePreviewRangeMax();
     updateStaticText();
+    renderInlineStyleEditor();
     renderAll();
   }
 
@@ -2201,6 +2627,7 @@
         populateFontSelect(defaultFontFamilyInput);
         populateFontSelect(cueFontFamilyInput);
         renderCustomFontControls();
+        renderInlineStyleEditor();
         alert(t("customFontLoaded", { name: font.name }));
       } catch (error) {
         console.error(error);
@@ -2221,6 +2648,9 @@
       if (state.defaults.fontFamily === targetValue) state.defaults.fontFamily = FONT_OPTIONS[1].value;
       state.cues.forEach((cue) => {
         if (cue.settings?.fontFamily === targetValue) cue.settings.fontFamily = FONT_OPTIONS[1].value;
+        safeArray(cue.settings?.inlineStyles).forEach((style) => {
+          if (style.fontFamily === targetValue) style.fontFamily = FONT_OPTIONS[1].value;
+        });
       });
       populateFontSelect(defaultFontFamilyInput);
       populateFontSelect(cueFontFamilyInput);
@@ -2234,6 +2664,7 @@
       .forEach((input) => input.addEventListener("input", updateDefaultStateFromControls));
 
     applyDefaultToSelectedBtn.addEventListener("click", applyDefaultsToSelected);
+    addInlineStyleBtn?.addEventListener("click", addInlineStyleToSelectedCue);
 
     audioPlayer.addEventListener("loadedmetadata", updatePreviewRangeMax);
     audioPlayer.addEventListener("play", startRenderLoop);
