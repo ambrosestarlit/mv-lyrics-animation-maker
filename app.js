@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const CANVAS_WIDTH = 1920;
-  const CANVAS_HEIGHT = 1080;
+  let CANVAS_WIDTH = 1920;
+  let CANVAS_HEIGHT = 1080;
   const CACHE_DB_NAME = "mv-lyrics-animation-maker";
   const CACHE_STORE_NAME = "projects";
   const CACHE_KEY = "autosave";
@@ -49,8 +49,12 @@
   const $ = (selector) => document.querySelector(selector);
 
   const canvas = $("#previewCanvas");
+  const canvasShell = $(".canvas-shell");
+  const previewPanel = $(".preview-panel");
+  const previewToolbar = $(".preview-toolbar");
   const ctx = canvas.getContext("2d", { alpha: true });
   const uiLanguageSelect = $("#uiLanguageSelect");
+  const canvasAspectSelect = $("#canvasAspectSelect");
   const openManualBtn = $("#openManualBtn");
   const manualModal = $("#manualModal");
   const manualModalTitle = $("#manualModalTitle");
@@ -87,6 +91,11 @@
   const defaultAnimationInput = $("#defaultAnimationInput");
   const defaultAlignInput = $("#defaultAlignInput");
   const autoChainSelect = $("#autoChainSelect");
+  const customFontInput = $("#customFontInput");
+  const customFontChooseLabel = $("#customFontChooseLabel");
+  const customFontChosenLabel = $("#customFontChosenLabel");
+  const customFontSelect = $("#customFontSelect");
+  const deleteCustomFontBtn = $("#deleteCustomFontBtn");
   const applyDefaultToSelectedBtn = $("#applyDefaultToSelectedBtn");
 
   const lyricsCountInfo = $("#lyricsCountInfo");
@@ -181,9 +190,9 @@
   const loadCacheBtn = $("#loadCacheBtn");
 
   const defaultStyle = () => ({
-    x: 960,
-    y: 540,
-    maxWidth: 1580,
+    x: Math.round(CANVAS_WIDTH / 2),
+    y: Math.round(CANVAS_HEIGHT / 2),
+    maxWidth: Math.round(CANVAS_WIDTH * 0.82),
     align: "center",
     fontFamily: FONT_OPTIONS[1].value,
     fontSize: 86,
@@ -226,6 +235,8 @@
     audioFileName: "",
     audioMimeType: "",
     uiLanguage: DEFAULT_UI_LANGUAGE,
+    canvasAspect: "16:9",
+    customFonts: [],
     previewBackgroundColor: "#f6fbff",
     previewBackgroundFit: "cover",
     previewBackgroundScale: 100,
@@ -249,6 +260,9 @@
   });
 
   let state = initialState();
+  const initialSize = canvasSizeForAspect(state.canvasAspect);
+  CANVAS_WIDTH = initialSize.width;
+  CANVAS_HEIGHT = initialSize.height;
   let renderLoopRunning = false;
   let suppressEditorEvents = false;
 
@@ -264,7 +278,8 @@
       audioFile: "音声ファイル", audioNotLoaded: "音声未読込", audioLoaded: "音声読込済み", loadedFile: "読込済み: {name}", clear: "解除",
       lyricsTxt: "歌詞TXT", lyricsHint: "TXTの1行を1フレーズとして歌詞ボタンにします。空行は自動除外します。",
       previewBgColor: "プレビュー背景色", bgFit: "背景画像の表示", fitCover: "画面いっぱい", fitContain: "全体表示", fitStretch: "引き伸ばし", previewBgImage: "プレビュー背景画像", bgScale: "背景画像サイズ", bgOffsetX: "背景画像移動X", bgOffsetY: "背景画像移動Y", clearBgImage: "背景画像を解除", bgHint: "背景色・背景画像はプレビュー確認用です。透過PNG書き出しには含まれません。",
-      defaultFont: "基本フォント", defaultSize: "基本サイズ", defaultDuration: "初期表示秒数", autoChain: "前フレーズ終了を自動調整", yes: "する", no: "しない", defaultAnimation: "初期アニメーション", defaultAlign: "初期文字揃え", applyDefaults: "選択中のフレーズへ基本設定を反映",
+      canvasAspect: "キャンバス比率", aspectLandscape: "16:9 横長", aspectPortrait: "9:16 縦長", transparentExport: "透過書き出し", customFont: "任意フォント追加", customFontList: "追加済みフォント", deleteCustomFont: "選択フォントを削除", customFontHint: "アップロードしたフォントはこのブラウザ内で利用できます。JSON/キャッシュ保存にも含まれます。", customFontLoaded: "フォントを追加しました: {name}", customFontLoadFailed: "フォントを読み込めませんでした。対応形式は ttf / otf / woff / woff2 です。", noCustomFonts: "追加フォントなし", selectFont: "フォントを選択",
+      defaultFont: "基本フォント", defaultSize: "基本サイズ", defaultDuration: "初期表示秒数", autoChain: "前フレーズ終了を自動調整", yes: "する", no: "しない", defaultAnimation: "初期アニメーション", defaultAlign: "初期文字揃え", applyDefaults: "全フレーズへ基本設定を反映",
       animNormal: "通常表示", animTypewriter: "タイプライター表示", animScaleReveal: "拡大しながら表示", animJumpTypewriter: "ジャンプしながらタイプライター表示", animJumpReveal: "ジャンプしながら表示", animJumpInOut: "登場時と退場時だけジャンプ",
       alignLeft: "左寄せ", alignCenter: "中央寄せ", alignRight: "右寄せ",
       lyricsNotLoaded: "歌詞未読込", clearList: "一覧クリア", lyricsButtonEmpty: "歌詞TXTを読み込むと、ここに1行ずつボタンが追加されます。", enteredEmpty: "入力済みフレーズはまだありません。音声再生中に歌詞ボタンを押してください。",
@@ -287,7 +302,8 @@
       audioFile: "Audio File", audioNotLoaded: "No audio loaded", audioLoaded: "Audio loaded", loadedFile: "Loaded: {name}", clear: "Clear",
       lyricsTxt: "Lyrics TXT", lyricsHint: "Each line in the TXT file becomes one lyric button. Blank lines are ignored.",
       previewBgColor: "Preview Background Color", bgFit: "Background Image Fit", fitCover: "Fill Screen", fitContain: "Contain", fitStretch: "Stretch", previewBgImage: "Preview Background Image", bgScale: "Background Image Scale", bgOffsetX: "Background Image Offset X", bgOffsetY: "Background Image Offset Y", clearBgImage: "Clear Background Image", bgHint: "Background color and image are for preview only and are not included in transparent PNG export.",
-      defaultFont: "Default Font", defaultSize: "Default Size", defaultDuration: "Default Duration", autoChain: "Auto-adjust previous phrase end", yes: "On", no: "Off", defaultAnimation: "Default Animation", defaultAlign: "Default Alignment", applyDefaults: "Apply defaults to selected phrase",
+      canvasAspect: "Canvas Aspect", aspectLandscape: "16:9 Landscape", aspectPortrait: "9:16 Portrait", transparentExport: "transparent export", customFont: "Add Custom Font", customFontList: "Custom Fonts", deleteCustomFont: "Delete Selected Font", customFontHint: "Uploaded fonts can be used in this browser and are included in JSON/cache saves.", customFontLoaded: "Font added: {name}", customFontLoadFailed: "Could not load the font. Supported formats: ttf / otf / woff / woff2.", noCustomFonts: "No custom fonts", selectFont: "Select a font",
+      defaultFont: "Default Font", defaultSize: "Default Size", defaultDuration: "Default Duration", autoChain: "Auto-adjust previous phrase end", yes: "On", no: "Off", defaultAnimation: "Default Animation", defaultAlign: "Default Alignment", applyDefaults: "Apply defaults to all phrases",
       animNormal: "Normal", animTypewriter: "Typewriter", animScaleReveal: "Scale Reveal", animJumpTypewriter: "Jump + Typewriter", animJumpReveal: "Jump Reveal", animJumpInOut: "Jump on In/Out",
       alignLeft: "Left", alignCenter: "Center", alignRight: "Right",
       lyricsNotLoaded: "No lyrics loaded", clearList: "Clear List", lyricsButtonEmpty: "Load a lyrics TXT file to create one button per line here.", enteredEmpty: "No phrases placed yet. Press a lyric button while audio is playing.",
@@ -311,7 +327,8 @@
       audioFile: "오디오 파일", audioNotLoaded: "오디오 미불러옴", audioLoaded: "오디오 불러옴", loadedFile: "불러옴: {name}", clear: "해제",
       lyricsTxt: "가사 TXT", lyricsHint: "TXT의 한 줄을 하나의 프레이즈 버튼으로 만듭니다. 빈 줄은 자동으로 제외됩니다.",
       previewBgColor: "미리보기 배경색", bgFit: "배경 이미지 표시", fitCover: "화면 채우기", fitContain: "전체 표시", fitStretch: "늘이기", previewBgImage: "미리보기 배경 이미지", bgScale: "배경 이미지 크기", bgOffsetX: "배경 이미지 이동 X", bgOffsetY: "배경 이미지 이동 Y", clearBgImage: "배경 이미지 해제", bgHint: "배경색과 배경 이미지는 미리보기 확인용입니다. 투명 PNG 내보내기에는 포함되지 않습니다.",
-      defaultFont: "기본 폰트", defaultSize: "기본 크기", defaultDuration: "초기 표시 시간", autoChain: "이전 프레이즈 종료 자동 조정", yes: "켜기", no: "끄기", defaultAnimation: "초기 애니메이션", defaultAlign: "초기 정렬", applyDefaults: "선택 중인 프레이즈에 기본 설정 적용",
+      canvasAspect: "캔버스 비율", aspectLandscape: "16:9 가로형", aspectPortrait: "9:16 세로형", transparentExport: "투명 내보내기", customFont: "사용자 폰트 추가", customFontList: "추가된 폰트", deleteCustomFont: "선택한 폰트 삭제", customFontHint: "업로드한 폰트는 이 브라우저에서 사용할 수 있으며 JSON/캐시 저장에도 포함됩니다.", customFontLoaded: "폰트를 추가했습니다: {name}", customFontLoadFailed: "폰트를 불러올 수 없습니다. 지원 형식은 ttf / otf / woff / woff2입니다.", noCustomFonts: "추가 폰트 없음", selectFont: "폰트 선택",
+      defaultFont: "기본 폰트", defaultSize: "기본 크기", defaultDuration: "초기 표시 시간", autoChain: "이전 프레이즈 종료 자동 조정", yes: "켜기", no: "끄기", defaultAnimation: "초기 애니메이션", defaultAlign: "초기 정렬", applyDefaults: "모든 프레이즈에 기본 설정 적용",
       animNormal: "일반 표시", animTypewriter: "타자기 표시", animScaleReveal: "확대하며 표시", animJumpTypewriter: "점프하며 타자기 표시", animJumpReveal: "점프하며 표시", animJumpInOut: "등장/퇴장 시에만 점프",
       alignLeft: "왼쪽 정렬", alignCenter: "가운데 정렬", alignRight: "오른쪽 정렬",
       lyricsNotLoaded: "가사 미불러옴", clearList: "목록 지우기", lyricsButtonEmpty: "가사 TXT를 불러오면 여기에 한 줄씩 버튼이 추가됩니다.", enteredEmpty: "아직 입력된 프레이즈가 없습니다. 오디오 재생 중에 가사 버튼을 눌러 주세요.",
@@ -414,6 +431,8 @@
     setText(clearPreviewBgImageBtn, "clearBgImage");
     setText(clearPreviewBgImageBtn.closest('.button-row')?.nextElementSibling, "bgHint");
 
+    setFieldLabel(canvasAspectSelect, "canvasAspect");
+    setSelectOptions(canvasAspectSelect, { "16:9": t("aspectLandscape"), "9:16": t("aspectPortrait") });
     setFieldLabel(defaultFontFamilyInput, "defaultFont");
     setRangeLabel(defaultFontSizeInput, "defaultSize");
     setFieldLabel(defaultDurationInput, "defaultDuration");
@@ -423,11 +442,18 @@
     setSelectOptions(defaultAnimationInput, { normal: t("animNormal"), typewriter: t("animTypewriter"), scaleReveal: t("animScaleReveal"), jumpTypewriter: t("animJumpTypewriter"), jumpReveal: t("animJumpReveal"), jumpInOut: t("animJumpInOut") });
     setFieldLabel(defaultAlignInput, "defaultAlign");
     setSelectOptions(defaultAlignInput, { left: t("alignLeft"), center: t("alignCenter"), right: t("alignRight") });
+    setFieldLabel(customFontInput, "customFont");
+    setText(customFontChooseLabel, "chooseFile");
+    updateFileChoiceStatus(customFontChosenLabel, customFontChosenLabel?.dataset.filename || "");
+    setFieldLabel(customFontSelect, "customFontList");
+    setText(deleteCustomFontBtn, "deleteCustomFont");
+    setText(document.querySelector(".custom-font-hint"), "customFontHint");
+    renderCustomFontControls();
     setText(applyDefaultToSelectedBtn, "applyDefaults");
 
     setText(clearLyricsBtn, "clearList");
     setText(".preview-toolbar strong", "previewCanvas");
-    setText(document.querySelector('.preview-toolbar strong')?.nextElementSibling, "previewCanvasSub");
+    updatePreviewCanvasInfo();
     setText(setPreviewFromAudioBtn, "previewAtCurrentTime");
     setFieldLabel(previewTimeInput, "previewSeconds");
     setText(renderPreviewBtn, "update");
@@ -671,6 +697,160 @@
     }
   }
 
+  function canvasSizeForAspect(aspect) {
+    return aspect === "9:16" ? { width: 1080, height: 1920 } : { width: 1920, height: 1080 };
+  }
+
+  function updatePreviewCanvasInfo() {
+    const node = document.querySelector('.preview-toolbar strong')?.nextElementSibling;
+    if (node) node.textContent = `${CANVAS_WIDTH} × ${CANVAS_HEIGHT} / ${t("transparentExport")}`;
+  }
+
+  function resizePreviewViewport() {
+    if (!canvasShell || !previewPanel) return;
+    const aspect = CANVAS_WIDTH / CANVAS_HEIGHT;
+    const panelWidth = Math.max(1, previewPanel.clientWidth);
+    const toolbarHeight = previewToolbar ? previewToolbar.offsetHeight : 0;
+    const panelStyle = getComputedStyle(previewPanel);
+    const padTop = parseFloat(panelStyle.paddingTop) || 0;
+    const padBottom = parseFloat(panelStyle.paddingBottom) || 0;
+    const padLeft = parseFloat(panelStyle.paddingLeft) || 0;
+    const padRight = parseFloat(panelStyle.paddingRight) || 0;
+    const availableWidth = Math.max(1, panelWidth - padLeft - padRight);
+    const availableHeight = Math.max(1, previewPanel.clientHeight - toolbarHeight - padTop - padBottom);
+
+    let displayWidth = availableWidth;
+    let displayHeight = displayWidth / aspect;
+    if (displayHeight > availableHeight) {
+      displayHeight = availableHeight;
+      displayWidth = displayHeight * aspect;
+    }
+
+    canvasShell.style.aspectRatio = `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`;
+    canvasShell.style.width = `${Math.max(1, Math.floor(displayWidth))}px`;
+    canvasShell.style.height = `${Math.max(1, Math.floor(displayHeight))}px`;
+  }
+
+  function updateCanvasControlRanges() {
+    if (canvas) {
+      canvas.width = CANVAS_WIDTH;
+      canvas.height = CANVAS_HEIGHT;
+      canvas.style.aspectRatio = `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`;
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+      canvas.style.maxWidth = "none";
+      canvas.style.maxHeight = "none";
+    }
+    resizePreviewViewport();
+    if (canvasAspectSelect) canvasAspectSelect.value = state.canvasAspect || "16:9";
+
+    if (cueXInput) cueXInput.max = String(CANVAS_WIDTH);
+    if (cueYInput) cueYInput.max = String(CANVAS_HEIGHT);
+    if (cueMaxWidthInput) cueMaxWidthInput.max = String(CANVAS_WIDTH);
+    if (previewBgOffsetXInput) {
+      previewBgOffsetXInput.min = String(-CANVAS_WIDTH);
+      previewBgOffsetXInput.max = String(CANVAS_WIDTH);
+    }
+    if (previewBgOffsetYInput) {
+      previewBgOffsetYInput.min = String(-CANVAS_HEIGHT);
+      previewBgOffsetYInput.max = String(CANVAS_HEIGHT);
+    }
+    if (cuePanXInput) {
+      cuePanXInput.min = String(-CANVAS_WIDTH);
+      cuePanXInput.max = String(CANVAS_WIDTH);
+    }
+    if (cuePanYInput) {
+      cuePanYInput.min = String(-CANVAS_HEIGHT);
+      cuePanYInput.max = String(CANVAS_HEIGHT);
+    }
+    updatePreviewCanvasInfo();
+  }
+
+  function applyCanvasAspect(aspect, { scaleExisting = false } = {}) {
+    const nextAspect = aspect === "9:16" ? "9:16" : "16:9";
+    const oldWidth = CANVAS_WIDTH;
+    const oldHeight = CANVAS_HEIGHT;
+    const nextSize = canvasSizeForAspect(nextAspect);
+    state.canvasAspect = nextAspect;
+    CANVAS_WIDTH = nextSize.width;
+    CANVAS_HEIGHT = nextSize.height;
+
+    if (scaleExisting && oldWidth && oldHeight && (oldWidth !== CANVAS_WIDTH || oldHeight !== CANVAS_HEIGHT)) {
+      const ratioX = CANVAS_WIDTH / oldWidth;
+      const ratioY = CANVAS_HEIGHT / oldHeight;
+      state.cues.forEach((cue) => {
+        if (!cue.settings) return;
+        cue.settings.x = Math.round(clamp((cue.settings.x ?? oldWidth / 2) * ratioX, 0, CANVAS_WIDTH));
+        cue.settings.y = Math.round(clamp((cue.settings.y ?? oldHeight / 2) * ratioY, 0, CANVAS_HEIGHT));
+        cue.settings.maxWidth = Math.round(clamp((cue.settings.maxWidth ?? oldWidth * 0.82) * ratioX, 100, CANVAS_WIDTH));
+        cue.settings.panX = Math.round(clamp((cue.settings.panX ?? 0) * ratioX, -CANVAS_WIDTH, CANVAS_WIDTH));
+        cue.settings.panY = Math.round(clamp((cue.settings.panY ?? 0) * ratioY, -CANVAS_HEIGHT, CANVAS_HEIGHT));
+      });
+      state.previewBackgroundOffsetX = Math.round(clamp((state.previewBackgroundOffsetX ?? 0) * ratioX, -CANVAS_WIDTH, CANVAS_WIDTH));
+      state.previewBackgroundOffsetY = Math.round(clamp((state.previewBackgroundOffsetY ?? 0) * ratioY, -CANVAS_HEIGHT, CANVAS_HEIGHT));
+    }
+
+    updateCanvasControlRanges();
+    syncPreviewBackgroundControls();
+    syncCueEditor();
+    renderCurrentPreview();
+  }
+
+  function fontOptions() {
+    const custom = safeArray(state.customFonts).map((font) => ({
+      label: `${font.name || font.familyName} *`,
+      labelEn: `${font.name || font.familyName} *`,
+      labelKo: `${font.name || font.familyName} *`,
+      value: `"${font.familyName}", sans-serif`,
+      custom: true,
+      customId: font.id
+    }));
+    return [...FONT_OPTIONS, ...custom];
+  }
+
+  function sanitizeFontFamilyName(name) {
+    const base = String(name || "Custom Font").replace(/\.[^.]+$/, "").replace(/[\\"']/g, "").trim() || "Custom Font";
+    return `MV_Custom_${base.replace(/[^\w\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af-]+/g, "_")}_${Date.now().toString(36)}`;
+  }
+
+  async function registerCustomFont(font) {
+    if (!font?.dataUrl || !font?.familyName || typeof FontFace !== "function") return false;
+    const fontFace = new FontFace(font.familyName, `url(${font.dataUrl})`);
+    await fontFace.load();
+    document.fonts.add(fontFace);
+    font.loaded = true;
+    return true;
+  }
+
+  async function registerAllCustomFonts() {
+    for (const font of safeArray(state.customFonts)) {
+      try {
+        await registerCustomFont(font);
+      } catch (error) {
+        console.warn("Custom font load failed", font?.name, error);
+      }
+    }
+    if (document.fonts?.ready) await document.fonts.ready;
+  }
+
+  function renderCustomFontControls() {
+    if (!customFontSelect) return;
+    const current = customFontSelect.value;
+    customFontSelect.innerHTML = "";
+    const empty = document.createElement("option");
+    empty.value = "";
+    empty.textContent = safeArray(state.customFonts).length ? t("selectFont") : t("noCustomFonts");
+    customFontSelect.append(empty);
+    safeArray(state.customFonts).forEach((font) => {
+      const option = document.createElement("option");
+      option.value = font.id;
+      option.textContent = font.name || font.familyName;
+      customFontSelect.append(option);
+    });
+    if (current && safeArray(state.customFonts).some((font) => font.id === current)) customFontSelect.value = current;
+    deleteCustomFontBtn.disabled = !customFontSelect.value;
+  }
+
   function applyLanguage(lang) {
     state.uiLanguage = ["ja", "en", "ko"].includes(lang) ? lang : "ja";
     const defaultFont = defaultFontFamilyInput.value;
@@ -819,7 +999,7 @@
   function populateFontSelect(select) {
     const selected = select.value;
     select.innerHTML = "";
-    FONT_OPTIONS.forEach((font) => {
+    fontOptions().forEach((font) => {
       const option = document.createElement("option");
       option.value = font.value;
       option.textContent = currentLang() === "ko" ? (font.labelKo || font.labelEn || font.label) : (currentLang() === "en" ? (font.labelEn || font.label) : font.label);
@@ -875,6 +1055,7 @@
   }
 
   function syncDefaultControls() {
+    if (canvasAspectSelect) canvasAspectSelect.value = state.canvasAspect || "16:9";
     defaultFontFamilyInput.value = state.defaults.fontFamily;
     defaultFontSizeInput.value = String(state.defaults.fontSize);
     defaultFontSizeOutput.textContent = `${defaultFontSizeInput.value}px`;
@@ -889,9 +1070,9 @@
     previewBgFitSelect.value = state.previewBackgroundFit || "cover";
     previewBgScaleInput.value = String(clamp(state.previewBackgroundScale ?? 100, 1, 100));
     previewBgScaleOutput.textContent = `${previewBgScaleInput.value}%`;
-    previewBgOffsetXInput.value = String(clamp(state.previewBackgroundOffsetX ?? 0, -1920, 1920));
+    previewBgOffsetXInput.value = String(clamp(state.previewBackgroundOffsetX ?? 0, -CANVAS_WIDTH, CANVAS_WIDTH));
     previewBgOffsetXOutput.textContent = `${previewBgOffsetXInput.value}px`;
-    previewBgOffsetYInput.value = String(clamp(state.previewBackgroundOffsetY ?? 0, -1080, 1080));
+    previewBgOffsetYInput.value = String(clamp(state.previewBackgroundOffsetY ?? 0, -CANVAS_HEIGHT, CANVAS_HEIGHT));
     previewBgOffsetYOutput.textContent = `${previewBgOffsetYInput.value}px`;
   }
 
@@ -1092,8 +1273,8 @@
     cueLineHeightInput.value = String(clamp(s.lineHeight, 0.5, 3));
     cueLetterSpacingInput.value = String(clamp(s.letterSpacing ?? 0, -20, 120));
     cueLetterSpacingPanInput.value = String(clamp(s.letterSpacingPan ?? 0, -120, 120));
-    cuePanXInput.value = String(clamp(s.panX ?? 0, -1920, 1920));
-    cuePanYInput.value = String(clamp(s.panY ?? 0, -1080, 1080));
+    cuePanXInput.value = String(clamp(s.panX ?? 0, -CANVAS_WIDTH, CANVAS_WIDTH));
+    cuePanYInput.value = String(clamp(s.panY ?? 0, -CANVAS_HEIGHT, CANVAS_HEIGHT));
     cueScaleInput.value = String(clamp(s.scale ?? 100, 10, 400));
     cueScalePanInput.value = String(clamp(s.scalePan ?? 0, -300, 300));
     cueRotationInput.value = String(clamp(s.rotation ?? 0, -360, 360));
@@ -1164,8 +1345,8 @@
     s.lineHeight = round(clamp(cueLineHeightInput.value, 0.5, 3), 2);
     s.letterSpacing = Math.round(clamp(cueLetterSpacingInput.value, -20, 120));
     s.letterSpacingPan = Math.round(clamp(cueLetterSpacingPanInput.value, -120, 120));
-    s.panX = Math.round(clamp(cuePanXInput.value, -1920, 1920));
-    s.panY = Math.round(clamp(cuePanYInput.value, -1080, 1080));
+    s.panX = Math.round(clamp(cuePanXInput.value, -CANVAS_WIDTH, CANVAS_WIDTH));
+    s.panY = Math.round(clamp(cuePanYInput.value, -CANVAS_HEIGHT, CANVAS_HEIGHT));
     s.scale = Math.round(clamp(cueScaleInput.value, 10, 400));
     s.scalePan = Math.round(clamp(cueScalePanInput.value, -300, 300));
     s.rotation = Math.round(clamp(cueRotationInput.value, -360, 360));
@@ -1268,18 +1449,23 @@
   }
 
   function applyDefaultsToSelected() {
-    const cue = selectedCue();
-    if (!cue) return;
-    const old = cue.settings || createCueStyle();
-    const next = createCueStyle();
-    next.x = old.x;
-    next.y = old.y;
-    next.maxWidth = old.maxWidth;
-    next.color = old.color;
-    next.stroke = clone(old.stroke || next.stroke);
-    next.shadow = clone(old.shadow || next.shadow);
-    cue.settings = next;
+    if (!state.cues.length) return;
+
+    state.cues.forEach((cue) => {
+      const old = cue.settings || createCueStyle();
+      cue.settings = {
+        ...old,
+        fontFamily: state.defaults.fontFamily || old.fontFamily,
+        fontSize: clamp(state.defaults.fontSize, 10, 300),
+        animation: state.defaults.animation || old.animation,
+        align: state.defaults.align || old.align,
+        stroke: clone(old.stroke || defaultStyle().stroke),
+        shadow: clone(old.shadow || defaultStyle().shadow)
+      };
+    });
+
     syncCueEditor();
+    renderCueList();
     renderCurrentPreview();
   }
 
@@ -1633,6 +1819,10 @@
   }
 
   async function hydrateAssets() {
+    await registerAllCustomFonts();
+    populateFontSelect(defaultFontFamilyInput);
+    populateFontSelect(cueFontFamilyInput);
+    renderCustomFontControls();
     if (state.previewBackgroundImageDataUrl) {
       try {
         state.previewBackgroundImage = await loadImage(state.previewBackgroundImageDataUrl);
@@ -1665,14 +1855,23 @@
       ...next,
       ...project,
       uiLanguage: ["ja", "en", "ko"].includes(project.uiLanguage) ? project.uiLanguage : next.uiLanguage,
+      canvasAspect: project.canvasAspect === "9:16" ? "9:16" : "16:9",
+      customFonts: Array.isArray(project.customFonts) ? project.customFonts : [],
       previewBackgroundScale: clamp(project.previewBackgroundScale ?? next.previewBackgroundScale, 1, 100),
-      previewBackgroundOffsetX: clamp(project.previewBackgroundOffsetX ?? next.previewBackgroundOffsetX, -1920, 1920),
-      previewBackgroundOffsetY: clamp(project.previewBackgroundOffsetY ?? next.previewBackgroundOffsetY, -1080, 1080),
+      previewBackgroundOffsetX: project.previewBackgroundOffsetX ?? next.previewBackgroundOffsetX,
+      previewBackgroundOffsetY: project.previewBackgroundOffsetY ?? next.previewBackgroundOffsetY,
       defaults: { ...next.defaults, ...(project.defaults || {}) },
       presets: mergePresets(next.presets, project.presets),
       lyrics: Array.isArray(project.lyrics) ? project.lyrics : [],
       cues: Array.isArray(project.cues) ? project.cues : []
     };
+
+    const projectSize = canvasSizeForAspect(state.canvasAspect);
+    CANVAS_WIDTH = projectSize.width;
+    CANVAS_HEIGHT = projectSize.height;
+    updateCanvasControlRanges();
+    state.previewBackgroundOffsetX = Math.round(clamp(state.previewBackgroundOffsetX ?? 0, -CANVAS_WIDTH, CANVAS_WIDTH));
+    state.previewBackgroundOffsetY = Math.round(clamp(state.previewBackgroundOffsetY ?? 0, -CANVAS_HEIGHT, CANVAS_HEIGHT));
 
     state.cues = state.cues.map((cue) => ({
       id: cue.id || uniqueId("cue"),
@@ -1838,6 +2037,7 @@
 
     exportZipBtn.disabled = true;
     exportProgress.textContent = t("preparing", { done: 0, total: frameCount });
+    if (document.fonts?.ready) await document.fonts.ready;
 
     try {
       const zip = new JSZip();
@@ -1944,13 +2144,13 @@
     });
 
     previewBgOffsetXInput.addEventListener("input", () => {
-      state.previewBackgroundOffsetX = Math.round(clamp(previewBgOffsetXInput.value, -1920, 1920));
+      state.previewBackgroundOffsetX = Math.round(clamp(previewBgOffsetXInput.value, -CANVAS_WIDTH, CANVAS_WIDTH));
       previewBgOffsetXOutput.textContent = `${state.previewBackgroundOffsetX}px`;
       renderCurrentPreview();
     });
 
     previewBgOffsetYInput.addEventListener("input", () => {
-      state.previewBackgroundOffsetY = Math.round(clamp(previewBgOffsetYInput.value, -1080, 1080));
+      state.previewBackgroundOffsetY = Math.round(clamp(previewBgOffsetYInput.value, -CANVAS_HEIGHT, CANVAS_HEIGHT));
       previewBgOffsetYOutput.textContent = `${state.previewBackgroundOffsetY}px`;
       renderCurrentPreview();
     });
@@ -1969,6 +2169,64 @@
       state.previewBackgroundImage = null;
       previewBgImageInput.value = "";
       updateFileChoiceStatus(previewBgChosenLabel, "");
+      renderCurrentPreview();
+    });
+
+    canvasAspectSelect?.addEventListener("change", () => {
+      applyCanvasAspect(canvasAspectSelect.value, { scaleExisting: true });
+    });
+
+    customFontInput?.addEventListener("change", async () => {
+      const file = customFontInput.files?.[0];
+      if (!file) return;
+      const ok = /\.(ttf|otf|woff2?|TTF|OTF|WOFF2?)$/.test(file.name) || /^font\//.test(file.type || "");
+      if (!ok) {
+        alert(t("customFontLoadFailed"));
+        customFontInput.value = "";
+        return;
+      }
+      try {
+        const dataUrl = await fileToDataUrl(file);
+        const font = {
+          id: uniqueId("font"),
+          name: file.name.replace(/\.[^.]+$/, ""),
+          familyName: sanitizeFontFamilyName(file.name),
+          dataUrl,
+          mimeType: file.type || "font/unknown",
+          createdAt: Date.now()
+        };
+        await registerCustomFont(font);
+        state.customFonts.push(font);
+        updateFileChoiceStatus(customFontChosenLabel, file.name);
+        populateFontSelect(defaultFontFamilyInput);
+        populateFontSelect(cueFontFamilyInput);
+        renderCustomFontControls();
+        alert(t("customFontLoaded", { name: font.name }));
+      } catch (error) {
+        console.error(error);
+        alert(t("customFontLoadFailed"));
+      } finally {
+        customFontInput.value = "";
+      }
+    });
+
+    customFontSelect?.addEventListener("change", renderCustomFontControls);
+
+    deleteCustomFontBtn?.addEventListener("click", () => {
+      const id = customFontSelect.value;
+      if (!id) return;
+      const target = state.customFonts.find((font) => font.id === id);
+      state.customFonts = state.customFonts.filter((font) => font.id !== id);
+      const targetValue = target ? `"${target.familyName}", sans-serif` : "";
+      if (state.defaults.fontFamily === targetValue) state.defaults.fontFamily = FONT_OPTIONS[1].value;
+      state.cues.forEach((cue) => {
+        if (cue.settings?.fontFamily === targetValue) cue.settings.fontFamily = FONT_OPTIONS[1].value;
+      });
+      populateFontSelect(defaultFontFamilyInput);
+      populateFontSelect(cueFontFamilyInput);
+      syncDefaultControls();
+      syncCueEditor();
+      renderCustomFontControls();
       renderCurrentPreview();
     });
 
@@ -2087,12 +2345,15 @@
   }
 
   function init() {
+    updateCanvasControlRanges();
     populateFontSelect(defaultFontFamilyInput);
     populateFontSelect(cueFontFamilyInput);
+    renderCustomFontControls();
     syncDefaultControls();
     syncPreviewBackgroundControls();
     bindEvents();
     applyLanguage(state.uiLanguage);
+    requestAnimationFrame(resizePreviewViewport);
   }
 
   init();

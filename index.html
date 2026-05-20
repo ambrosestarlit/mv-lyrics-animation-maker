@@ -111,6 +111,15 @@
         <div class="control-stack">
           <div class="grid-2">
             <label class="field">
+              <span>キャンバス比率</span>
+              <select id="canvasAspectSelect">
+                <option value="16:9">16:9 横長</option>
+                <option value="9:16">9:16 縦長</option>
+              </select>
+            </label>
+          </div>
+          <div class="grid-2">
+            <label class="field">
               <span>基本フォント</span>
               <select id="defaultFontFamilyInput"></select>
             </label>
@@ -153,7 +162,23 @@
               </select>
             </label>
           </div>
-          <button id="applyDefaultToSelectedBtn" type="button">選択中のフレーズへ基本設定を反映</button>
+          <div class="field">
+            <span>任意フォント追加</span>
+            <div class="custom-file-row">
+              <label class="file-button custom-file-button" for="customFontInput"><span id="customFontChooseLabel">ファイルを選択</span></label>
+              <span id="customFontChosenLabel" class="file-select-status">選択されていません</span>
+            </div>
+            <input id="customFontInput" class="visually-hidden-file" type="file" accept=".ttf,.otf,.woff,.woff2,font/*" />
+          </div>
+          <div class="grid-2">
+            <label class="field">
+              <span>追加済みフォント</span>
+              <select id="customFontSelect"></select>
+            </label>
+            <button id="deleteCustomFontBtn" type="button" class="danger">選択フォントを削除</button>
+          </div>
+          <p class="hint custom-font-hint">アップロードしたフォントはこのブラウザ内で利用できます。JSON/キャッシュ保存にも含まれます。</p>
+          <button id="applyDefaultToSelectedBtn" type="button">全フレーズへ基本設定を反映</button>
         </div>
       </details>
 
