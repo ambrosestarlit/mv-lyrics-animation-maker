@@ -1,4 +1,4 @@
-<!doctype html>
+]<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
@@ -178,6 +178,17 @@
             <button id="deleteCustomFontBtn" type="button" class="danger">選択フォントを削除</button>
           </div>
           <p class="hint custom-font-hint">アップロードしたフォントはこのブラウザ内で利用できます。JSON/キャッシュ保存にも含まれます。</p>
+          <div class="grid-2">
+            <label class="field">
+              <span>現在の入力レイヤー</span>
+              <select id="currentInputLayerSelect"></select>
+            </label>
+          </div>
+          <div class="preset-box layer-manager-box">
+            <div class="preset-title" id="layerSettingsTitle">レイヤー設定</div>
+            <div id="layerSettingsList" class="layer-settings-list"></div>
+            <p class="hint layer-settings-hint">レイヤー名と色ラベルを変更できます。入力済みフレーズ一覧のL1 / L2表示にも使われます。</p>
+          </div>
           <button id="applyDefaultToSelectedBtn" type="button">全フレーズへ基本設定を反映</button>
         </div>
       </details>
@@ -272,6 +283,11 @@
               <input id="cueEndInput" type="number" min="0" step="0.01" />
             </label>
           </div>
+
+          <label class="field">
+            <span>表示レイヤー</span>
+            <select id="cueLayerInput"></select>
+          </label>
 
           <div class="grid-2">
             <label class="field">
@@ -497,9 +513,14 @@
             <button id="exportZipBtn" type="button" class="primary">透過PNG連番ZIPを書き出し</button>
           </div>
           <div class="button-row export-download-row">
-            <a id="videoConverterDownloadBtn" class="download-button" href="./AlphaMOVConverter-WPF.zip" download>動画変換アプリDL</a>
+            <a id="videoConverterDownloadBtn" class="download-button" href="AlphaVideoConverter-WPF.zip" download>動画変換アプリDL</a>
           </div>
           <p class="hint video-converter-hint">透過PNG連番ZIPを透過動画化(MOV)するためのWindows用変換アプリです。</p>
+          <div id="exportProgress" class="progress-text"></div>
+          <div class="button-row export-download-row">
+            <a id="videoConverterDownloadBtn" class="download-button" href="SimpleVideoComposerWpf v1.0.zip" download>簡易編集アプリDL</a>
+          </div>
+          <p class="hint video-converter-hint">連番・動画・音声・画像で簡易動画編集が可能なWindows用変換アプリです。</p>
           <div id="exportProgress" class="progress-text"></div>
         </div>
       </details>

@@ -90,3 +90,11 @@ Update: 한국어 UI / Korean lyrics / SRT UTF-8 BOM support added.
 - 縦書き列間のスライダーを追加しました。
 - 英数字を横倒しにするチェックボックスを追加しました。
 - 縦書きは横書き描画とは別ルートで描画し、既存の横書きアニメーションへの影響を抑えています。
+
+
+[Layer update]
+- Added layer support for simultaneous phrase display.
+- Each phrase can be assigned to a display layer.
+- Layer names and label colors can be edited.
+- Placed phrase list now shows L1 / L2 style colored labels.
+- Writing direction support remains available.

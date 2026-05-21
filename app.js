@@ -48,6 +48,28 @@
 
   const $ = (selector) => document.querySelector(selector);
 
+  const DEFAULT_LAYER_COLOR_SET = ["#5B8CFF", "#FF6B9D", "#22C55E", "#F59E0B", "#8B5CF6"];
+
+  function defaultLayerSeeds(lang = DEFAULT_UI_LANGUAGE) {
+    const names = {
+      ja: ["メイン", "サブ", "コーラス", "アクセント", "背景文字"],
+      en: ["Main", "Sub", "Chorus", "Accent", "Background"],
+      ko: ["메인", "서브", "코러스", "악센트", "배경"]
+    };
+    const key = lang === "ko" ? "ko" : (lang === "en" ? "en" : "ja");
+    return names[key].map((name, index) => ({
+      id: `layer${index + 1}`,
+      order: index + 1,
+      name,
+      color: DEFAULT_LAYER_COLOR_SET[index] || "#5B8CFF"
+    }));
+  }
+
+  function normalizeLayerColor(value, fallback = "#5B8CFF") {
+    return /^#[0-9a-fA-F]{6}$/.test(String(value || "")) ? String(value) : fallback;
+  }
+
+
   const canvas = $("#previewCanvas");
   const canvasShell = $(".canvas-shell");
   const previewPanel = $(".preview-panel");
@@ -97,6 +119,8 @@
   const customFontSelect = $("#customFontSelect");
   const deleteCustomFontBtn = $("#deleteCustomFontBtn");
   const applyDefaultToSelectedBtn = $("#applyDefaultToSelectedBtn");
+  const currentInputLayerSelect = $("#currentInputLayerSelect");
+  const layerSettingsList = $("#layerSettingsList");
 
   const lyricsCountInfo = $("#lyricsCountInfo");
   const clearLyricsBtn = $("#clearLyricsBtn");
@@ -119,6 +143,7 @@
   const cueTextInput = $("#cueTextInput");
   const cueStartInput = $("#cueStartInput");
   const cueEndInput = $("#cueEndInput");
+  const cueLayerInput = $("#cueLayerInput");
   const cueAnimationInput = $("#cueAnimationInput");
   const cueAlignInput = $("#cueAlignInput");
   const cueWritingModeInput = $("#cueWritingModeInput");
@@ -261,6 +286,8 @@
     selectedCueId: null,
     lastCreatedCueId: null,
     presets: readStoredPresets(),
+    layers: defaultLayerSeeds(DEFAULT_UI_LANGUAGE),
+    currentInputLayerId: "layer1",
     defaults: {
       fontFamily: FONT_OPTIONS[1].value,
       fontSize: 86,
@@ -291,7 +318,7 @@
       lyricsTxt: "歌詞TXT", lyricsHint: "TXTの1行を1フレーズとして歌詞ボタンにします。空行は自動除外します。",
       previewBgColor: "プレビュー背景色", bgFit: "背景画像の表示", fitCover: "画面いっぱい", fitContain: "全体表示", fitStretch: "引き伸ばし", previewBgImage: "プレビュー背景画像", bgScale: "背景画像サイズ", bgOffsetX: "背景画像移動X", bgOffsetY: "背景画像移動Y", clearBgImage: "背景画像を解除", bgHint: "背景色・背景画像はプレビュー確認用です。透過PNG書き出しには含まれません。",
       canvasAspect: "キャンバス比率", aspectLandscape: "16:9 横長", aspectPortrait: "9:16 縦長", transparentExport: "透過書き出し", customFont: "任意フォント追加", customFontList: "追加済みフォント", deleteCustomFont: "選択フォントを削除", customFontHint: "アップロードしたフォントはこのブラウザ内で利用できます。JSON/キャッシュ保存にも含まれます。", customFontLoaded: "フォントを追加しました: {name}", customFontLoadFailed: "フォントを読み込めませんでした。対応形式は ttf / otf / woff / woff2 です。", noCustomFonts: "追加フォントなし", selectFont: "フォントを選択",
-      defaultFont: "基本フォント", defaultSize: "基本サイズ", defaultDuration: "初期表示秒数", autoChain: "前フレーズ終了を自動調整", yes: "する", no: "しない", defaultAnimation: "初期アニメーション", defaultAlign: "初期文字揃え", applyDefaults: "全フレーズへ基本設定を反映",
+      defaultFont: "基本フォント", defaultSize: "基本サイズ", defaultDuration: "初期表示秒数", autoChain: "前フレーズ終了を自動調整", yes: "する", no: "しない", defaultAnimation: "初期アニメーション", defaultAlign: "初期文字揃え", applyDefaults: "全フレーズへ基本設定を反映", currentInputLayer: "現在の入力レイヤー", cueLayer: "表示レイヤー", layerSettingsTitle: "レイヤー設定", layerSettingsHint: "レイヤー名と色ラベルを変更できます。入力済みフレーズ一覧のL1 / L2表示にも使われます。", layerName: "レイヤー名", layerColor: "色ラベル",
       animNormal: "通常表示", animTypewriter: "タイプライター表示", animScaleReveal: "拡大しながら表示", animJumpTypewriter: "ジャンプしながらタイプライター表示", animJumpReveal: "ジャンプしながら表示", animJumpInOut: "登場時と退場時だけジャンプ",
       alignLeft: "左寄せ", alignCenter: "中央寄せ", alignRight: "右寄せ",
       lyricsNotLoaded: "歌詞未読込", clearList: "一覧クリア", lyricsButtonEmpty: "歌詞TXTを読み込むと、ここに1行ずつボタンが追加されます。", enteredEmpty: "入力済みフレーズはまだありません。音声再生中に歌詞ボタンを押してください。",
@@ -315,7 +342,7 @@
       lyricsTxt: "Lyrics TXT", lyricsHint: "Each line in the TXT file becomes one lyric button. Blank lines are ignored.",
       previewBgColor: "Preview Background Color", bgFit: "Background Image Fit", fitCover: "Fill Screen", fitContain: "Contain", fitStretch: "Stretch", previewBgImage: "Preview Background Image", bgScale: "Background Image Scale", bgOffsetX: "Background Image Offset X", bgOffsetY: "Background Image Offset Y", clearBgImage: "Clear Background Image", bgHint: "Background color and image are for preview only and are not included in transparent PNG export.",
       canvasAspect: "Canvas Aspect", aspectLandscape: "16:9 Landscape", aspectPortrait: "9:16 Portrait", transparentExport: "transparent export", customFont: "Add Custom Font", customFontList: "Custom Fonts", deleteCustomFont: "Delete Selected Font", customFontHint: "Uploaded fonts can be used in this browser and are included in JSON/cache saves.", customFontLoaded: "Font added: {name}", customFontLoadFailed: "Could not load the font. Supported formats: ttf / otf / woff / woff2.", noCustomFonts: "No custom fonts", selectFont: "Select a font",
-      defaultFont: "Default Font", defaultSize: "Default Size", defaultDuration: "Default Duration", autoChain: "Auto-adjust previous phrase end", yes: "On", no: "Off", defaultAnimation: "Default Animation", defaultAlign: "Default Alignment", applyDefaults: "Apply defaults to all phrases",
+      defaultFont: "Default Font", defaultSize: "Default Size", defaultDuration: "Default Duration", autoChain: "Auto-adjust previous phrase end", yes: "On", no: "Off", defaultAnimation: "Default Animation", defaultAlign: "Default Alignment", applyDefaults: "Apply defaults to all phrases", currentInputLayer: "Current Input Layer", cueLayer: "Display Layer", layerSettingsTitle: "Layer Settings", layerSettingsHint: "You can rename each layer and change its color label. The same labels are shown as L1 / L2 in the placed phrase list.", layerName: "Layer Name", layerColor: "Color Label",
       animNormal: "Normal", animTypewriter: "Typewriter", animScaleReveal: "Scale Reveal", animJumpTypewriter: "Jump + Typewriter", animJumpReveal: "Jump Reveal", animJumpInOut: "Jump on In/Out",
       alignLeft: "Left", alignCenter: "Center", alignRight: "Right",
       lyricsNotLoaded: "No lyrics loaded", clearList: "Clear List", lyricsButtonEmpty: "Load a lyrics TXT file to create one button per line here.", enteredEmpty: "No phrases placed yet. Press a lyric button while audio is playing.",
@@ -340,7 +367,7 @@
       lyricsTxt: "가사 TXT", lyricsHint: "TXT의 한 줄을 하나의 프레이즈 버튼으로 만듭니다. 빈 줄은 자동으로 제외됩니다.",
       previewBgColor: "미리보기 배경색", bgFit: "배경 이미지 표시", fitCover: "화면 채우기", fitContain: "전체 표시", fitStretch: "늘이기", previewBgImage: "미리보기 배경 이미지", bgScale: "배경 이미지 크기", bgOffsetX: "배경 이미지 이동 X", bgOffsetY: "배경 이미지 이동 Y", clearBgImage: "배경 이미지 해제", bgHint: "배경색과 배경 이미지는 미리보기 확인용입니다. 투명 PNG 내보내기에는 포함되지 않습니다.",
       canvasAspect: "캔버스 비율", aspectLandscape: "16:9 가로형", aspectPortrait: "9:16 세로형", transparentExport: "투명 내보내기", customFont: "사용자 폰트 추가", customFontList: "추가된 폰트", deleteCustomFont: "선택한 폰트 삭제", customFontHint: "업로드한 폰트는 이 브라우저에서 사용할 수 있으며 JSON/캐시 저장에도 포함됩니다.", customFontLoaded: "폰트를 추가했습니다: {name}", customFontLoadFailed: "폰트를 불러올 수 없습니다. 지원 형식은 ttf / otf / woff / woff2입니다.", noCustomFonts: "추가 폰트 없음", selectFont: "폰트 선택",
-      defaultFont: "기본 폰트", defaultSize: "기본 크기", defaultDuration: "초기 표시 시간", autoChain: "이전 프레이즈 종료 자동 조정", yes: "켜기", no: "끄기", defaultAnimation: "초기 애니메이션", defaultAlign: "초기 정렬", applyDefaults: "모든 프레이즈에 기본 설정 적용",
+      defaultFont: "기본 폰트", defaultSize: "기본 크기", defaultDuration: "초기 표시 시간", autoChain: "이전 프레이즈 종료 자동 조정", yes: "켜기", no: "끄기", defaultAnimation: "초기 애니메이션", defaultAlign: "초기 정렬", applyDefaults: "모든 프레이즈에 기본 설정 적용", currentInputLayer: "현재 입력 레이어", cueLayer: "표시 레이어", layerSettingsTitle: "레이어 설정", layerSettingsHint: "레이어 이름과 색상 라벨을 변경할 수 있습니다. 입력된 프레이즈 목록의 L1 / L2 표시에도 사용됩니다.", layerName: "레이어 이름", layerColor: "색상 라벨",
       animNormal: "일반 표시", animTypewriter: "타자기 표시", animScaleReveal: "확대하며 표시", animJumpTypewriter: "점프하며 타자기 표시", animJumpReveal: "점프하며 표시", animJumpInOut: "등장/퇴장 시에만 점프",
       alignLeft: "왼쪽 정렬", alignCenter: "가운데 정렬", alignRight: "오른쪽 정렬",
       lyricsNotLoaded: "가사 미불러옴", clearList: "목록 지우기", lyricsButtonEmpty: "가사 TXT를 불러오면 여기에 한 줄씩 버튼이 추가됩니다.", enteredEmpty: "아직 입력된 프레이즈가 없습니다. 오디오 재생 중에 가사 버튼을 눌러 주세요.",
@@ -483,6 +510,7 @@
     setFieldLabel(cueTextInput, "lyricText");
     setFieldLabel(cueStartInput, "startSec");
     setFieldLabel(cueEndInput, "endSec");
+    setFieldLabel(cueLayerInput, "cueLayer");
     setFieldLabel(cueAnimationInput, "animation");
     setSelectOptions(cueAnimationInput, { normal: t("animNormal"), typewriter: t("animTypewriter"), scaleReveal: t("animScaleReveal"), jumpTypewriter: t("animJumpTypewriter"), jumpReveal: t("animJumpReveal"), jumpInOut: t("animJumpInOut") });
     setFieldLabel(cueAlignInput, "textAlign");
@@ -497,7 +525,7 @@
     setFieldLabel(cueFadeInDurationInput, "fadeInSec"); setFieldLabel(cueFadeOutDurationInput, "fadeOutSec"); setFieldLabel(cueStrokeColorInput, "strokeColor"); setRangeLabel(cueStrokeWidthInput, "strokeWidth"); setFieldLabel(cueShadowColorInput, "shadowColor"); setRangeLabel(cueShadowBlurInput, "shadowBlur"); setFieldLabel(cueShadowOffsetXInput, "shadowX"); setFieldLabel(cueShadowOffsetYInput, "shadowY");
     setText(duplicateCueBtn, "duplicate"); setText(deleteCueBtn, "delete");
 
-    setFieldLabel(exportFpsInput, "fps"); setFieldLabel(exportPrefixInput, "prefix"); setFieldLabel(exportStartInput, "startSec"); setFieldLabel(exportEndInput, "endSec"); setText(setExportEndFromAudioBtn, "setEndFromAudio"); setText(exportSrtBtn, "exportSrt"); setText(exportZipBtn, "exportZip"); setText(videoConverterDownloadBtn, "videoConverterDownload"); setText(videoConverterHint, "videoConverterHint");
+    setFieldLabel(exportFpsInput, "fps"); setFieldLabel(exportPrefixInput, "prefix"); setFieldLabel(exportStartInput, "startSec"); setFieldLabel(exportEndInput, "endSec"); setText(setExportEndFromAudioBtn, "setEndFromAudio"); setText(exportSrtBtn, "exportSrt"); setText(exportZipBtn, "exportZip"); setText(videoConverterDownloadBtn, "videoConverterDownload"); setText(videoConverterHint, "videoConverterHint"); const layerSettingsTitleNode = document.querySelector("#layerSettingsTitle"); if (layerSettingsTitleNode) layerSettingsTitleNode.textContent = t("layerSettingsTitle"); const layerSettingsHintNode = document.querySelector(".layer-settings-hint"); if (layerSettingsHintNode) layerSettingsHintNode.textContent = t("layerSettingsHint"); renderLayerControls();
   }
 
 
@@ -546,6 +574,7 @@
 
       <h3>6. プリセット</h3>
       <p>選択中フレーズの見た目やアニメーション設定をプリセット登録できます。歌詞本文、開始秒、終了秒はプリセットに含まれません。別フレーズへ同じ演出を使い回したい時に便利です。</p>
+      <p>レイヤー機能により同じ時間に複数のフレーズを重ねて表示できます。各フレーズの表示レイヤーは右側で変更でき、入力済みフレーズ一覧にはL1 / L2形式の色ラベルで表示されます。</p>
 
       <h3>7. 保存と復元</h3>
       <ul>
@@ -616,6 +645,7 @@
 
       <h3>6. Presets</h3>
       <p>You can save the selected phrase’s appearance and animation settings as a preset. Lyric text, start time, and end time are not included. This is useful for reusing the same effect on other phrases.</p>
+      <p>The layer feature lets you show multiple phrases at the same time. You can change each phrase’s display layer on the right, and the placed phrase list shows colored L1 / L2 labels.</p>
 
       <h3>7. Save and restore</h3>
       <ul>
@@ -676,6 +706,7 @@
 
       <h3>4. 프리셋</h3>
       <p><strong>현재 설정 등록</strong>으로 선택 중인 프레이즈의 외형과 애니메이션 설정을 저장할 수 있습니다. 가사 본문과 타이밍은 저장하지 않으므로 여러 프레이즈에 같은 연출을 적용하기 쉽습니다.</p>
+      <p>레이어 기능을 사용하면 같은 시간에 여러 프레이즈를 겹쳐 표시할 수 있습니다. 각 프레이즈의 표시 레이어는 오른쪽에서 변경할 수 있으며, 입력된 프레이즈 목록에는 L1 / L2 형식의 색상 라벨로 표시됩니다.</p>
 
       <h3>5. 내보내기</h3>
       <ol>
@@ -1319,8 +1350,39 @@
     return state.lyrics.find((lyric) => lyric.cueId === cueId) || null;
   }
 
+  function normalizeLayers(layers) {
+    const defaults = defaultLayerSeeds(currentLang());
+    return defaults.map((base) => {
+      const found = safeArray(layers).find((layer) => layer?.id === base.id) || {};
+      return {
+        id: base.id,
+        order: base.order,
+        name: String(found.name || base.name || `L${base.order}`).trim() || base.name,
+        color: normalizeLayerColor(found.color, base.color)
+      };
+    });
+  }
+
+  function getLayerById(id) {
+    return safeArray(state.layers).find((layer) => layer.id === id) || safeArray(state.layers)[0] || defaultLayerSeeds(currentLang())[0];
+  }
+
+  function layerShortLabel(layerOrId) {
+    const layer = typeof layerOrId === "string" ? getLayerById(layerOrId) : layerOrId;
+    return `L${layer?.order || 1}`;
+  }
+
+  function layerDisplayLabel(layerOrId) {
+    const layer = typeof layerOrId === "string" ? getLayerById(layerOrId) : layerOrId;
+    return `${layerShortLabel(layer)} : ${layer?.name || ""}`;
+  }
+
+  function cueLayerOrder(cue) {
+    return getLayerById(cue?.layerId).order || 1;
+  }
+
   function sortCues() {
-    state.cues.sort((a, b) => a.start - b.start || a.end - b.end);
+    state.cues.sort((a, b) => a.start - b.start || cueLayerOrder(a) - cueLayerOrder(b) || a.end - b.end);
   }
 
   function syncDefaultControls() {
@@ -1332,6 +1394,7 @@
     defaultAnimationInput.value = state.defaults.animation;
     defaultAlignInput.value = state.defaults.align;
     autoChainSelect.value = state.defaults.autoChain ? "1" : "0";
+    if (currentInputLayerSelect) currentInputLayerSelect.value = state.currentInputLayerId || "layer1";
   }
 
   function syncPreviewBackgroundControls() {
@@ -1343,6 +1406,77 @@
     previewBgOffsetXOutput.textContent = `${previewBgOffsetXInput.value}px`;
     previewBgOffsetYInput.value = String(clamp(state.previewBackgroundOffsetY ?? 0, -CANVAS_HEIGHT, CANVAS_HEIGHT));
     previewBgOffsetYOutput.textContent = `${previewBgOffsetYInput.value}px`;
+  }
+
+  function renderLayerControls() {
+    const layers = state.layers = normalizeLayers(state.layers);
+
+    const fillLayerSelect = (select, selectedValue) => {
+      if (!select) return;
+      select.innerHTML = "";
+      layers.forEach((layer) => {
+        const option = document.createElement("option");
+        option.value = layer.id;
+        option.textContent = layerDisplayLabel(layer);
+        select.append(option);
+      });
+      select.value = layers.some((layer) => layer.id === selectedValue) ? selectedValue : layers[0]?.id || "layer1";
+    };
+
+    fillLayerSelect(currentInputLayerSelect, state.currentInputLayerId || "layer1");
+    if (currentInputLayerSelect) state.currentInputLayerId = currentInputLayerSelect.value || layers[0]?.id || "layer1";
+
+    const cue = selectedCue();
+    fillLayerSelect(cueLayerInput, cue?.layerId || layers[0]?.id || "layer1");
+
+    if (layerSettingsList) {
+      layerSettingsList.innerHTML = "";
+      layers.forEach((layer) => {
+        const row = document.createElement("div");
+        row.className = "layer-setting-row";
+
+        const badge = document.createElement("span");
+        badge.className = "cue-layer-tag layer-preview-tag";
+        badge.style.backgroundColor = layer.color;
+        badge.textContent = layerShortLabel(layer);
+
+        const nameField = document.createElement("label");
+        nameField.className = "field compact-field";
+        const nameLabel = document.createElement("span");
+        nameLabel.textContent = t("layerName");
+        const nameInput = document.createElement("input");
+        nameInput.type = "text";
+        nameInput.className = "layer-name-input";
+        nameInput.value = layer.name;
+        nameInput.maxLength = 32;
+        nameField.append(nameLabel, nameInput);
+
+        const colorField = document.createElement("label");
+        colorField.className = "field compact-field";
+        const colorLabel = document.createElement("span");
+        colorLabel.textContent = t("layerColor");
+        const colorInput = document.createElement("input");
+        colorInput.type = "color";
+        colorInput.className = "layer-color-input";
+        colorInput.value = layer.color;
+        colorField.append(colorLabel, colorInput);
+
+        const applyChanges = () => {
+          layer.name = (nameInput.value || "").trim() || layer.name || layerShortLabel(layer);
+          layer.color = normalizeLayerColor(colorInput.value, layer.color);
+          badge.style.backgroundColor = layer.color;
+          renderLayerControls();
+          renderCueList();
+          renderCurrentPreview();
+        };
+
+        nameInput.addEventListener("change", applyChanges);
+        colorInput.addEventListener("input", applyChanges);
+
+        row.append(badge, nameField, colorField);
+        layerSettingsList.append(row);
+      });
+    }
   }
 
   function renderPresetControls() {
@@ -1378,6 +1512,7 @@
     state.defaults.animation = defaultAnimationInput.value;
     state.defaults.align = defaultAlignInput.value;
     state.defaults.autoChain = autoChainSelect.value === "1";
+    if (currentInputLayerSelect) state.currentInputLayerId = currentInputLayerSelect.value || state.currentInputLayerId || "layer1";
     syncDefaultControls();
   }
 
@@ -1407,12 +1542,13 @@
       start,
       end: round(start + duration, 2),
       createdAt: Date.now(),
+      layerId: state.currentInputLayerId || "layer1",
       settings: createCueStyle(templateCue)
     };
 
     if (state.defaults.autoChain) {
       const previous = state.cues
-        .filter((item) => item.start < start)
+        .filter((item) => item.layerId === cue.layerId && item.start < start)
         .sort((a, b) => b.start - a.start)[0];
       if (previous && previous.end > start) {
         previous.end = round(Math.max(previous.start + 0.05, start), 2);
@@ -1458,6 +1594,7 @@
 
     state.lyrics.forEach((lyric, index) => {
       const cue = lyric.cueId ? getCueById(lyric.cueId) : null;
+      const statusText = cue ? `${layerShortLabel(cue.layerId)} / ${t("enteredAt", { time: formatTime(cue.start) })}` : t("inputAtCurrent");
       const button = document.createElement("button");
       button.type = "button";
       button.className = "lyric-button";
@@ -1466,7 +1603,7 @@
       button.innerHTML = `
         <span class="lyric-number">${String(index + 1).padStart(3, "0")}</span>
         <span class="lyric-text"></span>
-        <span class="lyric-status">${cue ? t("enteredAt", { time: formatTime(cue.start) }) : t("inputAtCurrent")}</span>
+        <span class="lyric-status">${statusText}</span>
       `;
       button.querySelector(".lyric-text").textContent = lyric.text;
       button.addEventListener("click", () => {
@@ -1492,15 +1629,29 @@
 
     sortCues();
     state.cues.forEach((cue, index) => {
+      const layer = getLayerById(cue.layerId);
       const button = document.createElement("button");
       button.type = "button";
       button.className = "cue-item";
+      button.style.setProperty("--cue-layer-color", layer.color);
       if (cue.id === state.selectedCueId) button.classList.add("selected");
-      button.innerHTML = `
-        <span class="cue-time">${String(index + 1).padStart(3, "0")} / ${formatTime(cue.start)} - ${formatTime(cue.end)}</span>
-        <span class="cue-text"></span>
-      `;
-      button.querySelector(".cue-text").textContent = cue.text;
+
+      const topRow = document.createElement("span");
+      topRow.className = "cue-top-row";
+      const layerTag = document.createElement("span");
+      layerTag.className = "cue-layer-tag";
+      layerTag.style.backgroundColor = layer.color;
+      layerTag.textContent = `${layerShortLabel(layer)} ${layer.name}`;
+      const timeNode = document.createElement("span");
+      timeNode.className = "cue-time";
+      timeNode.textContent = `${String(index + 1).padStart(3, "0")} / ${formatTime(cue.start)} - ${formatTime(cue.end)}`;
+      topRow.append(layerTag, timeNode);
+
+      const textNode = document.createElement("span");
+      textNode.className = "cue-text";
+      textNode.textContent = cue.text;
+
+      button.append(topRow, textNode);
       button.addEventListener("click", () => {
         state.selectedCueId = cue.id;
         updatePreviewTime(cue.start, true);
@@ -1533,6 +1684,7 @@
     cueTextInput.value = cue.text || "";
     cueStartInput.value = String(round(cue.start, 2));
     cueEndInput.value = String(round(cue.end, 2));
+    if (cueLayerInput) cueLayerInput.value = cue.layerId || state.layers[0]?.id || "layer1";
     cueAnimationInput.value = s.animation || "normal";
     cueAlignInput.value = s.align || "center";
     cueWritingModeInput.value = s.writingMode === "vertical" ? "vertical" : "horizontal";
@@ -1573,6 +1725,7 @@
     cueShadowOffsetYInput.value = String(clamp(s.shadow?.offsetY ?? 0, -120, 120));
 
     updateRangeOutputs();
+    renderLayerControls();
     renderPresetControls();
     renderInlineStyleEditor();
     suppressEditorEvents = false;
@@ -1610,6 +1763,7 @@
     cue.text = cueTextInput.value;
     cue.start = round(clamp(cueStartInput.value, 0, 99999), 2);
     cue.end = round(clamp(cueEndInput.value, cue.start + 0.05, 99999), 2);
+    if (cueLayerInput) cue.layerId = cueLayerInput.value || cue.layerId || state.layers[0]?.id || "layer1";
 
     const s = cue.settings || createCueStyle();
     s.animation = cueAnimationInput.value;
@@ -1702,6 +1856,10 @@
       presetSelect.value = preset.id;
     }
 
+    state.layers = normalizeLayers(state.layers);
+    if (!state.layers.some((layer) => layer.id === state.currentInputLayerId)) {
+      state.currentInputLayerId = state.layers[0]?.id || "layer1";
+    }
     state.presets = mergePresets(state.presets);
     const saved = state.presets.find((preset) => preset.name === name);
     if (saved) presetSelect.value = saved.id;
@@ -1760,6 +1918,7 @@
     duplicated.lyricId = null;
     duplicated.start = round(cue.start + 0.1, 2);
     duplicated.end = round(cue.end + 0.1, 2);
+    duplicated.layerId = cue.layerId || state.layers[0]?.id || "layer1";
     state.cues.push(duplicated);
     sortCues();
     state.selectedCueId = duplicated.id;
@@ -2455,12 +2614,12 @@
 
     const active = state.cues
       .filter((cue) => time >= cue.start && time <= cue.end)
-      .sort((a, b) => a.start - b.start);
+      .sort((a, b) => cueLayerOrder(a) - cueLayerOrder(b) || a.start - b.start);
     active.forEach((cue) => drawCue(ctx, cue, time));
 
     if (includePreviewBackground) {
       if (active.length) {
-        activeCueInfo.textContent = active.map((cue) => cue.text).join(" / ");
+        activeCueInfo.textContent = active.map((cue) => `${layerShortLabel(cue.layerId)} ${cue.text}`).join(" / ");
       } else {
         activeCueInfo.textContent = t("noActiveLyrics");
       }
@@ -2557,6 +2716,8 @@
       previewBackgroundOffsetY: project.previewBackgroundOffsetY ?? next.previewBackgroundOffsetY,
       defaults: { ...next.defaults, ...(project.defaults || {}) },
       presets: mergePresets(next.presets, project.presets),
+      layers: normalizeLayers(project.layers || next.layers),
+      currentInputLayerId: String(project.currentInputLayerId || next.currentInputLayerId || "layer1"),
       lyrics: Array.isArray(project.lyrics) ? project.lyrics : [],
       cues: Array.isArray(project.cues) ? project.cues : []
     };
@@ -2575,6 +2736,7 @@
       start: Number(cue.start) || 0,
       end: Number(cue.end) || (Number(cue.start) || 0) + 3,
       createdAt: Number(cue.createdAt) || 0,
+      layerId: (cue.layerId && normalizeLayers(state.layers).some((layer) => layer.id === cue.layerId)) ? cue.layerId : (state.layers[0]?.id || "layer1"),
       settings: {
         ...defaultStyle(),
         ...(cue.settings || {}),
@@ -2590,6 +2752,10 @@
       cueId: lyric.cueId || null
     }));
 
+    state.layers = normalizeLayers(state.layers);
+    if (!state.layers.some((layer) => layer.id === state.currentInputLayerId)) {
+      state.currentInputLayerId = state.layers[0]?.id || "layer1";
+    }
     state.presets = mergePresets(state.presets);
     saveStoredPresets();
 
@@ -2609,6 +2775,7 @@
     if (!state.lyrics?.length) updateFileChoiceStatus(lyricsChosenLabel, "");
     syncPreviewBackgroundControls();
     syncDefaultControls();
+    renderLayerControls();
     renderPresetControls();
     updatePreviewRangeMax();
     updateStaticText();
@@ -2930,8 +3097,8 @@
       renderCurrentPreview();
     });
 
-    [defaultFontFamilyInput, defaultFontSizeInput, defaultDurationInput, defaultAnimationInput, defaultAlignInput, autoChainSelect]
-      .forEach((input) => input.addEventListener("input", updateDefaultStateFromControls));
+    [defaultFontFamilyInput, defaultFontSizeInput, defaultDurationInput, defaultAnimationInput, defaultAlignInput, autoChainSelect, currentInputLayerSelect]
+      .forEach((input) => input?.addEventListener("input", updateDefaultStateFromControls));
 
     applyDefaultToSelectedBtn.addEventListener("click", applyDefaultsToSelected);
     addInlineStyleBtn?.addEventListener("click", addInlineStyleToSelectedCue);
@@ -2953,6 +3120,7 @@
       cueTextInput,
       cueStartInput,
       cueEndInput,
+      cueLayerInput,
       cueAnimationInput,
       cueAlignInput,
       cueWritingModeInput,
