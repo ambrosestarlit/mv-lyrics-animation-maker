@@ -732,3 +732,20 @@ summary {
   transform: translateY(-1px);
   box-shadow: 0 8px 20px rgba(72, 134, 180, 0.14);
 }
+
+
+.inline-check {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.7rem;
+  padding: 0.58rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--text);
+}
+
+.checkbox-field {
+  align-content: start;
+}

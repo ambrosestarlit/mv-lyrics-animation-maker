@@ -121,6 +121,10 @@
   const cueEndInput = $("#cueEndInput");
   const cueAnimationInput = $("#cueAnimationInput");
   const cueAlignInput = $("#cueAlignInput");
+  const cueWritingModeInput = $("#cueWritingModeInput");
+  const cueVerticalLatinRotateInput = $("#cueVerticalLatinRotateInput");
+  const cueVerticalColumnGapInput = $("#cueVerticalColumnGapInput");
+  const cueVerticalColumnGapOutput = $("#cueVerticalColumnGapOutput");
   const cueXInput = $("#cueXInput");
   const cueXOutput = $("#cueXOutput");
   const cueYInput = $("#cueYInput");
@@ -199,6 +203,9 @@
     y: Math.round(CANVAS_HEIGHT / 2),
     maxWidth: Math.round(CANVAS_WIDTH * 0.82),
     align: "center",
+    writingMode: "horizontal",
+    verticalColumnGap: 24,
+    verticalLatinRotate: true,
     fontFamily: FONT_OPTIONS[1].value,
     fontSize: 86,
     lineHeight: 1.25,
@@ -291,7 +298,7 @@
       inputAtCurrent: "クリックで現在時刻に入力", enteredAt: "入力済み {time} / 再クリックでキャンセル", linesCount: "{count}行",
       previewCanvas: "Preview Canvas", previewCanvasSub: "1920 × 1080 / export transparent", noActiveLyrics: "表示中の歌詞なし", previewAtCurrentTime: "現在時刻でプレビュー", previewSeconds: "プレビュー秒", update: "更新", transportHint: "音声再生中に左の歌詞ボタンを押すと、その時刻に歌詞キューを作成します。",
       selectedEmpty: "入力済みフレーズを選択してください。", presetTitle: "フレーズ設定プリセット", presetName: "プリセット名", presetPlaceholder: "例：サビ中央ジャンプ", registeredPresets: "登録済みプリセット", selectPreset: "プリセットを選択", noPreset: "プリセット未登録", saveCurrentAsPreset: "現在設定を登録", applySelectedPreset: "選択プリセットを適用", delete: "削除", presetHint: "歌詞本文・開始秒・終了秒は含めず、見た目とアニメーション設定だけを保存します。",
-      lyricText: "歌詞テキスト", startSec: "開始秒", endSec: "終了秒", animation: "アニメーション", textAlign: "文字揃え", positionX: "位置X", positionY: "位置Y", wrapWidth: "折り返し幅", font: "フォント", fontSize: "フォントサイズ", textColor: "文字色", lineHeight: "行間", letterSpacing: "字間", letterSpacingPan: "字間移動", textPanX: "文字PAN移動X", textPanY: "文字PAN移動Y", textScale: "文字サイズ倍率", scalePan: "サイズ移動", textRotation: "文字回転", rotationPan: "回転移動", typewriterSpeed: "タイプライター速度", scaleRevealMin: "拡大表示の最小サイズ", scaleRevealSpeed: "拡大表示の速度", jumpSize: "ジャンプの大きさ", jumpSpeed: "ジャンプの速さ", fadeIn: "フェードイン", fadeOut: "フェードアウト", stroke: "縁取り", dropShadow: "ドロップシャドウ", fadeInSec: "フェードイン秒", fadeOutSec: "フェードアウト秒", strokeColor: "フチ色", strokeWidth: "フチ太さ", shadowColor: "影色", shadowBlur: "影ぼかし", shadowX: "影X", shadowY: "影Y", inlineStyleTitle: "フォントの指定", inlineStyleHint: "指定した文字列だけ、フォント・色・サイズ・フチ・影を変更できます。複数指定はコンマで区切ってください。", inlineStyleEmpty: "指定フォントはまだありません。+ボタンで追加できます。", inlineStyleItem: "指定 {number}", inlineStyleTargets: "指定したい文字列", inlineStyleTargetsPlaceholder: "例：赤い, 海", inlineStyleFont: "指定したいフォント", inlineStyleColor: "色の選択", inlineStyleSize: "サイズ", inlineStyleStrokeColor: "フチ色", inlineStyleStrokeWidth: "フチ太さ", inlineStyleShadowColor: "影色", inlineStyleShadowBlur: "影ぼかし", addInlineStyle: "+ 追加", duplicate: "複製",
+      lyricText: "歌詞テキスト", startSec: "開始秒", endSec: "終了秒", animation: "アニメーション", textAlign: "文字揃え", writingMode: "文字方向", writingHorizontal: "横書き", writingVertical: "縦書き", verticalLatinRotate: "英数字を横倒しにする", verticalColumnGap: "縦書き列間", positionX: "位置X", positionY: "位置Y", wrapWidth: "折り返し幅", wrapHeight: "折り返し高さ", font: "フォント", fontSize: "フォントサイズ", textColor: "文字色", lineHeight: "行間", letterSpacing: "字間", letterSpacingPan: "字間移動", textPanX: "文字PAN移動X", textPanY: "文字PAN移動Y", textScale: "文字サイズ倍率", scalePan: "サイズ移動", textRotation: "文字回転", rotationPan: "回転移動", typewriterSpeed: "タイプライター速度", scaleRevealMin: "拡大表示の最小サイズ", scaleRevealSpeed: "拡大表示の速度", jumpSize: "ジャンプの大きさ", jumpSpeed: "ジャンプの速さ", fadeIn: "フェードイン", fadeOut: "フェードアウト", stroke: "縁取り", dropShadow: "ドロップシャドウ", fadeInSec: "フェードイン秒", fadeOutSec: "フェードアウト秒", strokeColor: "フチ色", strokeWidth: "フチ太さ", shadowColor: "影色", shadowBlur: "影ぼかし", shadowX: "影X", shadowY: "影Y", inlineStyleTitle: "フォントの指定", inlineStyleHint: "指定した文字列だけ、フォント・色・サイズ・フチ・影を変更できます。複数指定はコンマで区切ってください。", inlineStyleEmpty: "指定フォントはまだありません。+ボタンで追加できます。", inlineStyleItem: "指定 {number}", inlineStyleTargets: "指定したい文字列", inlineStyleTargetsPlaceholder: "例：赤い, 海", inlineStyleFont: "指定したいフォント", inlineStyleColor: "色の選択", inlineStyleSize: "サイズ", inlineStyleStrokeColor: "フチ色", inlineStyleStrokeWidth: "フチ太さ", inlineStyleShadowColor: "影色", inlineStyleShadowBlur: "影ぼかし", addInlineStyle: "+ 追加", duplicate: "複製",
       export: "書き出し", fps: "FPS", prefix: "接頭辞", setEndFromAudio: "音声の長さを終了秒へ", exportZip: "透過PNG連番ZIPを書き出し", exportSrt: "SRT字幕を書き出し", videoConverterDownload: "動画変換アプリDL", videoConverterHint: "透過PNG連番ZIPを透過動画化(MOV)するためのWindows用変換アプリです。",
       preparing: "書き出し準備中... {done} / {total}", pngGenerating: "PNG生成中... {done} / {total}", zipGenerating: "ZIP生成中... {percent}%", exportComplete: "完了: {count}枚を書き出しました。", exportFailed: "書き出しに失敗しました。", srtComplete: "完了: SRT字幕を{count}件を書き出しました。", srtEmpty: "書き出せる入力済みフレーズがありません。",
       failedReadJson: "JSONを読み込めませんでした。", cacheSaved: "キャッシュへ保存しました。", cacheSaveFailed: "キャッシュ保存に失敗しました。ブラウザの保存容量を確認してください。", cacheLoadFailed: "キャッシュ復元に失敗しました。", cacheMissing: "保存済みキャッシュがありません。", jszipMissing: "JSZipを読み込めませんでした。インターネット接続、またはCDNの読み込みを確認してください。", pngFailed: "PNG生成に失敗しました。", exportFailedRetry: "書き出しに失敗しました。枚数を減らして再試行してください。",
@@ -315,7 +322,7 @@
       inputAtCurrent: "Click to place at current time", enteredAt: "Placed {time} / click again to cancel", linesCount: "{count} lines",
       previewCanvas: "Preview Canvas", previewCanvasSub: "1920 × 1080 / transparent export", noActiveLyrics: "No active lyrics", previewAtCurrentTime: "Preview at Current Time", previewSeconds: "Preview Time", update: "Update", transportHint: "While audio is playing, press a lyric button on the left to create a lyric cue at that time.",
       selectedEmpty: "Select a placed phrase.", presetTitle: "Phrase Setting Presets", presetName: "Preset Name", presetPlaceholder: "e.g. Chorus Center Jump", registeredPresets: "Saved Presets", selectPreset: "Select a preset", noPreset: "No presets", saveCurrentAsPreset: "Save Current Settings", applySelectedPreset: "Apply Selected Preset", delete: "Delete", presetHint: "Only appearance and animation settings are saved. Lyric text and timing are not included.",
-      lyricText: "Lyric Text", startSec: "Start (sec)", endSec: "End (sec)", animation: "Animation", textAlign: "Alignment", positionX: "Position X", positionY: "Position Y", wrapWidth: "Wrap Width", font: "Font", fontSize: "Font Size", textColor: "Text Color", lineHeight: "Line Height", letterSpacing: "Letter Spacing", letterSpacingPan: "Letter Spacing Pan", textPanX: "Text Pan X", textPanY: "Text Pan Y", textScale: "Text Scale", scalePan: "Scale Pan", textRotation: "Text Rotation", rotationPan: "Rotation Pan", typewriterSpeed: "Typewriter Speed", scaleRevealMin: "Scale Reveal Min Size", scaleRevealSpeed: "Scale Reveal Speed", jumpSize: "Jump Height", jumpSpeed: "Jump Speed", fadeIn: "Fade In", fadeOut: "Fade Out", stroke: "Stroke", dropShadow: "Drop Shadow", fadeInSec: "Fade In (sec)", fadeOutSec: "Fade Out (sec)", strokeColor: "Stroke Color", strokeWidth: "Stroke Width", shadowColor: "Shadow Color", shadowBlur: "Shadow Blur", shadowX: "Shadow X", shadowY: "Shadow Y", inlineStyleTitle: "Font Assignment", inlineStyleHint: "Change the font, color, size, stroke, and shadow only for specified text. Separate multiple strings with commas.", inlineStyleEmpty: "No font assignments yet. Use the + button to add one.", inlineStyleItem: "Assignment {number}", inlineStyleTargets: "Target Text", inlineStyleTargetsPlaceholder: "e.g. red, sea", inlineStyleFont: "Assigned Font", inlineStyleColor: "Color", inlineStyleSize: "Size", inlineStyleStrokeColor: "Stroke Color", inlineStyleStrokeWidth: "Stroke Width", inlineStyleShadowColor: "Shadow Color", inlineStyleShadowBlur: "Shadow Blur", addInlineStyle: "+ Add", duplicate: "Duplicate",
+      lyricText: "Lyric Text", startSec: "Start (sec)", endSec: "End (sec)", animation: "Animation", textAlign: "Alignment", writingMode: "Writing Direction", writingHorizontal: "Horizontal", writingVertical: "Vertical", verticalLatinRotate: "Rotate Latin/numbers sideways", verticalColumnGap: "Vertical Column Gap", positionX: "Position X", positionY: "Position Y", wrapWidth: "Wrap Width", wrapHeight: "Wrap Height", font: "Font", fontSize: "Font Size", textColor: "Text Color", lineHeight: "Line Height", letterSpacing: "Letter Spacing", letterSpacingPan: "Letter Spacing Pan", textPanX: "Text Pan X", textPanY: "Text Pan Y", textScale: "Text Scale", scalePan: "Scale Pan", textRotation: "Text Rotation", rotationPan: "Rotation Pan", typewriterSpeed: "Typewriter Speed", scaleRevealMin: "Scale Reveal Min Size", scaleRevealSpeed: "Scale Reveal Speed", jumpSize: "Jump Height", jumpSpeed: "Jump Speed", fadeIn: "Fade In", fadeOut: "Fade Out", stroke: "Stroke", dropShadow: "Drop Shadow", fadeInSec: "Fade In (sec)", fadeOutSec: "Fade Out (sec)", strokeColor: "Stroke Color", strokeWidth: "Stroke Width", shadowColor: "Shadow Color", shadowBlur: "Shadow Blur", shadowX: "Shadow X", shadowY: "Shadow Y", inlineStyleTitle: "Font Assignment", inlineStyleHint: "Change the font, color, size, stroke, and shadow only for specified text. Separate multiple strings with commas.", inlineStyleEmpty: "No font assignments yet. Use the + button to add one.", inlineStyleItem: "Assignment {number}", inlineStyleTargets: "Target Text", inlineStyleTargetsPlaceholder: "e.g. red, sea", inlineStyleFont: "Assigned Font", inlineStyleColor: "Color", inlineStyleSize: "Size", inlineStyleStrokeColor: "Stroke Color", inlineStyleStrokeWidth: "Stroke Width", inlineStyleShadowColor: "Shadow Color", inlineStyleShadowBlur: "Shadow Blur", addInlineStyle: "+ Add", duplicate: "Duplicate",
       export: "Export", fps: "FPS", prefix: "Prefix", setEndFromAudio: "Use Audio Length as End Time", exportZip: "Export Transparent PNG ZIP", exportSrt: "Export SRT Subtitles", videoConverterDownload: "Download Video Converter App", videoConverterHint: "A Windows converter app for turning transparent PNG sequence ZIP files into transparent MOV video.",
       preparing: "Preparing export... {done} / {total}", pngGenerating: "Generating PNG... {done} / {total}", zipGenerating: "Creating ZIP... {percent}%", exportComplete: "Done: exported {count} frames.", exportFailed: "Export failed.", srtComplete: "Done: exported {count} SRT subtitles.", srtEmpty: "There are no placed phrases to export.",
       failedReadJson: "Could not load the JSON file.", cacheSaved: "Saved to cache.", cacheSaveFailed: "Could not save cache. Please check browser storage limits.", cacheLoadFailed: "Could not restore cache.", cacheMissing: "No saved cache was found.", jszipMissing: "JSZip could not be loaded. Please check your internet connection or the CDN.", pngFailed: "Failed to generate PNG.", exportFailedRetry: "Export failed. Try reducing the number of frames and run again.",
@@ -340,7 +347,7 @@
       inputAtCurrent: "클릭하면 현재 시간에 입력", enteredAt: "입력됨 {time} / 다시 클릭하면 취소", linesCount: "{count}줄",
       previewCanvas: "Preview Canvas", previewCanvasSub: "1920 × 1080 / transparent export", noActiveLyrics: "표시 중인 가사 없음", previewAtCurrentTime: "현재 시간으로 미리보기", previewSeconds: "미리보기 초", update: "갱신", transportHint: "오디오 재생 중 왼쪽의 가사 버튼을 누르면 해당 시각에 가사 큐가 생성됩니다.",
       selectedEmpty: "입력된 프레이즈를 선택해 주세요.", presetTitle: "프레이즈 설정 프리셋", presetName: "프리셋 이름", presetPlaceholder: "예: 후렴 중앙 점프", registeredPresets: "등록된 프리셋", selectPreset: "프리셋 선택", noPreset: "등록된 프리셋 없음", saveCurrentAsPreset: "현재 설정 등록", applySelectedPreset: "선택한 프리셋 적용", delete: "삭제", presetHint: "가사 본문, 시작 시간, 종료 시간은 포함하지 않고 외형과 애니메이션 설정만 저장합니다.",
-      lyricText: "가사 텍스트", startSec: "시작 초", endSec: "종료 초", animation: "애니메이션", textAlign: "문자 정렬", positionX: "위치 X", positionY: "위치 Y", wrapWidth: "줄바꿈 폭", font: "폰트", fontSize: "폰트 크기", textColor: "문자색", lineHeight: "줄 간격", letterSpacing: "자간", letterSpacingPan: "자간 이동", textPanX: "문자 PAN 이동 X", textPanY: "문자 PAN 이동 Y", textScale: "문자 크기 배율", scalePan: "크기 이동", textRotation: "문자 회전", rotationPan: "회전 이동", typewriterSpeed: "타자기 속도", scaleRevealMin: "확대 표시 최소 크기", scaleRevealSpeed: "확대 표시 속도", jumpSize: "점프 크기", jumpSpeed: "점프 속도", fadeIn: "페이드 인", fadeOut: "페이드 아웃", stroke: "외곽선", dropShadow: "드롭 섀도", fadeInSec: "페이드 인 초", fadeOutSec: "페이드 아웃 초", strokeColor: "외곽선 색", strokeWidth: "외곽선 두께", shadowColor: "그림자 색", shadowBlur: "그림자 흐림", shadowX: "그림자 X", shadowY: "그림자 Y", inlineStyleTitle: "폰트 지정", inlineStyleHint: "지정한 문자열에만 폰트, 색상, 크기, 외곽선, 그림자를 변경할 수 있습니다. 여러 항목은 쉼표로 구분하세요.", inlineStyleEmpty: "아직 폰트 지정이 없습니다. + 버튼으로 추가할 수 있습니다.", inlineStyleItem: "지정 {number}", inlineStyleTargets: "지정할 문자열", inlineStyleTargetsPlaceholder: "예: 빨간, 바다", inlineStyleFont: "지정할 폰트", inlineStyleColor: "색상 선택", inlineStyleSize: "크기", inlineStyleStrokeColor: "외곽선 색", inlineStyleStrokeWidth: "외곽선 두께", inlineStyleShadowColor: "그림자 색", inlineStyleShadowBlur: "그림자 흐림", addInlineStyle: "+ 추가", duplicate: "복제",
+      lyricText: "가사 텍스트", startSec: "시작 초", endSec: "종료 초", animation: "애니메이션", textAlign: "문자 정렬", writingMode: "문자 방향", writingHorizontal: "가로쓰기", writingVertical: "세로쓰기", verticalLatinRotate: "영문/숫자를 옆으로 회전", verticalColumnGap: "세로쓰기 열 간격", positionX: "위치 X", positionY: "위치 Y", wrapWidth: "줄바꿈 폭", wrapHeight: "줄바꿈 높이", font: "폰트", fontSize: "폰트 크기", textColor: "문자색", lineHeight: "줄 간격", letterSpacing: "자간", letterSpacingPan: "자간 이동", textPanX: "문자 PAN 이동 X", textPanY: "문자 PAN 이동 Y", textScale: "문자 크기 배율", scalePan: "크기 이동", textRotation: "문자 회전", rotationPan: "회전 이동", typewriterSpeed: "타자기 속도", scaleRevealMin: "확대 표시 최소 크기", scaleRevealSpeed: "확대 표시 속도", jumpSize: "점프 크기", jumpSpeed: "점프 속도", fadeIn: "페이드 인", fadeOut: "페이드 아웃", stroke: "외곽선", dropShadow: "드롭 섀도", fadeInSec: "페이드 인 초", fadeOutSec: "페이드 아웃 초", strokeColor: "외곽선 색", strokeWidth: "외곽선 두께", shadowColor: "그림자 색", shadowBlur: "그림자 흐림", shadowX: "그림자 X", shadowY: "그림자 Y", inlineStyleTitle: "폰트 지정", inlineStyleHint: "지정한 문자열에만 폰트, 색상, 크기, 외곽선, 그림자를 변경할 수 있습니다. 여러 항목은 쉼표로 구분하세요.", inlineStyleEmpty: "아직 폰트 지정이 없습니다. + 버튼으로 추가할 수 있습니다.", inlineStyleItem: "지정 {number}", inlineStyleTargets: "지정할 문자열", inlineStyleTargetsPlaceholder: "예: 빨간, 바다", inlineStyleFont: "지정할 폰트", inlineStyleColor: "색상 선택", inlineStyleSize: "크기", inlineStyleStrokeColor: "외곽선 색", inlineStyleStrokeWidth: "외곽선 두께", inlineStyleShadowColor: "그림자 색", inlineStyleShadowBlur: "그림자 흐림", addInlineStyle: "+ 추가", duplicate: "복제",
       export: "내보내기", fps: "FPS", prefix: "접두사", setEndFromAudio: "오디오 길이를 종료 초로 설정", exportZip: "투명 PNG 시퀀스 ZIP 내보내기", exportSrt: "SRT 자막 내보내기", videoConverterDownload: "동영상 변환 앱 다운로드", videoConverterHint: "투명 PNG 시퀀스 ZIP을 투명 동영상(MOV)으로 변환하기 위한 Windows용 변환 앱입니다.",
       preparing: "내보내기 준비 중... {done} / {total}", pngGenerating: "PNG 생성 중... {done} / {total}", zipGenerating: "ZIP 생성 중... {percent}%", exportComplete: "완료: {count}장을 내보냈습니다.", exportFailed: "내보내기에 실패했습니다.", srtComplete: "완료: SRT 자막 {count}개를 내보냈습니다.", srtEmpty: "내보낼 수 있는 입력된 프레이즈가 없습니다.",
       failedReadJson: "JSON을 불러올 수 없습니다.", cacheSaved: "캐시에 저장했습니다.", cacheSaveFailed: "캐시 저장에 실패했습니다. 브라우저 저장 용량을 확인해 주세요.", cacheLoadFailed: "캐시 복원에 실패했습니다.", cacheMissing: "저장된 캐시가 없습니다.", jszipMissing: "JSZip을 불러올 수 없습니다. 인터넷 연결 또는 CDN 로딩을 확인해 주세요.", pngFailed: "PNG 생성에 실패했습니다.", exportFailedRetry: "내보내기에 실패했습니다. 프레임 수를 줄인 뒤 다시 시도해 주세요.",
@@ -480,7 +487,9 @@
     setSelectOptions(cueAnimationInput, { normal: t("animNormal"), typewriter: t("animTypewriter"), scaleReveal: t("animScaleReveal"), jumpTypewriter: t("animJumpTypewriter"), jumpReveal: t("animJumpReveal"), jumpInOut: t("animJumpInOut") });
     setFieldLabel(cueAlignInput, "textAlign");
     setSelectOptions(cueAlignInput, { left: t("alignLeft"), center: t("alignCenter"), right: t("alignRight") });
-    setRangeLabel(cueXInput, "positionX"); setRangeLabel(cueYInput, "positionY"); setRangeLabel(cueMaxWidthInput, "wrapWidth");
+    setSelectOptions(cueWritingModeInput, { horizontal: t("writingHorizontal"), vertical: t("writingVertical") });
+    setTextNodeLabel(cueVerticalLatinRotateInput?.parentNode, "verticalLatinRotate");
+    setRangeLabel(cueXInput, "positionX"); setRangeLabel(cueYInput, "positionY"); updateWritingModeUiLabels(); setRangeLabel(cueVerticalColumnGapInput, "verticalColumnGap");
     setFieldLabel(cueFontFamilyInput, "font"); setRangeLabel(cueFontSizeInput, "fontSize"); setFieldLabel(cueColorInput, "textColor"); setFieldLabel(cueLineHeightInput, "lineHeight");
     setText(inlineStyleTitle, "inlineStyleTitle"); setText(addInlineStyleBtn, "addInlineStyle"); setText(document.querySelector(".inline-style-hint"), "inlineStyleHint");
     setRangeLabel(cueLetterSpacingInput, "letterSpacing"); setRangeLabel(cueLetterSpacingPanInput, "letterSpacingPan"); setRangeLabel(cuePanXInput, "textPanX"); setRangeLabel(cuePanYInput, "textPanY"); setRangeLabel(cueScaleInput, "textScale"); setRangeLabel(cueScalePanInput, "scalePan"); setRangeLabel(cueRotationInput, "textRotation"); setRangeLabel(cueRotationPanInput, "rotationPan"); setRangeLabel(cueCpsInput, "typewriterSpeed"); setRangeLabel(cueScaleRevealMinInput, "scaleRevealMin"); setRangeLabel(cueScaleRevealSpeedInput, "scaleRevealSpeed"); setRangeLabel(cueJumpSizeInput, "jumpSize"); setRangeLabel(cueJumpSpeedInput, "jumpSpeed");
@@ -519,6 +528,7 @@
       <ul>
         <li>開始秒・終了秒、歌詞テキストを編集できます。</li>
         <li>位置X/Y、折り返し幅、フォント、フォントサイズ、文字色、行間、字間を調整できます。</li>
+        <li><strong>文字方向</strong>で横書き・縦書きを切り替えできます。縦書き時は折り返し幅を「折り返し高さ」として扱い、列間や英数字の横倒し表示も調整できます。</li>
         <li><strong>フォントの指定</strong>では、1フレーズ中の指定文字列だけフォント・色・サイズ・フチ・影を変更できます。複数の文字列はコンマで区切れます。</li>
         <li>文字PAN移動、サイズ移動、文字回転、回転移動、字間移動を使って、時間経過に合わせた動きを付けられます。</li>
         <li>フェードイン、フェードアウト、縁取り、ドロップシャドウを設定できます。</li>
@@ -588,6 +598,7 @@
       <ul>
         <li>Edit start time, end time, and lyric text.</li>
         <li>Adjust position X/Y, wrap width, font, font size, text color, line height, and letter spacing.</li>
+        <li>Use <strong>Writing Direction</strong> to switch between horizontal and vertical text. In vertical mode, Wrap Width is treated as Wrap Height, and you can adjust column gap and sideways rotation for Latin letters/numbers.</li>
         <li>Use <strong>Font Assignment</strong> to change only specific text strings inside one phrase. You can assign font, color, and size, and separate multiple target strings with commas.</li>
         <li>Add motion over time with text pan, scale pan, rotation, rotation pan, and letter spacing pan.</li>
         <li>Enable fade in, fade out, stroke, and drop shadow.</li>
@@ -758,7 +769,7 @@
 
     if (cueXInput) cueXInput.max = String(CANVAS_WIDTH);
     if (cueYInput) cueYInput.max = String(CANVAS_HEIGHT);
-    if (cueMaxWidthInput) cueMaxWidthInput.max = String(CANVAS_WIDTH);
+    if (cueMaxWidthInput) cueMaxWidthInput.max = String(cueWritingModeInput?.value === "vertical" ? CANVAS_HEIGHT : CANVAS_WIDTH);
     if (previewBgOffsetXInput) {
       previewBgOffsetXInput.min = String(-CANVAS_WIDTH);
       previewBgOffsetXInput.max = String(CANVAS_WIDTH);
@@ -776,6 +787,29 @@
       cuePanYInput.max = String(CANVAS_HEIGHT);
     }
     updatePreviewCanvasInfo();
+    updateWritingModeUiLabels();
+  }
+
+  function isVerticalWritingMode(value) {
+    return value === "vertical";
+  }
+
+  function updateWritingModeUiLabels() {
+    const cue = selectedCue();
+    const mode = cueWritingModeInput?.value || cue?.settings?.writingMode || "horizontal";
+    const isVertical = isVerticalWritingMode(mode);
+    setRangeLabel(cueMaxWidthInput, isVertical ? "wrapHeight" : "wrapWidth");
+    if (cueMaxWidthInput) {
+      cueMaxWidthInput.max = String(isVertical ? CANVAS_HEIGHT : CANVAS_WIDTH);
+      cueMaxWidthInput.value = String(clamp(cueMaxWidthInput.value, 100, isVertical ? CANVAS_HEIGHT : CANVAS_WIDTH));
+    }
+    if (cueVerticalColumnGapInput) {
+      cueVerticalColumnGapInput.disabled = !isVertical;
+    }
+    if (cueVerticalLatinRotateInput) {
+      cueVerticalLatinRotateInput.disabled = !isVertical;
+    }
+    if (cueMaxWidthOutput && cueMaxWidthInput) cueMaxWidthOutput.textContent = `${cueMaxWidthInput.value}px`;
   }
 
   function applyCanvasAspect(aspect, { scaleExisting = false } = {}) {
@@ -794,7 +828,9 @@
         if (!cue.settings) return;
         cue.settings.x = Math.round(clamp((cue.settings.x ?? oldWidth / 2) * ratioX, 0, CANVAS_WIDTH));
         cue.settings.y = Math.round(clamp((cue.settings.y ?? oldHeight / 2) * ratioY, 0, CANVAS_HEIGHT));
-        cue.settings.maxWidth = Math.round(clamp((cue.settings.maxWidth ?? oldWidth * 0.82) * ratioX, 100, CANVAS_WIDTH));
+        const maxRatio = cue.settings.writingMode === "vertical" ? ratioY : ratioX;
+        const maxLimit = cue.settings.writingMode === "vertical" ? CANVAS_HEIGHT : CANVAS_WIDTH;
+        cue.settings.maxWidth = Math.round(clamp((cue.settings.maxWidth ?? oldWidth * 0.82) * maxRatio, 100, maxLimit));
         cue.settings.panX = Math.round(clamp((cue.settings.panX ?? 0) * ratioX, -CANVAS_WIDTH, CANVAS_WIDTH));
         cue.settings.panY = Math.round(clamp((cue.settings.panY ?? 0) * ratioY, -CANVAS_HEIGHT, CANVAS_HEIGHT));
       });
@@ -1499,9 +1535,13 @@
     cueEndInput.value = String(round(cue.end, 2));
     cueAnimationInput.value = s.animation || "normal";
     cueAlignInput.value = s.align || "center";
+    cueWritingModeInput.value = s.writingMode === "vertical" ? "vertical" : "horizontal";
+    cueVerticalLatinRotateInput.checked = s.verticalLatinRotate !== false;
+    cueVerticalColumnGapInput.value = String(clamp(s.verticalColumnGap ?? 24, 0, 300));
+    updateWritingModeUiLabels();
     cueXInput.value = String(clamp(s.x, 0, CANVAS_WIDTH));
     cueYInput.value = String(clamp(s.y, 0, CANVAS_HEIGHT));
-    cueMaxWidthInput.value = String(clamp(s.maxWidth, 100, CANVAS_WIDTH));
+    cueMaxWidthInput.value = String(clamp(s.maxWidth, 100, cueWritingModeInput.value === "vertical" ? CANVAS_HEIGHT : CANVAS_WIDTH));
     cueFontFamilyInput.value = s.fontFamily || FONT_OPTIONS[1].value;
     cueFontSizeInput.value = String(clamp(s.fontSize, 10, 300));
     cueColorInput.value = s.color || "#ffffff";
@@ -1542,6 +1582,8 @@
     cueXOutput.textContent = `${cueXInput.value}px`;
     cueYOutput.textContent = `${cueYInput.value}px`;
     cueMaxWidthOutput.textContent = `${cueMaxWidthInput.value}px`;
+    if (cueVerticalColumnGapOutput) cueVerticalColumnGapOutput.textContent = `${cueVerticalColumnGapInput.value}px`;
+    updateWritingModeUiLabels();
     cueFontSizeOutput.textContent = `${cueFontSizeInput.value}px`;
     cueLetterSpacingOutput.textContent = `${cueLetterSpacingInput.value}px`;
     cueLetterSpacingPanOutput.textContent = `${cueLetterSpacingPanInput.value}px`;
@@ -1572,9 +1614,13 @@
     const s = cue.settings || createCueStyle();
     s.animation = cueAnimationInput.value;
     s.align = cueAlignInput.value;
+    s.writingMode = cueWritingModeInput.value === "vertical" ? "vertical" : "horizontal";
+    s.verticalLatinRotate = cueVerticalLatinRotateInput.checked;
+    s.verticalColumnGap = Math.round(clamp(cueVerticalColumnGapInput.value, 0, 300));
+    updateWritingModeUiLabels();
     s.x = Math.round(clamp(cueXInput.value, 0, CANVAS_WIDTH));
     s.y = Math.round(clamp(cueYInput.value, 0, CANVAS_HEIGHT));
-    s.maxWidth = Math.round(clamp(cueMaxWidthInput.value, 100, CANVAS_WIDTH));
+    s.maxWidth = Math.round(clamp(cueMaxWidthInput.value, 100, s.writingMode === "vertical" ? CANVAS_HEIGHT : CANVAS_WIDTH));
     s.fontFamily = cueFontFamilyInput.value;
     s.fontSize = Math.round(clamp(cueFontSizeInput.value, 10, 300));
     s.color = cueColorInput.value;
@@ -2003,11 +2049,230 @@
     drawStyledTextLayer(context, text, x, y, settings, letterSpacing, "fill");
   }
 
+
+
+  function isVerticalLatinGlyph(char) {
+    return /^[A-Za-z0-9Ａ-Ｚａ-ｚ０-９]$/.test(String(char || ""));
+  }
+
+  function paintCenteredGlyphLayer(context, char, settings, layer = "fill") {
+    if (!char) return;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.lineJoin = "round";
+    context.miterLimit = 2;
+    context.font = fontStringForSettings(settings);
+
+    if (layer === "shadow") {
+      if (!hasVisibleShadow(settings)) return;
+      const shadow = settings.shadow || {};
+      context.shadowColor = shadow.color || "#000000";
+      context.shadowBlur = Number(shadow.blur || 0);
+      context.shadowOffsetX = Number(shadow.offsetX || 0);
+      context.shadowOffsetY = Number(shadow.offsetY || 0);
+      context.fillStyle = shadow.color || "#000000";
+      context.fillText(char, 0, 0);
+      return;
+    }
+
+    clearTextShadow(context);
+    if (layer === "stroke") {
+      if (settings.stroke?.enabled && Number(settings.stroke.width) > 0) {
+        context.strokeStyle = settings.stroke.color || "#111827";
+        context.lineWidth = Number(settings.stroke.width) || 0;
+        context.strokeText(char, 0, 0);
+      }
+      return;
+    }
+
+    context.fillStyle = settings.color || "#ffffff";
+    context.fillText(char, 0, 0);
+  }
+
+  function drawVerticalGlyphEntryLayer(context, entry, layer) {
+    const alpha = clamp(entry.alpha ?? 1, 0, 1);
+    if (alpha <= 0) return;
+
+    const previousAlpha = context.globalAlpha;
+    context.save();
+    context.globalAlpha = previousAlpha * alpha;
+    context.translate(entry.x, entry.y);
+    if (entry.rotateLatin) context.rotate(Math.PI / 2);
+    const scale = Math.max(0.01, entry.scale ?? 1);
+    context.scale(scale, scale);
+    paintCenteredGlyphLayer(context, entry.char, entry.settings, layer);
+    context.restore();
+    context.globalAlpha = previousAlpha;
+  }
+
+  function buildVerticalGlyphEntries(context, text, settings, letterSpacing = 0) {
+    const source = String(text || "");
+    const maxHeight = Math.max(100, Number(settings.maxWidth) || Math.round(CANVAS_HEIGHT * 0.82));
+    const columnGap = Math.round(clamp(settings.verticalColumnGap ?? Math.round((settings.fontSize || 86) * 0.35), 0, 300));
+    const inlineMap = inlineStyleMapForText(source, settings);
+    const chars = splitChars(source);
+    const columns = [];
+    let current = null;
+    let glyphIndex = 0;
+
+    const newColumn = () => {
+      current = { glyphs: [], height: 0, width: 0, x: 0 };
+      columns.push(current);
+    };
+
+    newColumn();
+
+    chars.forEach((char, sourceIndex) => {
+      if (char === "\r") return;
+      if (char === "\n") {
+        if (current.glyphs.length) newColumn();
+        return;
+      }
+
+      const charSettings = mergeInlineSettings(settings, inlineMap[sourceIndex]);
+      const fontSize = Math.max(1, Number(charSettings.fontSize || settings.fontSize || 86));
+      const lineHeight = Math.max(0.5, Number(charSettings.lineHeight || settings.lineHeight || 1.25));
+      const step = Math.max(fontSize * 0.25, fontSize * lineHeight + Number(letterSpacing || 0));
+      const columnWidth = fontSize;
+
+      if (current.glyphs.length && current.height + step > maxHeight) {
+        newColumn();
+      }
+
+      const entry = {
+        char,
+        settings: charSettings,
+        index: glyphIndex,
+        localY: current.height + step / 2,
+        x: 0,
+        y: 0,
+        width: columnWidth,
+        step,
+        alpha: 1,
+        scale: 1,
+        rotateLatin: Boolean(charSettings.verticalLatinRotate !== false && isVerticalLatinGlyph(char))
+      };
+      current.glyphs.push(entry);
+      current.height += step;
+      current.width = Math.max(current.width, columnWidth);
+      glyphIndex += 1;
+    });
+
+    const nonEmptyColumns = columns.filter((column) => column.glyphs.length);
+    if (!nonEmptyColumns.length) return [];
+
+    let offset = 0;
+    nonEmptyColumns.forEach((column, index) => {
+      if (index === 0) {
+        column.x = 0;
+      } else {
+        const previous = nonEmptyColumns[index - 1];
+        offset += previous.width / 2 + columnGap + column.width / 2;
+        column.x = -offset;
+      }
+    });
+
+    const minX = Math.min(...nonEmptyColumns.map((column) => column.x - column.width / 2));
+    const maxX = Math.max(...nonEmptyColumns.map((column) => column.x + column.width / 2));
+    let shiftX = 0;
+    if (settings.align === "center") shiftX = -(minX + maxX) / 2;
+    if (settings.align === "left") shiftX = -minX;
+    if (settings.align === "right") shiftX = -maxX;
+
+    const entries = [];
+    nonEmptyColumns.forEach((column) => {
+      column.glyphs.forEach((entry) => {
+        entry.x = column.x + shiftX;
+        entry.y = entry.localY - column.height / 2;
+        entries.push(entry);
+      });
+    });
+
+    return entries;
+  }
+
+  function drawVerticalCue(context, cue, time, settings, alpha) {
+    const elapsed = Math.max(0, time - cue.start);
+    const progress = clamp((time - cue.start) / Math.max(0.01, cue.end - cue.start), 0, 1);
+    const allText = String(cue.text || "");
+    let text = allText;
+
+    if (settings.animation === "typewriter" || settings.animation === "jumpTypewriter") {
+      const visibleCount = Math.floor(elapsed * Math.max(1, settings.cps || 24));
+      text = visibleTextByCount(allText, visibleCount);
+    }
+
+    const x = (settings.x ?? CANVAS_WIDTH / 2) + (settings.panX || 0) * progress;
+    const y = (settings.y ?? CANVAS_HEIGHT / 2) + (settings.panY || 0) * progress;
+    const scale = clamp((settings.scale ?? 100) + (settings.scalePan || 0) * progress, 1, 400) / 100;
+    const rotation = ((settings.rotation || 0) + (settings.rotationPan || 0) * progress) * Math.PI / 180;
+    const letterSpacing = clamp((settings.letterSpacing || 0) + (settings.letterSpacingPan || 0) * progress, -100, 240);
+
+    context.save();
+    context.globalAlpha *= alpha;
+    context.translate(x, y);
+    context.rotate(rotation);
+    context.scale(scale, scale);
+
+    const layoutText = settings.animation === "scaleReveal" ? allText : text;
+    const entries = buildVerticalGlyphEntries(context, layoutText, settings, letterSpacing);
+    const totalGlyphs = entries.length;
+
+    const jumpInOutPowerForChar = (charIndex) => {
+      const duration = Math.max(0.01, cue.end - cue.start);
+      const speedFactor = clamp(settings.jumpSpeed || 8, 1, 20) / 8;
+      const charJumpDuration = clamp(0.34 / speedFactor, 0.12, 0.7);
+      const charDelay = clamp(0.045 / speedFactor, 0.012, 0.08);
+      const edgeDuration = Math.min(duration / 2, charJumpDuration + charDelay * Math.max(0, totalGlyphs - 1));
+
+      const introLocal = (elapsed - charIndex * charDelay) / charJumpDuration;
+      const introPower = introLocal >= 0 && introLocal <= 1 ? Math.sin(Math.PI * introLocal) : 0;
+
+      const outroElapsed = time - (cue.end - edgeDuration);
+      const outroLocal = (outroElapsed - charIndex * charDelay) / charJumpDuration;
+      const outroPower = outroLocal >= 0 && outroLocal <= 1 ? Math.sin(Math.PI * outroLocal) : 0;
+
+      return Math.max(introPower, outroPower);
+    };
+
+    entries.forEach((entry) => {
+      if (settings.animation === "scaleReveal") {
+        const revealSpeed = Math.max(1, settings.scaleRevealSpeed ?? settings.cps ?? 24);
+        const minScale = clamp(settings.scaleRevealMin ?? 18, 1, 100) / 100;
+        const localProgress = elapsed * revealSpeed - entry.index;
+        if (localProgress < 0) {
+          entry.alpha = 0;
+          return;
+        }
+        const revealProgress = easeOutCubic(clamp(localProgress, 0, 1));
+        entry.scale = minScale + (1 - minScale) * revealProgress;
+        entry.alpha = revealProgress;
+      } else if (settings.animation === "jumpTypewriter" || settings.animation === "jumpReveal") {
+        const wavePower = Math.abs(Math.sin(elapsed * (settings.jumpSpeed || 8) + entry.index * 0.65));
+        entry.y -= wavePower * (settings.jumpSize || 0);
+      } else if (settings.animation === "jumpInOut") {
+        const wavePower = jumpInOutPowerForChar(entry.index);
+        entry.y -= wavePower * (settings.jumpSize || 0);
+      }
+    });
+
+    ["shadow", "stroke", "fill"].forEach((layer) => {
+      entries.forEach((entry) => drawVerticalGlyphEntryLayer(context, entry, layer));
+    });
+
+    context.restore();
+  }
+
   function drawCue(context, cue, time) {
     if (time < cue.start || time > cue.end) return;
     const settings = { ...defaultStyle(), ...(cue.settings || {}), stroke: { ...defaultStyle().stroke, ...(cue.settings?.stroke || {}) }, shadow: { ...defaultStyle().shadow, ...(cue.settings?.shadow || {}) } };
     const alpha = getCueAlpha(cue, time);
     if (alpha <= 0) return;
+
+    if (settings.writingMode === "vertical") {
+      drawVerticalCue(context, cue, time, settings, alpha);
+      return;
+    }
 
     const elapsed = Math.max(0, time - cue.start);
     const progress = clamp((time - cue.start) / Math.max(0.01, cue.end - cue.start), 0, 1);
@@ -2690,6 +2955,9 @@
       cueEndInput,
       cueAnimationInput,
       cueAlignInput,
+      cueWritingModeInput,
+      cueVerticalLatinRotateInput,
+      cueVerticalColumnGapInput,
       cueXInput,
       cueYInput,
       cueMaxWidthInput,

@@ -295,6 +295,25 @@
             </label>
           </div>
 
+
+          <div class="grid-2">
+            <label class="field">
+              <span>文字方向</span>
+              <select id="cueWritingModeInput">
+                <option value="horizontal">横書き</option>
+                <option value="vertical">縦書き</option>
+              </select>
+            </label>
+            <label class="field checkbox-field">
+              <span>縦書き英数字</span>
+              <label class="inline-check"><input id="cueVerticalLatinRotateInput" type="checkbox" checked /> 英数字を横倒しにする</label>
+            </label>
+          </div>
+          <div class="range-field">
+            <div class="range-head"><span>縦書き列間</span><output id="cueVerticalColumnGapOutput"></output></div>
+            <input id="cueVerticalColumnGapInput" type="range" min="0" max="300" step="1" value="24" />
+          </div>
+
           <div class="range-field">
             <div class="range-head"><span>位置X</span><output id="cueXOutput"></output></div>
             <input id="cueXInput" type="range" min="0" max="1920" step="1" />
@@ -478,7 +497,7 @@
             <button id="exportZipBtn" type="button" class="primary">透過PNG連番ZIPを書き出し</button>
           </div>
           <div class="button-row export-download-row">
-            <a id="videoConverterDownloadBtn" class="download-button" href="./AlphaVideoConverter-WPF.zip" download>動画変換アプリDL</a>
+            <a id="videoConverterDownloadBtn" class="download-button" href="./AlphaMOVConverter-WPF.zip" download>動画変換アプリDL</a>
           </div>
           <p class="hint video-converter-hint">透過PNG連番ZIPを透過動画化(MOV)するためのWindows用変換アプリです。</p>
           <div id="exportProgress" class="progress-text"></div>
