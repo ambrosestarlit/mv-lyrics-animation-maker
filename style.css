@@ -122,6 +122,10 @@ audio {
   width: 100%;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .app-header {
   display: flex;
   justify-content: space-between;
@@ -370,6 +374,7 @@ summary {
   max-height: 100%;
   justify-self: center;
   align-self: center;
+  position: relative;
   display: grid;
   place-items: center;
   border-radius: 18px;
@@ -386,6 +391,9 @@ summary {
 }
 
 #previewCanvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   display: block;
   width: 100%;
   height: 100%;
@@ -393,6 +401,17 @@ summary {
   max-height: none;
   aspect-ratio: inherit;
   background: transparent;
+  pointer-events: none;
+}
+
+.preview-video-player {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  background: #000;
 }
 
 .time-row {

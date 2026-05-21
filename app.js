@@ -88,6 +88,7 @@
   const audioChooseLabel = $("#audioChooseLabel");
   const audioChosenLabel = $("#audioChosenLabel");
   const audioPlayer = $("#audioPlayer");
+  const previewVideoPlayer = $("#previewVideoPlayer");
   const audioFileInfo = $("#audioFileInfo");
   const clearAudioBtn = $("#clearAudioBtn");
   const lyricsInput = $("#lyricsInput");
@@ -305,6 +306,40 @@
   let renderLoopRunning = false;
   let suppressEditorEvents = false;
 
+  function isVideoMediaFile(mimeType = "", fileName = "") {
+    return /^video\//i.test(mimeType || "") || /\.(mp4|m4v|mov)$/i.test(fileName || "");
+  }
+
+  function hasPreviewVideo() {
+    return Boolean(state.audioDataUrl && isVideoMediaFile(state.audioMimeType, state.audioFileName));
+  }
+
+  function activeMediaPlayer() {
+    return hasPreviewVideo() ? previewVideoPlayer : audioPlayer;
+  }
+
+  function syncMediaVisibility() {
+    const videoMode = hasPreviewVideo();
+    previewVideoPlayer?.classList.toggle("hidden", !videoMode);
+    audioPlayer?.classList.toggle("hidden", videoMode);
+    canvasShell?.classList.toggle("has-video", videoMode);
+  }
+
+  function syncActiveMediaTime(time) {
+    const media = activeMediaPlayer();
+    if (!media || !state.audioDataUrl) return;
+    const nextTime = Number(time);
+    if (!Number.isFinite(nextTime) || nextTime < 0) return;
+    try {
+      if (Number.isFinite(media.duration) && media.duration > 0 && nextTime > media.duration) return;
+      if (Math.abs((media.currentTime || 0) - nextTime) > 0.05) {
+        media.currentTime = nextTime;
+      }
+    } catch (_) {
+      // Some browsers reject seek attempts before metadata is ready.
+    }
+  }
+
 
   const I18N = {
     ja: {
@@ -314,19 +349,19 @@
       manual: "取扱説明", manualTitle: "取扱説明", close: "閉じる", chooseFile: "ファイルを選択", noFileSelected: "選択されていません", selectedFile: "選択中: {name}",
       saveJson: "JSON保存", loadJson: "JSON読込", saveCache: "キャッシュ保存", loadCache: "キャッシュ復元",
       secAssets: "素材読み込み", secDefaults: "基本設定", secLyricsList: "歌詞ボタン一覧", secEntered: "入力済みフレーズ", secSelected: "選択中フレーズ設定", secExport: "書き出し",
-      audioFile: "音声ファイル", audioNotLoaded: "音声未読込", audioLoaded: "音声読込済み", loadedFile: "読込済み: {name}", clear: "解除",
+      audioFile: "音声 / MP4ファイル", audioNotLoaded: "音声 / MP4未読込", audioLoaded: "素材読込済み", loadedFile: "読込済み: {name}", clear: "解除",
       lyricsTxt: "歌詞TXT", lyricsHint: "TXTの1行を1フレーズとして歌詞ボタンにします。空行は自動除外します。",
       previewBgColor: "プレビュー背景色", bgFit: "背景画像の表示", fitCover: "画面いっぱい", fitContain: "全体表示", fitStretch: "引き伸ばし", previewBgImage: "プレビュー背景画像", bgScale: "背景画像サイズ", bgOffsetX: "背景画像移動X", bgOffsetY: "背景画像移動Y", clearBgImage: "背景画像を解除", bgHint: "背景色・背景画像はプレビュー確認用です。透過PNG書き出しには含まれません。",
       canvasAspect: "キャンバス比率", aspectLandscape: "16:9 横長", aspectPortrait: "9:16 縦長", transparentExport: "透過書き出し", customFont: "任意フォント追加", customFontList: "追加済みフォント", deleteCustomFont: "選択フォントを削除", customFontHint: "アップロードしたフォントはこのブラウザ内で利用できます。JSON/キャッシュ保存にも含まれます。", customFontLoaded: "フォントを追加しました: {name}", customFontLoadFailed: "フォントを読み込めませんでした。対応形式は ttf / otf / woff / woff2 です。", noCustomFonts: "追加フォントなし", selectFont: "フォントを選択",
       defaultFont: "基本フォント", defaultSize: "基本サイズ", defaultDuration: "初期表示秒数", autoChain: "前フレーズ終了を自動調整", yes: "する", no: "しない", defaultAnimation: "初期アニメーション", defaultAlign: "初期文字揃え", applyDefaults: "全フレーズへ基本設定を反映", currentInputLayer: "現在の入力レイヤー", cueLayer: "表示レイヤー", layerSettingsTitle: "レイヤー設定", layerSettingsHint: "レイヤー名と色ラベルを変更できます。入力済みフレーズ一覧のL1 / L2表示にも使われます。", layerName: "レイヤー名", layerColor: "色ラベル",
       animNormal: "通常表示", animTypewriter: "タイプライター表示", animScaleReveal: "拡大しながら表示", animJumpTypewriter: "ジャンプしながらタイプライター表示", animJumpReveal: "ジャンプしながら表示", animJumpInOut: "登場時と退場時だけジャンプ",
       alignLeft: "左寄せ", alignCenter: "中央寄せ", alignRight: "右寄せ",
-      lyricsNotLoaded: "歌詞未読込", clearList: "一覧クリア", lyricsButtonEmpty: "歌詞TXTを読み込むと、ここに1行ずつボタンが追加されます。", enteredEmpty: "入力済みフレーズはまだありません。音声再生中に歌詞ボタンを押してください。",
+      lyricsNotLoaded: "歌詞未読込", clearList: "一覧クリア", lyricsButtonEmpty: "歌詞TXTを読み込むと、ここに1行ずつボタンが追加されます。", enteredEmpty: "入力済みフレーズはまだありません。音声またはMP4再生中に歌詞ボタンを押してください。",
       inputAtCurrent: "クリックで現在時刻に入力", enteredAt: "入力済み {time} / 再クリックでキャンセル", linesCount: "{count}行",
-      previewCanvas: "Preview Canvas", previewCanvasSub: "1920 × 1080 / export transparent", noActiveLyrics: "表示中の歌詞なし", previewAtCurrentTime: "現在時刻でプレビュー", previewSeconds: "プレビュー秒", update: "更新", transportHint: "音声再生中に左の歌詞ボタンを押すと、その時刻に歌詞キューを作成します。",
+      previewCanvas: "Preview Canvas", previewCanvasSub: "1920 × 1080 / export transparent", noActiveLyrics: "表示中の歌詞なし", previewAtCurrentTime: "現在時刻でプレビュー", previewSeconds: "プレビュー秒", update: "更新", transportHint: "音声またはMP4を再生中に左の歌詞ボタンを押すと、その時刻に歌詞キューを作成します。",
       selectedEmpty: "入力済みフレーズを選択してください。", presetTitle: "フレーズ設定プリセット", presetName: "プリセット名", presetPlaceholder: "例：サビ中央ジャンプ", registeredPresets: "登録済みプリセット", selectPreset: "プリセットを選択", noPreset: "プリセット未登録", saveCurrentAsPreset: "現在設定を登録", applySelectedPreset: "選択プリセットを適用", delete: "削除", presetHint: "歌詞本文・開始秒・終了秒は含めず、見た目とアニメーション設定だけを保存します。",
       lyricText: "歌詞テキスト", startSec: "開始秒", endSec: "終了秒", animation: "アニメーション", textAlign: "文字揃え", writingMode: "文字方向", writingHorizontal: "横書き", writingVertical: "縦書き", verticalLatinRotate: "英数字を横倒しにする", verticalColumnGap: "縦書き列間", positionX: "位置X", positionY: "位置Y", wrapWidth: "折り返し幅", wrapHeight: "折り返し高さ", font: "フォント", fontSize: "フォントサイズ", textColor: "文字色", lineHeight: "行間", letterSpacing: "字間", letterSpacingPan: "字間移動", textPanX: "文字PAN移動X", textPanY: "文字PAN移動Y", textScale: "文字サイズ倍率", scalePan: "サイズ移動", textRotation: "文字回転", rotationPan: "回転移動", typewriterSpeed: "タイプライター速度", scaleRevealMin: "拡大表示の最小サイズ", scaleRevealSpeed: "拡大表示の速度", jumpSize: "ジャンプの大きさ", jumpSpeed: "ジャンプの速さ", fadeIn: "フェードイン", fadeOut: "フェードアウト", stroke: "縁取り", dropShadow: "ドロップシャドウ", fadeInSec: "フェードイン秒", fadeOutSec: "フェードアウト秒", strokeColor: "フチ色", strokeWidth: "フチ太さ", shadowColor: "影色", shadowBlur: "影ぼかし", shadowX: "影X", shadowY: "影Y", inlineStyleTitle: "フォントの指定", inlineStyleHint: "指定した文字列だけ、フォント・色・サイズ・フチ・影を変更できます。複数指定はコンマで区切ってください。", inlineStyleEmpty: "指定フォントはまだありません。+ボタンで追加できます。", inlineStyleItem: "指定 {number}", inlineStyleTargets: "指定したい文字列", inlineStyleTargetsPlaceholder: "例：赤い, 海", inlineStyleFont: "指定したいフォント", inlineStyleColor: "色の選択", inlineStyleSize: "サイズ", inlineStyleStrokeColor: "フチ色", inlineStyleStrokeWidth: "フチ太さ", inlineStyleShadowColor: "影色", inlineStyleShadowBlur: "影ぼかし", addInlineStyle: "+ 追加", duplicate: "複製",
-      export: "書き出し", fps: "FPS", prefix: "接頭辞", setEndFromAudio: "音声の長さを終了秒へ", exportZip: "透過PNG連番ZIPを書き出し", exportSrt: "SRT字幕を書き出し", videoConverterDownload: "動画変換アプリDL", videoConverterHint: "透過PNG連番ZIPを透過動画化(MOV)するためのWindows用変換アプリです。",
+      export: "書き出し", fps: "FPS", prefix: "接頭辞", setEndFromAudio: "素材の長さを終了秒へ", exportZip: "透過PNG連番ZIPを書き出し", exportSrt: "SRT字幕を書き出し", videoConverterDownload: "動画変換アプリDL", videoConverterHint: "透過PNG連番ZIPを透過動画化(MOV)するためのWindows用変換アプリです。",
       preparing: "書き出し準備中... {done} / {total}", pngGenerating: "PNG生成中... {done} / {total}", zipGenerating: "ZIP生成中... {percent}%", exportComplete: "完了: {count}枚を書き出しました。", exportFailed: "書き出しに失敗しました。", srtComplete: "完了: SRT字幕を{count}件を書き出しました。", srtEmpty: "書き出せる入力済みフレーズがありません。",
       failedReadJson: "JSONを読み込めませんでした。", cacheSaved: "キャッシュへ保存しました。", cacheSaveFailed: "キャッシュ保存に失敗しました。ブラウザの保存容量を確認してください。", cacheLoadFailed: "キャッシュ復元に失敗しました。", cacheMissing: "保存済みキャッシュがありません。", jszipMissing: "JSZipを読み込めませんでした。インターネット接続、またはCDNの読み込みを確認してください。", pngFailed: "PNG生成に失敗しました。", exportFailedRetry: "書き出しに失敗しました。枚数を減らして再試行してください。",
       presetAutoName: "プリセット{count}", loadedLyrics: "表示中の歌詞なし"
@@ -338,19 +373,19 @@
       manual: "Manual", manualTitle: "Manual", close: "Close", chooseFile: "Choose File", noFileSelected: "No file selected", selectedFile: "Selected: {name}",
       saveJson: "Save JSON", loadJson: "Load JSON", saveCache: "Save Cache", loadCache: "Restore Cache",
       secAssets: "Assets", secDefaults: "Defaults", secLyricsList: "Lyric Buttons", secEntered: "Placed Phrases", secSelected: "Selected Phrase Settings", secExport: "Export",
-      audioFile: "Audio File", audioNotLoaded: "No audio loaded", audioLoaded: "Audio loaded", loadedFile: "Loaded: {name}", clear: "Clear",
+      audioFile: "Audio / MP4 File", audioNotLoaded: "No audio / MP4 loaded", audioLoaded: "Media loaded", loadedFile: "Loaded: {name}", clear: "Clear",
       lyricsTxt: "Lyrics TXT", lyricsHint: "Each line in the TXT file becomes one lyric button. Blank lines are ignored.",
       previewBgColor: "Preview Background Color", bgFit: "Background Image Fit", fitCover: "Fill Screen", fitContain: "Contain", fitStretch: "Stretch", previewBgImage: "Preview Background Image", bgScale: "Background Image Scale", bgOffsetX: "Background Image Offset X", bgOffsetY: "Background Image Offset Y", clearBgImage: "Clear Background Image", bgHint: "Background color and image are for preview only and are not included in transparent PNG export.",
       canvasAspect: "Canvas Aspect", aspectLandscape: "16:9 Landscape", aspectPortrait: "9:16 Portrait", transparentExport: "transparent export", customFont: "Add Custom Font", customFontList: "Custom Fonts", deleteCustomFont: "Delete Selected Font", customFontHint: "Uploaded fonts can be used in this browser and are included in JSON/cache saves.", customFontLoaded: "Font added: {name}", customFontLoadFailed: "Could not load the font. Supported formats: ttf / otf / woff / woff2.", noCustomFonts: "No custom fonts", selectFont: "Select a font",
       defaultFont: "Default Font", defaultSize: "Default Size", defaultDuration: "Default Duration", autoChain: "Auto-adjust previous phrase end", yes: "On", no: "Off", defaultAnimation: "Default Animation", defaultAlign: "Default Alignment", applyDefaults: "Apply defaults to all phrases", currentInputLayer: "Current Input Layer", cueLayer: "Display Layer", layerSettingsTitle: "Layer Settings", layerSettingsHint: "You can rename each layer and change its color label. The same labels are shown as L1 / L2 in the placed phrase list.", layerName: "Layer Name", layerColor: "Color Label",
       animNormal: "Normal", animTypewriter: "Typewriter", animScaleReveal: "Scale Reveal", animJumpTypewriter: "Jump + Typewriter", animJumpReveal: "Jump Reveal", animJumpInOut: "Jump on In/Out",
       alignLeft: "Left", alignCenter: "Center", alignRight: "Right",
-      lyricsNotLoaded: "No lyrics loaded", clearList: "Clear List", lyricsButtonEmpty: "Load a lyrics TXT file to create one button per line here.", enteredEmpty: "No phrases placed yet. Press a lyric button while audio is playing.",
+      lyricsNotLoaded: "No lyrics loaded", clearList: "Clear List", lyricsButtonEmpty: "Load a lyrics TXT file to create one button per line here.", enteredEmpty: "No phrases placed yet. Press a lyric button while audio or MP4 is playing.",
       inputAtCurrent: "Click to place at current time", enteredAt: "Placed {time} / click again to cancel", linesCount: "{count} lines",
-      previewCanvas: "Preview Canvas", previewCanvasSub: "1920 × 1080 / transparent export", noActiveLyrics: "No active lyrics", previewAtCurrentTime: "Preview at Current Time", previewSeconds: "Preview Time", update: "Update", transportHint: "While audio is playing, press a lyric button on the left to create a lyric cue at that time.",
+      previewCanvas: "Preview Canvas", previewCanvasSub: "1920 × 1080 / transparent export", noActiveLyrics: "No active lyrics", previewAtCurrentTime: "Preview at Current Time", previewSeconds: "Preview Time", update: "Update", transportHint: "While audio or MP4 is playing, press a lyric button on the left to create a lyric cue at that time.",
       selectedEmpty: "Select a placed phrase.", presetTitle: "Phrase Setting Presets", presetName: "Preset Name", presetPlaceholder: "e.g. Chorus Center Jump", registeredPresets: "Saved Presets", selectPreset: "Select a preset", noPreset: "No presets", saveCurrentAsPreset: "Save Current Settings", applySelectedPreset: "Apply Selected Preset", delete: "Delete", presetHint: "Only appearance and animation settings are saved. Lyric text and timing are not included.",
       lyricText: "Lyric Text", startSec: "Start (sec)", endSec: "End (sec)", animation: "Animation", textAlign: "Alignment", writingMode: "Writing Direction", writingHorizontal: "Horizontal", writingVertical: "Vertical", verticalLatinRotate: "Rotate Latin/numbers sideways", verticalColumnGap: "Vertical Column Gap", positionX: "Position X", positionY: "Position Y", wrapWidth: "Wrap Width", wrapHeight: "Wrap Height", font: "Font", fontSize: "Font Size", textColor: "Text Color", lineHeight: "Line Height", letterSpacing: "Letter Spacing", letterSpacingPan: "Letter Spacing Pan", textPanX: "Text Pan X", textPanY: "Text Pan Y", textScale: "Text Scale", scalePan: "Scale Pan", textRotation: "Text Rotation", rotationPan: "Rotation Pan", typewriterSpeed: "Typewriter Speed", scaleRevealMin: "Scale Reveal Min Size", scaleRevealSpeed: "Scale Reveal Speed", jumpSize: "Jump Height", jumpSpeed: "Jump Speed", fadeIn: "Fade In", fadeOut: "Fade Out", stroke: "Stroke", dropShadow: "Drop Shadow", fadeInSec: "Fade In (sec)", fadeOutSec: "Fade Out (sec)", strokeColor: "Stroke Color", strokeWidth: "Stroke Width", shadowColor: "Shadow Color", shadowBlur: "Shadow Blur", shadowX: "Shadow X", shadowY: "Shadow Y", inlineStyleTitle: "Font Assignment", inlineStyleHint: "Change the font, color, size, stroke, and shadow only for specified text. Separate multiple strings with commas.", inlineStyleEmpty: "No font assignments yet. Use the + button to add one.", inlineStyleItem: "Assignment {number}", inlineStyleTargets: "Target Text", inlineStyleTargetsPlaceholder: "e.g. red, sea", inlineStyleFont: "Assigned Font", inlineStyleColor: "Color", inlineStyleSize: "Size", inlineStyleStrokeColor: "Stroke Color", inlineStyleStrokeWidth: "Stroke Width", inlineStyleShadowColor: "Shadow Color", inlineStyleShadowBlur: "Shadow Blur", addInlineStyle: "+ Add", duplicate: "Duplicate",
-      export: "Export", fps: "FPS", prefix: "Prefix", setEndFromAudio: "Use Audio Length as End Time", exportZip: "Export Transparent PNG ZIP", exportSrt: "Export SRT Subtitles", videoConverterDownload: "Download Video Converter App", videoConverterHint: "A Windows converter app for turning transparent PNG sequence ZIP files into transparent MOV video.",
+      export: "Export", fps: "FPS", prefix: "Prefix", setEndFromAudio: "Use Media Length as End Time", exportZip: "Export Transparent PNG ZIP", exportSrt: "Export SRT Subtitles", videoConverterDownload: "Download Video Converter App", videoConverterHint: "A Windows converter app for turning transparent PNG sequence ZIP files into transparent MOV video.",
       preparing: "Preparing export... {done} / {total}", pngGenerating: "Generating PNG... {done} / {total}", zipGenerating: "Creating ZIP... {percent}%", exportComplete: "Done: exported {count} frames.", exportFailed: "Export failed.", srtComplete: "Done: exported {count} SRT subtitles.", srtEmpty: "There are no placed phrases to export.",
       failedReadJson: "Could not load the JSON file.", cacheSaved: "Saved to cache.", cacheSaveFailed: "Could not save cache. Please check browser storage limits.", cacheLoadFailed: "Could not restore cache.", cacheMissing: "No saved cache was found.", jszipMissing: "JSZip could not be loaded. Please check your internet connection or the CDN.", pngFailed: "Failed to generate PNG.", exportFailedRetry: "Export failed. Try reducing the number of frames and run again.",
       presetAutoName: "Preset {count}", loadedLyrics: "No active lyrics"
@@ -363,19 +398,19 @@
       manual: "사용 설명서", manualTitle: "사용 설명서", close: "닫기", chooseFile: "파일 선택", noFileSelected: "선택된 파일 없음", selectedFile: "선택 중: {name}",
       saveJson: "JSON 저장", loadJson: "JSON 불러오기", saveCache: "캐시 저장", loadCache: "캐시 복원",
       secAssets: "소재 불러오기", secDefaults: "기본 설정", secLyricsList: "가사 버튼 목록", secEntered: "입력된 프레이즈", secSelected: "선택 중인 프레이즈 설정", secExport: "내보내기",
-      audioFile: "오디오 파일", audioNotLoaded: "오디오 미불러옴", audioLoaded: "오디오 불러옴", loadedFile: "불러옴: {name}", clear: "해제",
+      audioFile: "오디오 / MP4 파일", audioNotLoaded: "오디오 / MP4 미불러옴", audioLoaded: "소재 불러옴", loadedFile: "불러옴: {name}", clear: "해제",
       lyricsTxt: "가사 TXT", lyricsHint: "TXT의 한 줄을 하나의 프레이즈 버튼으로 만듭니다. 빈 줄은 자동으로 제외됩니다.",
       previewBgColor: "미리보기 배경색", bgFit: "배경 이미지 표시", fitCover: "화면 채우기", fitContain: "전체 표시", fitStretch: "늘이기", previewBgImage: "미리보기 배경 이미지", bgScale: "배경 이미지 크기", bgOffsetX: "배경 이미지 이동 X", bgOffsetY: "배경 이미지 이동 Y", clearBgImage: "배경 이미지 해제", bgHint: "배경색과 배경 이미지는 미리보기 확인용입니다. 투명 PNG 내보내기에는 포함되지 않습니다.",
       canvasAspect: "캔버스 비율", aspectLandscape: "16:9 가로형", aspectPortrait: "9:16 세로형", transparentExport: "투명 내보내기", customFont: "사용자 폰트 추가", customFontList: "추가된 폰트", deleteCustomFont: "선택한 폰트 삭제", customFontHint: "업로드한 폰트는 이 브라우저에서 사용할 수 있으며 JSON/캐시 저장에도 포함됩니다.", customFontLoaded: "폰트를 추가했습니다: {name}", customFontLoadFailed: "폰트를 불러올 수 없습니다. 지원 형식은 ttf / otf / woff / woff2입니다.", noCustomFonts: "추가 폰트 없음", selectFont: "폰트 선택",
       defaultFont: "기본 폰트", defaultSize: "기본 크기", defaultDuration: "초기 표시 시간", autoChain: "이전 프레이즈 종료 자동 조정", yes: "켜기", no: "끄기", defaultAnimation: "초기 애니메이션", defaultAlign: "초기 정렬", applyDefaults: "모든 프레이즈에 기본 설정 적용", currentInputLayer: "현재 입력 레이어", cueLayer: "표시 레이어", layerSettingsTitle: "레이어 설정", layerSettingsHint: "레이어 이름과 색상 라벨을 변경할 수 있습니다. 입력된 프레이즈 목록의 L1 / L2 표시에도 사용됩니다.", layerName: "레이어 이름", layerColor: "색상 라벨",
       animNormal: "일반 표시", animTypewriter: "타자기 표시", animScaleReveal: "확대하며 표시", animJumpTypewriter: "점프하며 타자기 표시", animJumpReveal: "점프하며 표시", animJumpInOut: "등장/퇴장 시에만 점프",
       alignLeft: "왼쪽 정렬", alignCenter: "가운데 정렬", alignRight: "오른쪽 정렬",
-      lyricsNotLoaded: "가사 미불러옴", clearList: "목록 지우기", lyricsButtonEmpty: "가사 TXT를 불러오면 여기에 한 줄씩 버튼이 추가됩니다.", enteredEmpty: "아직 입력된 프레이즈가 없습니다. 오디오 재생 중에 가사 버튼을 눌러 주세요.",
+      lyricsNotLoaded: "가사 미불러옴", clearList: "목록 지우기", lyricsButtonEmpty: "가사 TXT를 불러오면 여기에 한 줄씩 버튼이 추가됩니다.", enteredEmpty: "아직 입력된 프레이즈가 없습니다. 오디오 또는 MP4 재생 중에 가사 버튼을 눌러 주세요.",
       inputAtCurrent: "클릭하면 현재 시간에 입력", enteredAt: "입력됨 {time} / 다시 클릭하면 취소", linesCount: "{count}줄",
-      previewCanvas: "Preview Canvas", previewCanvasSub: "1920 × 1080 / transparent export", noActiveLyrics: "표시 중인 가사 없음", previewAtCurrentTime: "현재 시간으로 미리보기", previewSeconds: "미리보기 초", update: "갱신", transportHint: "오디오 재생 중 왼쪽의 가사 버튼을 누르면 해당 시각에 가사 큐가 생성됩니다.",
+      previewCanvas: "Preview Canvas", previewCanvasSub: "1920 × 1080 / transparent export", noActiveLyrics: "표시 중인 가사 없음", previewAtCurrentTime: "현재 시간으로 미리보기", previewSeconds: "미리보기 초", update: "갱신", transportHint: "오디오 또는 MP4 재생 중 왼쪽의 가사 버튼을 누르면 해당 시각에 가사 큐가 생성됩니다.",
       selectedEmpty: "입력된 프레이즈를 선택해 주세요.", presetTitle: "프레이즈 설정 프리셋", presetName: "프리셋 이름", presetPlaceholder: "예: 후렴 중앙 점프", registeredPresets: "등록된 프리셋", selectPreset: "프리셋 선택", noPreset: "등록된 프리셋 없음", saveCurrentAsPreset: "현재 설정 등록", applySelectedPreset: "선택한 프리셋 적용", delete: "삭제", presetHint: "가사 본문, 시작 시간, 종료 시간은 포함하지 않고 외형과 애니메이션 설정만 저장합니다.",
       lyricText: "가사 텍스트", startSec: "시작 초", endSec: "종료 초", animation: "애니메이션", textAlign: "문자 정렬", writingMode: "문자 방향", writingHorizontal: "가로쓰기", writingVertical: "세로쓰기", verticalLatinRotate: "영문/숫자를 옆으로 회전", verticalColumnGap: "세로쓰기 열 간격", positionX: "위치 X", positionY: "위치 Y", wrapWidth: "줄바꿈 폭", wrapHeight: "줄바꿈 높이", font: "폰트", fontSize: "폰트 크기", textColor: "문자색", lineHeight: "줄 간격", letterSpacing: "자간", letterSpacingPan: "자간 이동", textPanX: "문자 PAN 이동 X", textPanY: "문자 PAN 이동 Y", textScale: "문자 크기 배율", scalePan: "크기 이동", textRotation: "문자 회전", rotationPan: "회전 이동", typewriterSpeed: "타자기 속도", scaleRevealMin: "확대 표시 최소 크기", scaleRevealSpeed: "확대 표시 속도", jumpSize: "점프 크기", jumpSpeed: "점프 속도", fadeIn: "페이드 인", fadeOut: "페이드 아웃", stroke: "외곽선", dropShadow: "드롭 섀도", fadeInSec: "페이드 인 초", fadeOutSec: "페이드 아웃 초", strokeColor: "외곽선 색", strokeWidth: "외곽선 두께", shadowColor: "그림자 색", shadowBlur: "그림자 흐림", shadowX: "그림자 X", shadowY: "그림자 Y", inlineStyleTitle: "폰트 지정", inlineStyleHint: "지정한 문자열에만 폰트, 색상, 크기, 외곽선, 그림자를 변경할 수 있습니다. 여러 항목은 쉼표로 구분하세요.", inlineStyleEmpty: "아직 폰트 지정이 없습니다. + 버튼으로 추가할 수 있습니다.", inlineStyleItem: "지정 {number}", inlineStyleTargets: "지정할 문자열", inlineStyleTargetsPlaceholder: "예: 빨간, 바다", inlineStyleFont: "지정할 폰트", inlineStyleColor: "색상 선택", inlineStyleSize: "크기", inlineStyleStrokeColor: "외곽선 색", inlineStyleStrokeWidth: "외곽선 두께", inlineStyleShadowColor: "그림자 색", inlineStyleShadowBlur: "그림자 흐림", addInlineStyle: "+ 추가", duplicate: "복제",
-      export: "내보내기", fps: "FPS", prefix: "접두사", setEndFromAudio: "오디오 길이를 종료 초로 설정", exportZip: "투명 PNG 시퀀스 ZIP 내보내기", exportSrt: "SRT 자막 내보내기", videoConverterDownload: "동영상 변환 앱 다운로드", videoConverterHint: "투명 PNG 시퀀스 ZIP을 투명 동영상(MOV)으로 변환하기 위한 Windows용 변환 앱입니다.",
+      export: "내보내기", fps: "FPS", prefix: "접두사", setEndFromAudio: "소재 길이를 종료 초로 설정", exportZip: "투명 PNG 시퀀스 ZIP 내보내기", exportSrt: "SRT 자막 내보내기", videoConverterDownload: "동영상 변환 앱 다운로드", videoConverterHint: "투명 PNG 시퀀스 ZIP을 투명 동영상(MOV)으로 변환하기 위한 Windows용 변환 앱입니다.",
       preparing: "내보내기 준비 중... {done} / {total}", pngGenerating: "PNG 생성 중... {done} / {total}", zipGenerating: "ZIP 생성 중... {percent}%", exportComplete: "완료: {count}장을 내보냈습니다.", exportFailed: "내보내기에 실패했습니다.", srtComplete: "완료: SRT 자막 {count}개를 내보냈습니다.", srtEmpty: "내보낼 수 있는 입력된 프레이즈가 없습니다.",
       failedReadJson: "JSON을 불러올 수 없습니다.", cacheSaved: "캐시에 저장했습니다.", cacheSaveFailed: "캐시 저장에 실패했습니다. 브라우저 저장 용량을 확인해 주세요.", cacheLoadFailed: "캐시 복원에 실패했습니다.", cacheMissing: "저장된 캐시가 없습니다.", jszipMissing: "JSZip을 불러올 수 없습니다. 인터넷 연결 또는 CDN 로딩을 확인해 주세요.", pngFailed: "PNG 생성에 실패했습니다.", exportFailedRetry: "내보내기에 실패했습니다. 프레임 수를 줄인 뒤 다시 시도해 주세요.",
       presetAutoName: "프리셋 {count}", loadedLyrics: "표시 중인 가사 없음"
@@ -532,18 +567,18 @@
   function manualHtmlJa() {
     return `
       <h3>このツールについて</h3>
-      <p>音声に合わせて歌詞フレーズを配置し、文字アニメーション付きの透過PNG連番を書き出すためのMV制作支援ツールです。背景色・背景画像は確認用で、書き出しには含まれません。</p>
+      <p>音声やMP4に合わせて歌詞フレーズを配置し、文字アニメーション付きの透過PNG連番を書き出すためのMV制作支援ツールです。MP4を読み込んだ場合はプレビュー上で文字の下敷きとして表示されます。背景色・背景画像・MP4は透過PNG書き出しには含まれません。</p>
 
       <h3>1. 素材を読み込む</h3>
       <ol>
-        <li><strong>音声ファイル</strong>から楽曲や仮音源を読み込みます。</li>
+        <li><strong>音声 / MP4ファイル</strong>から楽曲、仮音源、または下敷きにしたいMP4動画を読み込みます。</li>
         <li><strong>歌詞TXT</strong>を読み込みます。TXTの1行が1つの歌詞ボタンになります。</li>
         <li>プレビュー確認用に背景色や背景画像を設定できます。背景画像はサイズ、X位置、Y位置を調整できます。</li>
       </ol>
 
       <h3>2. 歌詞をタイミング入力する</h3>
       <ol>
-        <li>音声を再生します。</li>
+        <li>音声またはMP4を再生します。MP4はプレビュー上で歌詞の下に表示されます。</li>
         <li>任意のタイミングで左側の歌詞ボタンをクリックすると、その時刻にフレーズが配置されます。</li>
         <li>配置済みの歌詞ボタンはグレー表示になります。もう一度クリックすると配置をキャンセルできます。</li>
         <li>入力済みフレーズ一覧からフレーズを選択すると、右側で細かい設定を編集できます。</li>
@@ -590,7 +625,7 @@
         <li><strong>透過PNG連番ZIPを書き出し</strong>を押すと、歌詞だけの透過PNG連番がZIPで保存されます。</li>
         <li><strong>SRT字幕を書き出し</strong>を押すと、入力済みフレーズの開始秒・終了秒・歌詞本文をもとに.srt字幕ファイルを保存できます。</li>
         <li><strong>動画変換アプリDL</strong>から、透過PNG連番ZIPを透過MOV化するWindows用変換アプリをダウンロードできます。</li>
-        <li>背景色・背景画像は書き出しには含まれません。動画編集ソフト側で背景や映像素材と合成してください。</li>
+        <li>背景色・背景画像・下敷きMP4は透過PNG書き出しには含まれません。必要に応じて動画編集ソフト側で背景や映像素材と合成してください。</li>
       </ol>
 
       <h3>注意</h3>
@@ -603,18 +638,18 @@
       <p class="manual-note">※英訳にはAI翻訳を使用しております。一部、おかしな表現があるかもしれませんがご了承ください。<br>AI translation was used for the English manual. Some expressions may sound unnatural.</p>
 
       <h3>About this tool</h3>
-      <p>This is a browser-based MV production support tool for placing lyric phrases in sync with audio and exporting animated transparent PNG sequences. Preview background color and images are only for checking the layout and are not included in the export.</p>
+      <p>This is a browser-based MV production support tool for placing lyric phrases in sync with audio or MP4 and exporting animated transparent PNG sequences. When an MP4 is loaded, it is shown under the lyrics in the preview. Preview background color, images, and MP4 video are not included in transparent PNG export.</p>
 
       <h3>1. Load assets</h3>
       <ol>
-        <li>Load a song or temporary audio file from <strong>Audio File</strong>.</li>
+        <li>Load a song, temporary audio file, or MP4 background video from <strong>Audio / MP4 File</strong>.</li>
         <li>Load a <strong>Lyrics TXT</strong> file. Each line in the TXT file becomes one lyric button.</li>
         <li>You can set a preview background color or image. The background image scale, X offset, and Y offset can be adjusted.</li>
       </ol>
 
       <h3>2. Place lyrics to timing</h3>
       <ol>
-        <li>Play the audio.</li>
+        <li>Play the audio or MP4. MP4 appears under the lyrics in the preview.</li>
         <li>Click a lyric button on the left at the timing where you want the phrase to appear.</li>
         <li>Placed lyric buttons turn gray. Click again to cancel that placement.</li>
         <li>Select a placed phrase from the list to edit detailed settings on the right.</li>
@@ -660,7 +695,7 @@
         <li>Set FPS, prefix, start time, and end time.</li>
         <li>Press <strong>Export Transparent PNG ZIP</strong> to save the lyric-only transparent PNG sequence as a ZIP file.</li>
         <li>Use <strong>Download Video Converter App</strong> to download the Windows converter app for turning transparent PNG sequence ZIP files into transparent MOV video.</li>
-        <li>Background color and preview background images are not included in the export. Please composite them with video or background materials in your video editing software.</li>
+        <li>Background color, preview background images, and loaded MP4 are not included in transparent PNG export. Composite them later in your video editing software if needed.</li>
       </ol>
 
       <h3>Note</h3>
@@ -674,18 +709,18 @@
       <p class="manual-note">※한국어 번역에는 AI 번역을 사용했습니다. 일부 어색한 표현이 있을 수 있으니 양해 부탁드립니다.</p>
 
       <h3>이 도구에 대하여</h3>
-      <p>오디오에 맞춰 가사 프레이즈를 배치하고, 문자 애니메이션이 적용된 투명 PNG 시퀀스를 내보내기 위한 MV 제작 지원 도구입니다. 배경색과 배경 이미지는 확인용이며, 내보내기에는 포함되지 않습니다.</p>
+      <p>오디오 또는 MP4에 맞춰 가사 프레이즈를 배치하고, 문자 애니메이션이 적용된 투명 PNG 시퀀스를 내보내기 위한 MV 제작 지원 도구입니다. MP4를 불러오면 미리보기에서 가사 아래 배경 영상으로 표시됩니다. 배경색, 배경 이미지, MP4는 투명 PNG 내보내기에 포함되지 않습니다.</p>
 
       <h3>1. 소재 불러오기</h3>
       <ol>
-        <li><strong>오디오 파일</strong>에서 음악이나 임시 음원을 불러옵니다.</li>
+        <li><strong>오디오 / MP4 파일</strong>에서 음악, 임시 음원, 또는 배경으로 사용할 MP4 영상을 불러옵니다.</li>
         <li><strong>가사 TXT</strong>를 불러옵니다. TXT의 한 줄이 하나의 가사 버튼이 됩니다.</li>
         <li>미리보기 확인용으로 배경색이나 배경 이미지를 설정할 수 있습니다. 배경 이미지는 크기, X 위치, Y 위치를 조정할 수 있습니다.</li>
       </ol>
 
       <h3>2. 가사 타이밍 입력</h3>
       <ol>
-        <li>오디오를 재생합니다.</li>
+        <li>오디오 또는 MP4를 재생합니다. MP4는 미리보기에서 가사 아래에 표시됩니다.</li>
         <li>원하는 타이밍에 왼쪽의 가사 버튼을 클릭하면 그 시각에 프레이즈가 배치됩니다.</li>
         <li>배치된 가사 버튼은 회색으로 표시됩니다. 다시 클릭하면 배치를 취소할 수 있습니다.</li>
         <li>입력된 프레이즈 목록에서 프레이즈를 선택하면 오른쪽에서 세부 설정을 편집할 수 있습니다.</li>
@@ -711,7 +746,7 @@
       <h3>5. 내보내기</h3>
       <ol>
         <li>FPS, 접두사, 시작 초, 종료 초를 설정합니다.</li>
-        <li><strong>투명 PNG 시퀀스 ZIP 내보내기</strong>를 누르면 가사 레이어만 투명 PNG 시퀀스로 저장됩니다.</li>
+        <li><strong>투명 PNG 시퀀스 ZIP 내보내기</strong>를 누르면 가사 레이어만 투명 PNG 시퀀스로 저장됩니다. 배경 영상 MP4는 포함되지 않습니다.</li>
         <li><strong>SRT 자막 내보내기</strong>를 누르면 입력된 프레이즈의 시작 초, 종료 초, 가사 본문을 바탕으로 .srt 자막 파일을 저장합니다.</li>
         <li><strong>동영상 변환 앱 다운로드</strong>에서 투명 PNG 시퀀스 ZIP을 투명 MOV 동영상으로 변환하는 Windows용 변환 앱을 다운로드할 수 있습니다.</li>
       </ol>
@@ -1531,7 +1566,8 @@
   }
 
   function assignLyricAtCurrentTime(lyric) {
-    const currentTime = Number.isFinite(audioPlayer.currentTime) ? audioPlayer.currentTime : Number(previewTimeInput.value) || 0;
+    const media = activeMediaPlayer();
+    const currentTime = Number.isFinite(media?.currentTime) ? media.currentTime : Number(previewTimeInput.value) || 0;
     const start = round(Math.max(0, currentTime), 2);
     const duration = round(clamp(state.defaults.duration, 0.1, 60), 2);
     const templateCue = getCueTemplateSource();
@@ -2593,7 +2629,7 @@
     const includePreviewBackground = options.includePreviewBackground !== false;
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    if (includePreviewBackground) {
+    if (includePreviewBackground && !hasPreviewVideo()) {
       ctx.save();
       ctx.fillStyle = state.previewBackgroundColor || "#f6fbff";
       ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -2637,16 +2673,18 @@
     renderCurrentPreview();
   }
 
-  function updatePreviewTime(value, render = true) {
+  function updatePreviewTime(value, render = true, syncMedia = true) {
     const max = Number(previewTimeRange.max) || Math.max(30, value);
     const time = round(clamp(value, 0, max), 2);
     previewTimeInput.value = String(time);
     previewTimeRange.value = String(time);
+    if (syncMedia) syncActiveMediaTime(time);
     if (render) renderFrame(time, { includePreviewBackground: true });
   }
 
   function updatePreviewRangeMax() {
-    const duration = Number.isFinite(audioPlayer.duration) ? audioPlayer.duration : 0;
+    const media = activeMediaPlayer();
+    const duration = Number.isFinite(media?.duration) ? media.duration : 0;
     const cueEnd = Math.max(0, ...state.cues.map((cue) => cue.end || 0));
     const max = Math.max(30, Math.ceil(duration || cueEnd || 30));
     previewTimeRange.max = String(max);
@@ -2660,9 +2698,11 @@
     renderLoopRunning = true;
 
     const tick = () => {
-      updatePreviewTime(audioPlayer.currentTime || 0, false);
-      renderFrame(audioPlayer.currentTime || 0, { includePreviewBackground: true });
-      if (!audioPlayer.paused && !audioPlayer.ended) {
+      const media = activeMediaPlayer();
+      const currentTime = media?.currentTime || 0;
+      updatePreviewTime(currentTime, false, false);
+      renderFrame(currentTime, { includePreviewBackground: true });
+      if (media && !media.paused && !media.ended) {
         requestAnimationFrame(tick);
       } else {
         renderLoopRunning = false;
@@ -2688,13 +2728,30 @@
     }
 
     if (state.audioDataUrl) {
-      audioPlayer.src = state.audioDataUrl;
+      if (hasPreviewVideo()) {
+        audioPlayer.pause();
+        audioPlayer.removeAttribute("src");
+        audioPlayer.load();
+        previewVideoPlayer.src = state.audioDataUrl;
+        previewVideoPlayer.load();
+      } else {
+        previewVideoPlayer.pause();
+        previewVideoPlayer.removeAttribute("src");
+        previewVideoPlayer.load();
+        audioPlayer.src = state.audioDataUrl;
+        audioPlayer.load();
+      }
       audioFileInfo.textContent = state.audioFileName ? t("loadedFile", { name: state.audioFileName }) : t("audioLoaded");
     } else {
+      audioPlayer.pause();
       audioPlayer.removeAttribute("src");
       audioPlayer.load();
+      previewVideoPlayer.pause();
+      previewVideoPlayer.removeAttribute("src");
+      previewVideoPlayer.load();
       audioFileInfo.textContent = t("audioNotLoaded");
     }
+    syncMediaVisibility();
   }
 
   function serializeProject() {
@@ -2955,7 +3012,7 @@
       state.audioMimeType = file.type;
       updateFileChoiceStatus(audioChosenLabel, file.name);
       await hydrateAssets();
-      audioPlayer.addEventListener("loadedmetadata", updatePreviewRangeMax, { once: true });
+      activeMediaPlayer()?.addEventListener("loadedmetadata", updatePreviewRangeMax, { once: true });
     });
 
     clearAudioBtn.addEventListener("click", async () => {
@@ -3103,13 +3160,16 @@
     applyDefaultToSelectedBtn.addEventListener("click", applyDefaultsToSelected);
     addInlineStyleBtn?.addEventListener("click", addInlineStyleToSelectedCue);
 
-    audioPlayer.addEventListener("loadedmetadata", updatePreviewRangeMax);
-    audioPlayer.addEventListener("play", startRenderLoop);
-    audioPlayer.addEventListener("pause", () => updatePreviewTime(audioPlayer.currentTime || 0, true));
-    audioPlayer.addEventListener("seeked", () => updatePreviewTime(audioPlayer.currentTime || 0, true));
+    [audioPlayer, previewVideoPlayer].forEach((media) => {
+      media?.addEventListener("loadedmetadata", updatePreviewRangeMax);
+      media?.addEventListener("play", startRenderLoop);
+      media?.addEventListener("pause", () => updatePreviewTime(media.currentTime || 0, true, false));
+      media?.addEventListener("seeked", () => updatePreviewTime(media.currentTime || 0, true, false));
+    });
 
     setPreviewFromAudioBtn.addEventListener("click", () => {
-      updatePreviewTime(audioPlayer.currentTime || 0, true);
+      const media = activeMediaPlayer();
+      updatePreviewTime(media?.currentTime || 0, true, false);
     });
 
     previewTimeRange.addEventListener("input", () => updatePreviewTime(previewTimeRange.value, true));
@@ -3174,8 +3234,9 @@
     });
 
     setExportEndFromAudioBtn.addEventListener("click", () => {
-      if (Number.isFinite(audioPlayer.duration) && audioPlayer.duration > 0) {
-        exportEndInput.value = String(round(audioPlayer.duration, 2));
+      const media = activeMediaPlayer();
+      if (Number.isFinite(media?.duration) && media.duration > 0) {
+        exportEndInput.value = String(round(media.duration, 2));
       }
     });
     exportSrtBtn?.addEventListener("click", exportSrtFile);
@@ -3223,6 +3284,7 @@
     renderCustomFontControls();
     syncDefaultControls();
     syncPreviewBackgroundControls();
+    syncMediaVisibility();
     bindEvents();
     applyLanguage(state.uiLanguage);
     requestAnimationFrame(resizePreviewViewport);

@@ -41,12 +41,12 @@
         <summary>素材読み込み</summary>
         <div class="control-stack">
           <div class="field">
-            <span>音声ファイル</span>
+            <span>音声 / MP4ファイル</span>
             <div class="custom-file-row">
               <label class="file-button custom-file-button" for="audioInput"><span id="audioChooseLabel">ファイルを選択</span></label>
               <span id="audioChosenLabel" class="file-select-status">選択されていません</span>
             </div>
-            <input id="audioInput" class="visually-hidden-file" type="file" accept="audio/*" />
+            <input id="audioInput" class="visually-hidden-file" type="file" accept="audio/*,video/mp4,video/quicktime,.mp4,.m4v,.mov" />
           </div>
           <div class="asset-status-row">
             <div id="audioFileInfo" class="asset-status">音声未読込</div>
@@ -222,6 +222,7 @@
           <div id="activeCueInfo" class="active-cue-info">表示中の歌詞なし</div>
         </div>
         <div class="canvas-shell">
+          <video id="previewVideoPlayer" class="preview-video-player hidden" controls playsinline preload="metadata"></video>
           <canvas id="previewCanvas" width="1920" height="1080"></canvas>
         </div>
       </div>
@@ -239,7 +240,7 @@
           <input id="previewTimeRange" type="range" min="0" max="30" step="0.01" value="0" />
           <button id="renderPreviewBtn" type="button">更新</button>
         </div>
-        <p class="hint">音声再生中に左の歌詞ボタンを押すと、その時刻に歌詞キューを作成します。</p>
+        <p class="hint">音声またはMP4を再生中に左の歌詞ボタンを押すと、その時刻に歌詞キューを作成します。</p>
       </div>
     </section>
 
@@ -507,7 +508,7 @@
               <input id="exportEndInput" type="number" min="0" step="0.01" value="3" />
             </label>
           </div>
-          <button id="setExportEndFromAudioBtn" type="button">音声の長さを終了秒へ</button>
+          <button id="setExportEndFromAudioBtn" type="button">素材の長さを終了秒へ</button>
           <div class="button-row">
             <button id="exportSrtBtn" type="button">SRT字幕を書き出し</button>
             <button id="exportZipBtn" type="button" class="primary">透過PNG連番ZIPを書き出し</button>
