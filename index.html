@@ -544,6 +544,27 @@
       </div>
       <div class="manual-modal-body">
         <div class="control-stack">
+          <div class="export-preview-box">
+            <div class="export-preview-head">
+              <strong id="exportPreviewTitle">書き出しプレビュー</strong>
+              <span id="exportPreviewTimeLabel">0.00s</span>
+            </div>
+            <div class="export-preview-shell">
+              <video id="exportPreviewVideoPlayer" class="export-preview-video hidden" playsinline preload="metadata"></video>
+              <audio id="exportPreviewAudioPlayer" preload="metadata"></audio>
+              <canvas id="exportPreviewCanvas"></canvas>
+            </div>
+            <div class="export-preview-controls">
+              <button id="exportPreviewPlayPauseBtn" type="button">再生</button>
+              <button id="exportPreviewStopBtn" type="button">停止</button>
+              <input id="exportPreviewTimeRange" type="range" min="0" max="30" step="0.01" value="0" />
+              <label class="field compact-field">
+                <span>プレビュー秒</span>
+                <input id="exportPreviewTimeInput" type="number" min="0" step="0.01" value="0" />
+              </label>
+            </div>
+          </div>
+
           <div class="grid-2">
             <label class="field">
               <span>FPS</span>
@@ -558,10 +579,12 @@
             <label class="field">
               <span>開始秒</span>
               <input id="exportStartInput" type="number" min="0" step="0.01" value="0" />
+              <button id="setExportStartCurrentBtn" type="button">現在位置で開始</button>
             </label>
             <label class="field">
               <span>終了秒</span>
               <input id="exportEndInput" type="number" min="0" step="0.01" value="3" />
+              <button id="setExportEndCurrentBtn" type="button">現在位置で終了</button>
             </label>
           </div>
           <button id="setExportEndFromAudioBtn" type="button">素材の長さを終了秒へ</button>

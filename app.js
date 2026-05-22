@@ -98,6 +98,16 @@
   const exportModalTitle = $("#exportModalTitle");
   const closeExportModalBtn = $("#closeExportModalBtn");
   const closeExportModalFooterBtn = $("#closeExportModalFooterBtn");
+  const exportPreviewTitle = $("#exportPreviewTitle");
+  const exportPreviewCanvas = $("#exportPreviewCanvas");
+  const exportPreviewCtx = exportPreviewCanvas?.getContext("2d", { alpha: true });
+  const exportPreviewVideoPlayer = $("#exportPreviewVideoPlayer");
+  const exportPreviewAudioPlayer = $("#exportPreviewAudioPlayer");
+  const exportPreviewPlayPauseBtn = $("#exportPreviewPlayPauseBtn");
+  const exportPreviewStopBtn = $("#exportPreviewStopBtn");
+  const exportPreviewTimeRange = $("#exportPreviewTimeRange");
+  const exportPreviewTimeInput = $("#exportPreviewTimeInput");
+  const exportPreviewTimeLabel = $("#exportPreviewTimeLabel");
   const openLayerSettingsBtn = $("#openLayerSettingsBtn");
   const layerSettingsModal = $("#layerSettingsModal");
   const closeLayerSettingsBtn = $("#closeLayerSettingsBtn");
@@ -236,6 +246,8 @@
   const exportPrefixInput = $("#exportPrefixInput");
   const exportStartInput = $("#exportStartInput");
   const exportEndInput = $("#exportEndInput");
+  const setExportStartCurrentBtn = $("#setExportStartCurrentBtn");
+  const setExportEndCurrentBtn = $("#setExportEndCurrentBtn");
   const setExportEndFromAudioBtn = $("#setExportEndFromAudioBtn");
   const exportSrtBtn = $("#exportSrtBtn");
   const exportZipBtn = $("#exportZipBtn");
@@ -718,7 +730,7 @@
       lyricsTxt: "歌詞TXT", lyricsHint: "TXTの1行を1フレーズとして歌詞ボタンにします。空行は自動除外します。",
       previewBgColor: "プレビュー背景色", bgFit: "背景画像の表示", fitCover: "画面いっぱい", fitContain: "全体表示", fitStretch: "引き伸ばし", previewBgImage: "プレビュー背景画像", bgScale: "背景画像サイズ", bgOffsetX: "背景画像移動X", bgOffsetY: "背景画像移動Y", clearBgImage: "背景画像を解除", bgHint: "背景色・背景画像はプレビュー確認用です。透過PNG書き出しには含まれません。",
       canvasAspect: "キャンバス比率", aspectLandscape: "16:9 横長", aspectPortrait: "9:16 縦長", transparentExport: "透過書き出し", customFont: "任意フォント追加", customFontList: "追加済みフォント", deleteCustomFont: "選択フォントを削除", customFontHint: "アップロードしたフォントはこのブラウザ内で利用できます。JSON/キャッシュ保存にも含まれます。", customFontLoaded: "フォントを追加しました: {name}", customFontLoadFailed: "フォントを読み込めませんでした。対応形式は ttf / otf / woff / woff2 です。", noCustomFonts: "追加フォントなし", selectFont: "フォントを選択",
-      defaultFont: "基本フォント", defaultSize: "基本サイズ", defaultDuration: "初期表示秒数", autoChain: "前フレーズ終了を自動調整", yes: "する", no: "しない", defaultAnimation: "初期アニメーション", defaultAlign: "初期文字揃え", applyDefaults: "全フレーズへ基本設定を反映", currentInputLayer: "現在の入力レイヤー", cueLayer: "表示レイヤー", layerSettingsTitle: "レイヤー設定", layerSettingsHint: "レイヤー名と色ラベルを変更できます。入力済みフレーズ一覧のL1 / L2表示にも使われます。", layerName: "レイヤー名", layerColor: "色ラベル", layerWarning: "※文字を複数同じ画面に表示したい場合は、必ずレイヤーを切り替えてからフレーズボタンを押してください。", setCueStartCurrent: "現在位置で開始", setCueEndCurrent: "現在位置で終了", simpleEditorDownload: "簡易編集アプリDL", simpleEditorHint: "連番・動画・音声・画像で簡易動画編集が可能なWindows用変換アプリです。",
+      defaultFont: "基本フォント", defaultSize: "基本サイズ", defaultDuration: "初期表示秒数", autoChain: "前フレーズ終了を自動調整", yes: "する", no: "しない", defaultAnimation: "初期アニメーション", defaultAlign: "初期文字揃え", applyDefaults: "全フレーズへ基本設定を反映", currentInputLayer: "現在の入力レイヤー", cueLayer: "表示レイヤー", layerSettingsTitle: "レイヤー設定", layerSettingsHint: "レイヤー名と色ラベルを変更できます。入力済みフレーズ一覧のL1 / L2表示にも使われます。", layerName: "レイヤー名", layerColor: "色ラベル", layerWarning: "※文字を複数同じ画面に表示したい場合は、必ずレイヤーを切り替えてからフレーズボタンを押してください。", setCueStartCurrent: "現在位置で開始", setCueEndCurrent: "現在位置で終了", exportPreviewTitle: "書き出しプレビュー", setExportStartCurrent: "現在位置で開始", setExportEndCurrent: "現在位置で終了", exportPreviewPlay: "再生", exportPreviewPause: "一時停止", exportPreviewStop: "停止", simpleEditorDownload: "簡易編集アプリDL", simpleEditorHint: "連番・動画・音声・画像で簡易動画編集が可能なWindows用変換アプリです。",
       animNormal: "通常表示", animTypewriter: "タイプライター表示", animScaleReveal: "拡大しながら表示", animJumpTypewriter: "ジャンプしながらタイプライター表示", animJumpReveal: "ジャンプしながら表示", animJumpInOut: "登場時と退場時だけジャンプ",
       alignLeft: "左寄せ", alignCenter: "中央寄せ", alignRight: "右寄せ",
       lyricsNotLoaded: "歌詞未読込", clearList: "一覧クリア", lyricsButtonEmpty: "歌詞TXTを読み込むと、ここに1行ずつボタンが追加されます。", enteredEmpty: "入力済みフレーズはまだありません。音声またはMP4再生中に歌詞ボタンを押してください。",
@@ -744,7 +756,7 @@
       lyricsTxt: "Lyrics TXT", lyricsHint: "Each line in the TXT file becomes one lyric button. Blank lines are ignored.",
       previewBgColor: "Preview Background Color", bgFit: "Background Image Fit", fitCover: "Fill Screen", fitContain: "Contain", fitStretch: "Stretch", previewBgImage: "Preview Background Image", bgScale: "Background Image Scale", bgOffsetX: "Background Image Offset X", bgOffsetY: "Background Image Offset Y", clearBgImage: "Clear Background Image", bgHint: "Background color and image are for preview only and are not included in transparent PNG export.",
       canvasAspect: "Canvas Aspect", aspectLandscape: "16:9 Landscape", aspectPortrait: "9:16 Portrait", transparentExport: "transparent export", customFont: "Add Custom Font", customFontList: "Custom Fonts", deleteCustomFont: "Delete Selected Font", customFontHint: "Uploaded fonts can be used in this browser and are included in JSON/cache saves.", customFontLoaded: "Font added: {name}", customFontLoadFailed: "Could not load the font. Supported formats: ttf / otf / woff / woff2.", noCustomFonts: "No custom fonts", selectFont: "Select a font",
-      defaultFont: "Default Font", defaultSize: "Default Size", defaultDuration: "Default Duration", autoChain: "Auto-adjust previous phrase end", yes: "On", no: "Off", defaultAnimation: "Default Animation", defaultAlign: "Default Alignment", applyDefaults: "Apply defaults to all phrases", currentInputLayer: "Current Input Layer", cueLayer: "Display Layer", layerSettingsTitle: "Layer Settings", layerSettingsHint: "You can rename each layer and change its color label. The same labels are shown as L1 / L2 in the placed phrase list.", layerName: "Layer Name", layerColor: "Color Label", layerWarning: "※ To display multiple text phrases on the same screen, switch layers before pressing a phrase button.", setCueStartCurrent: "Set Start to Current Position", setCueEndCurrent: "Set End to Current Position", simpleEditorDownload: "Download Simple Editor App", simpleEditorHint: "A Windows app for simple video editing with image sequences, video, audio, and still images.",
+      defaultFont: "Default Font", defaultSize: "Default Size", defaultDuration: "Default Duration", autoChain: "Auto-adjust previous phrase end", yes: "On", no: "Off", defaultAnimation: "Default Animation", defaultAlign: "Default Alignment", applyDefaults: "Apply defaults to all phrases", currentInputLayer: "Current Input Layer", cueLayer: "Display Layer", layerSettingsTitle: "Layer Settings", layerSettingsHint: "You can rename each layer and change its color label. The same labels are shown as L1 / L2 in the placed phrase list.", layerName: "Layer Name", layerColor: "Color Label", layerWarning: "※ To display multiple text phrases on the same screen, switch layers before pressing a phrase button.", setCueStartCurrent: "Set Start to Current Position", setCueEndCurrent: "Set End to Current Position", exportPreviewTitle: "Export Preview", setExportStartCurrent: "Set Start to Current", setExportEndCurrent: "Set End to Current", exportPreviewPlay: "Play", exportPreviewPause: "Pause", exportPreviewStop: "Stop", simpleEditorDownload: "Download Simple Editor App", simpleEditorHint: "A Windows app for simple video editing with image sequences, video, audio, and still images.",
       animNormal: "Normal", animTypewriter: "Typewriter", animScaleReveal: "Scale Reveal", animJumpTypewriter: "Jump + Typewriter", animJumpReveal: "Jump Reveal", animJumpInOut: "Jump on In/Out",
       alignLeft: "Left", alignCenter: "Center", alignRight: "Right",
       lyricsNotLoaded: "No lyrics loaded", clearList: "Clear List", lyricsButtonEmpty: "Load a lyrics TXT file to create one button per line here.", enteredEmpty: "No phrases placed yet. Press a lyric button while audio or MP4 is playing.",
@@ -771,7 +783,7 @@
       lyricsTxt: "가사 TXT", lyricsHint: "TXT의 한 줄을 하나의 프레이즈 버튼으로 만듭니다. 빈 줄은 자동으로 제외됩니다.",
       previewBgColor: "미리보기 배경색", bgFit: "배경 이미지 표시", fitCover: "화면 채우기", fitContain: "전체 표시", fitStretch: "늘이기", previewBgImage: "미리보기 배경 이미지", bgScale: "배경 이미지 크기", bgOffsetX: "배경 이미지 이동 X", bgOffsetY: "배경 이미지 이동 Y", clearBgImage: "배경 이미지 해제", bgHint: "배경색과 배경 이미지는 미리보기 확인용입니다. 투명 PNG 내보내기에는 포함되지 않습니다.",
       canvasAspect: "캔버스 비율", aspectLandscape: "16:9 가로형", aspectPortrait: "9:16 세로형", transparentExport: "투명 내보내기", customFont: "사용자 폰트 추가", customFontList: "추가된 폰트", deleteCustomFont: "선택한 폰트 삭제", customFontHint: "업로드한 폰트는 이 브라우저에서 사용할 수 있으며 JSON/캐시 저장에도 포함됩니다.", customFontLoaded: "폰트를 추가했습니다: {name}", customFontLoadFailed: "폰트를 불러올 수 없습니다. 지원 형식은 ttf / otf / woff / woff2입니다.", noCustomFonts: "추가 폰트 없음", selectFont: "폰트 선택",
-      defaultFont: "기본 폰트", defaultSize: "기본 크기", defaultDuration: "초기 표시 시간", autoChain: "이전 프레이즈 종료 자동 조정", yes: "켜기", no: "끄기", defaultAnimation: "초기 애니메이션", defaultAlign: "초기 정렬", applyDefaults: "모든 프레이즈에 기본 설정 적용", currentInputLayer: "현재 입력 레이어", cueLayer: "표시 레이어", layerSettingsTitle: "레이어 설정", layerSettingsHint: "레이어 이름과 색상 라벨을 변경할 수 있습니다. 입력된 프레이즈 목록의 L1 / L2 표시에도 사용됩니다.", layerName: "레이어 이름", layerColor: "색상 라벨", layerWarning: "※ 같은 화면에 여러 문자를 표시하려면 반드시 레이어를 전환한 뒤 프레이즈 버튼을 눌러 주세요.", setCueStartCurrent: "현재 위치로 시작 설정", setCueEndCurrent: "현재 위치로 종료 설정", simpleEditorDownload: "간이 편집 앱 DL", simpleEditorHint: "시퀀스 이미지, 영상, 음성, 이미지로 간단한 영상 편집이 가능한 Windows용 앱입니다.",
+      defaultFont: "기본 폰트", defaultSize: "기본 크기", defaultDuration: "초기 표시 시간", autoChain: "이전 프레이즈 종료 자동 조정", yes: "켜기", no: "끄기", defaultAnimation: "초기 애니메이션", defaultAlign: "초기 정렬", applyDefaults: "모든 프레이즈에 기본 설정 적용", currentInputLayer: "현재 입력 레이어", cueLayer: "표시 레이어", layerSettingsTitle: "레이어 설정", layerSettingsHint: "레이어 이름과 색상 라벨을 변경할 수 있습니다. 입력된 프레이즈 목록의 L1 / L2 표시에도 사용됩니다.", layerName: "레이어 이름", layerColor: "색상 라벨", layerWarning: "※ 같은 화면에 여러 문자를 표시하려면 반드시 레이어를 전환한 뒤 프레이즈 버튼을 눌러 주세요.", setCueStartCurrent: "현재 위치로 시작 설정", setCueEndCurrent: "현재 위치로 종료 설정", exportPreviewTitle: "내보내기 미리보기", setExportStartCurrent: "현재 위치로 시작 설정", setExportEndCurrent: "현재 위치로 종료 설정", exportPreviewPlay: "재생", exportPreviewPause: "일시정지", exportPreviewStop: "정지", simpleEditorDownload: "간이 편집 앱 DL", simpleEditorHint: "시퀀스 이미지, 영상, 음성, 이미지로 간단한 영상 편집이 가능한 Windows용 앱입니다.",
       animNormal: "일반 표시", animTypewriter: "타자기 표시", animScaleReveal: "확대하며 표시", animJumpTypewriter: "점프하며 타자기 표시", animJumpReveal: "점프하며 표시", animJumpInOut: "등장/퇴장 시에만 점프",
       alignLeft: "왼쪽 정렬", alignCenter: "가운데 정렬", alignRight: "오른쪽 정렬",
       lyricsNotLoaded: "가사 미불러옴", clearList: "목록 지우기", lyricsButtonEmpty: "가사 TXT를 불러오면 여기에 한 줄씩 버튼이 추가됩니다.", enteredEmpty: "아직 입력된 프레이즈가 없습니다. 오디오 또는 MP4 재생 중에 가사 버튼을 눌러 주세요.",
@@ -934,7 +946,17 @@
     setFieldLabel(cueFadeInDurationInput, "fadeInSec"); setFieldLabel(cueFadeOutDurationInput, "fadeOutSec"); setFieldLabel(cueStrokeColorInput, "strokeColor"); setRangeLabel(cueStrokeWidthInput, "strokeWidth"); setFieldLabel(cueShadowColorInput, "shadowColor"); setRangeLabel(cueShadowBlurInput, "shadowBlur"); setFieldLabel(cueShadowOffsetXInput, "shadowX"); setFieldLabel(cueShadowOffsetYInput, "shadowY");
     setText(duplicateCueBtn, "duplicate"); setText(deleteCueBtn, "delete");
 
-    setText(exportModalTitle, "export"); setFieldLabel(exportFpsInput, "fps"); setFieldLabel(exportPrefixInput, "prefix"); setFieldLabel(exportStartInput, "startSec"); setFieldLabel(exportEndInput, "endSec"); setText(setExportEndFromAudioBtn, "setEndFromAudio"); setText(exportSrtBtn, "exportSrt"); setText(exportZipBtn, "exportZip"); setText(videoConverterDownloadBtn, "videoConverterDownload"); setText(videoConverterHint, "videoConverterHint"); setText(simpleEditorDownloadBtn, "simpleEditorDownload"); setText(simpleEditorHint, "simpleEditorHint"); const layerSettingsTitleNode = document.querySelector("#layerSettingsTitle"); if (layerSettingsTitleNode) layerSettingsTitleNode.textContent = t("layerSettingsTitle"); const layerSettingsHintNode = document.querySelector(".layer-settings-hint"); if (layerSettingsHintNode) layerSettingsHintNode.textContent = t("layerSettingsHint"); renderLayerControls();
+    setText(exportModalTitle, "export"); setText(exportPreviewTitle, "exportPreviewTitle"); updateExportPreviewPlayButton(); setText(exportPreviewStopBtn, "exportPreviewStop"); setFieldLabel(exportPreviewTimeInput, "previewSeconds"); setFieldLabel(exportFpsInput, "fps"); setFieldLabel(exportPrefixInput, "prefix"); setFieldLabel(exportStartInput, "startSec"); setFieldLabel(exportEndInput, "endSec"); setText(setExportStartCurrentBtn, "setExportStartCurrent"); setText(setExportEndCurrentBtn, "setExportEndCurrent"); setText(setExportEndFromAudioBtn, "setEndFromAudio"); setText(exportSrtBtn, "exportSrt"); setText(exportZipBtn, "exportZip"); setText(videoConverterDownloadBtn, "videoConverterDownload"); setText(videoConverterHint, "videoConverterHint"); setText(simpleEditorDownloadBtn, "simpleEditorDownload"); setText(simpleEditorHint, "simpleEditorHint");
+
+    setText(closeLayerSettingsFooterBtn, "close");
+    setText(closeExportModalFooterBtn, "close");
+    closeLayerSettingsBtn?.setAttribute("aria-label", t("close"));
+    closeExportModalBtn?.setAttribute("aria-label", t("close"));
+
+    const layerSettingsTitleNode = document.querySelector("#layerSettingsTitle"); if (layerSettingsTitleNode) layerSettingsTitleNode.textContent = t("layerSettingsTitle"); const layerSettingsHintNode = document.querySelector(".layer-settings-hint"); if (layerSettingsHintNode) layerSettingsHintNode.textContent = t("layerSettingsHint"); renderLayerControls();
+
+    updatePreviewToolUi();
+    updateHistoryButtons();
   }
 
 
@@ -1204,6 +1226,14 @@
       canvas.style.maxWidth = "none";
       canvas.style.maxHeight = "none";
     }
+    if (exportPreviewCanvas) {
+      exportPreviewCanvas.width = CANVAS_WIDTH;
+      exportPreviewCanvas.height = CANVAS_HEIGHT;
+      exportPreviewCanvas.style.aspectRatio = `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`;
+    }
+    if (exportPreviewVideoPlayer) {
+      exportPreviewVideoPlayer.style.aspectRatio = `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`;
+    }
     resizePreviewViewport();
     if (canvasAspectSelect) canvasAspectSelect.value = state.canvasAspect || "16:9";
 
@@ -1352,6 +1382,8 @@
     updateStaticText();
     renderInlineStyleEditor();
     renderAll();
+    updatePreviewToolUi();
+    updateHistoryButtons();
   }
 
   function uniqueId(prefix) {
@@ -3030,6 +3062,242 @@
     context.restore();
   }
 
+
+  function renderExportPreviewFrame(time) {
+    if (!exportPreviewCanvas || !exportPreviewCtx) return;
+
+    exportPreviewCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    if (!hasPreviewVideo()) {
+      exportPreviewCtx.save();
+      exportPreviewCtx.fillStyle = state.previewBackgroundColor || "#f6fbff";
+      exportPreviewCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      if (state.previewBackgroundImage) {
+        drawImageFit(
+          exportPreviewCtx,
+          state.previewBackgroundImage,
+          state.previewBackgroundFit || "cover",
+          CANVAS_WIDTH,
+          CANVAS_HEIGHT,
+          state.previewBackgroundScale ?? 100,
+          state.previewBackgroundOffsetX ?? 0,
+          state.previewBackgroundOffsetY ?? 0
+        );
+      }
+      exportPreviewCtx.restore();
+    }
+
+    const active = state.cues
+      .filter((cue) => time >= cue.start && time <= cue.end)
+      .sort((a, b) => cueLayerOrder(a) - cueLayerOrder(b) || a.start - b.start);
+
+    active.forEach((cue) => drawCue(exportPreviewCtx, cue, time));
+  }
+
+  function exportPreviewMediaPlayer() {
+    if (!state.audioDataUrl) return null;
+    return hasPreviewVideo() ? exportPreviewVideoPlayer : exportPreviewAudioPlayer;
+  }
+
+  function isExportPreviewPlaying() {
+    const media = exportPreviewMediaPlayer();
+    return Boolean(media && !media.paused && !media.ended);
+  }
+
+  function updateExportPreviewPlayButton() {
+    if (!exportPreviewPlayPauseBtn) return;
+    const label = isExportPreviewPlaying() ? t("exportPreviewPause") : t("exportPreviewPlay");
+    exportPreviewPlayPauseBtn.textContent = label;
+    exportPreviewPlayPauseBtn.title = label;
+    exportPreviewPlayPauseBtn.setAttribute("aria-label", label);
+  }
+
+  function syncExportPreviewVideoSource() {
+    if (!exportPreviewVideoPlayer || !exportPreviewAudioPlayer) return;
+
+    const isVideo = hasPreviewVideo() && state.audioDataUrl;
+
+    if (isVideo) {
+      exportPreviewVideoPlayer.classList.remove("hidden");
+      exportPreviewVideoPlayer.muted = false;
+      exportPreviewVideoPlayer.volume = activeMediaPlayer()?.volume ?? 1;
+
+      if (exportPreviewVideoPlayer.src !== state.audioDataUrl) {
+        exportPreviewVideoPlayer.src = state.audioDataUrl;
+        exportPreviewVideoPlayer.load();
+      }
+
+      exportPreviewAudioPlayer.pause();
+      exportPreviewAudioPlayer.removeAttribute("src");
+      exportPreviewAudioPlayer.load();
+    } else {
+      exportPreviewVideoPlayer.pause();
+      exportPreviewVideoPlayer.removeAttribute("src");
+      exportPreviewVideoPlayer.load();
+      exportPreviewVideoPlayer.classList.add("hidden");
+
+      if (state.audioDataUrl && exportPreviewAudioPlayer.src !== state.audioDataUrl) {
+        exportPreviewAudioPlayer.src = state.audioDataUrl;
+        exportPreviewAudioPlayer.load();
+      }
+    }
+
+    updateExportPreviewPlayButton();
+  }
+
+  function exportPreviewMaxTime() {
+    const media = exportPreviewMediaPlayer() || activeMediaPlayer();
+    const duration = Number.isFinite(media?.duration) ? media.duration : 0;
+    const cueEnd = Math.max(0, ...state.cues.map((cue) => Number(cue.end) || 0));
+    const exportEnd = Number(exportEndInput?.value) || 0;
+    return Math.max(30, Math.ceil(duration || cueEnd || exportEnd || 30));
+  }
+
+  function updateExportPreviewRangeMax() {
+    const max = exportPreviewMaxTime();
+    if (exportPreviewTimeRange) exportPreviewTimeRange.max = String(max);
+    if (exportPreviewTimeInput) exportPreviewTimeInput.max = String(max);
+  }
+
+  function updateExportPreviewTimeUi(time) {
+    const safeTime = round(Number(time) || 0, 2);
+    if (exportPreviewTimeRange) exportPreviewTimeRange.value = String(safeTime);
+    if (exportPreviewTimeInput) exportPreviewTimeInput.value = String(safeTime);
+    if (exportPreviewTimeLabel) exportPreviewTimeLabel.textContent = `${safeTime.toFixed(2)}s`;
+  }
+
+  function setExportPreviewTime(value, render = true, options = {}) {
+    updateExportPreviewRangeMax();
+
+    const shouldSeek = options.seek !== false;
+    const max = Number(exportPreviewTimeRange?.max) || 30;
+    const time = round(clamp(Number(value) || 0, 0, max), 2);
+
+    updateExportPreviewTimeUi(time);
+
+    const media = exportPreviewMediaPlayer();
+    if (shouldSeek && media?.src) {
+      try {
+        if (!Number.isFinite(media.duration) || time <= media.duration) {
+          if (Math.abs((media.currentTime || 0) - time) > 0.04) {
+            media.currentTime = time;
+          }
+        }
+      } catch (_) {
+        // metadata読み込み前のseek失敗は無視
+      }
+    }
+
+    if (render) renderExportPreviewFrame(time);
+  }
+
+  function currentExportPreviewTime() {
+    const media = exportPreviewMediaPlayer();
+    if (isExportPreviewPlaying() && Number.isFinite(media?.currentTime)) {
+      return round(media.currentTime, 2);
+    }
+    return round(Number(exportPreviewTimeInput?.value || exportPreviewTimeRange?.value) || 0, 2);
+  }
+
+  let exportPreviewAnimationFrameId = null;
+
+  function stopExportPreviewRenderLoop() {
+    if (exportPreviewAnimationFrameId) {
+      cancelAnimationFrame(exportPreviewAnimationFrameId);
+      exportPreviewAnimationFrameId = null;
+    }
+  }
+
+  function exportPreviewRenderLoop() {
+    const media = exportPreviewMediaPlayer();
+
+    if (!media || media.paused || media.ended) {
+      stopExportPreviewRenderLoop();
+      updateExportPreviewPlayButton();
+      return;
+    }
+
+    const time = round(media.currentTime || 0, 2);
+    updateExportPreviewTimeUi(time);
+    renderExportPreviewFrame(time);
+
+    exportPreviewAnimationFrameId = requestAnimationFrame(exportPreviewRenderLoop);
+  }
+
+  function startExportPreviewRenderLoop() {
+    stopExportPreviewRenderLoop();
+    exportPreviewAnimationFrameId = requestAnimationFrame(exportPreviewRenderLoop);
+  }
+
+  async function playExportPreview() {
+    syncExportPreviewVideoSource();
+
+    const media = exportPreviewMediaPlayer();
+    if (!media || !state.audioDataUrl) return;
+
+    const time = currentExportPreviewTime();
+
+    try {
+      if (Math.abs((media.currentTime || 0) - time) > 0.04) {
+        media.currentTime = time;
+      }
+
+      await media.play();
+      updateExportPreviewPlayButton();
+      startExportPreviewRenderLoop();
+    } catch (error) {
+      console.error(error);
+      updateExportPreviewPlayButton();
+    }
+  }
+
+  function pauseExportPreview() {
+    const media = exportPreviewMediaPlayer();
+    media?.pause();
+    stopExportPreviewRenderLoop();
+    setExportPreviewTime(currentExportPreviewTime(), true, { seek: false });
+    updateExportPreviewPlayButton();
+  }
+
+  function stopExportPreviewPlayback() {
+    const media = exportPreviewMediaPlayer();
+    media?.pause();
+    stopExportPreviewRenderLoop();
+    setExportPreviewTime(0, true);
+    updateExportPreviewPlayButton();
+  }
+
+  function toggleExportPreviewPlayback() {
+    if (isExportPreviewPlaying()) {
+      pauseExportPreview();
+    } else {
+      playExportPreview();
+    }
+  }
+
+  function refreshExportPreviewFromMainPreview() {
+    syncExportPreviewVideoSource();
+    updateExportPreviewRangeMax();
+    setExportPreviewTime(Number(previewTimeInput?.value || previewTimeRange?.value || 0), true);
+  }
+
+  function setExportStartToCurrentPosition() {
+    const time = currentExportPreviewTime();
+    exportStartInput.value = String(time);
+    if (Number(exportEndInput.value) <= time) {
+      exportEndInput.value = String(round(time + 0.05, 2));
+      updateExportPreviewRangeMax();
+    }
+  }
+
+  function setExportEndToCurrentPosition() {
+    const time = currentExportPreviewTime();
+    const start = Number(exportStartInput.value) || 0;
+    exportEndInput.value = String(round(Math.max(time, start + 0.05), 2));
+    updateExportPreviewRangeMax();
+  }
+
+
   function renderFrame(time, options = {}) {
     const includePreviewBackground = options.includePreviewBackground !== false;
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -3240,9 +3508,14 @@
     renderLayerControls();
     renderPresetControls();
     updatePreviewRangeMax();
+    updateExportPreviewRangeMax();
+    syncExportPreviewVideoSource();
+    setExportPreviewTime(0, true);
     updateStaticText();
     renderInlineStyleEditor();
     renderAll();
+    updatePreviewToolUi();
+    updateHistoryButtons();
   }
 
   function downloadBlob(blob, filename) {
@@ -3397,9 +3670,11 @@
 
   function openExportModal() {
     exportModal?.classList.remove("hidden");
+    refreshExportPreviewFromMainPreview();
   }
 
   function closeExportModal() {
+    pauseExportPreview();
     exportModal?.classList.add("hidden");
   }
 
@@ -3751,10 +4026,48 @@
       renderPresetControls();
     });
 
+    exportPreviewPlayPauseBtn?.addEventListener("click", toggleExportPreviewPlayback);
+    exportPreviewStopBtn?.addEventListener("click", stopExportPreviewPlayback);
+    exportPreviewTimeRange?.addEventListener("input", () => {
+      pauseExportPreview();
+      setExportPreviewTime(Number(exportPreviewTimeRange.value), true);
+    });
+    exportPreviewTimeInput?.addEventListener("input", () => {
+      pauseExportPreview();
+      setExportPreviewTime(Number(exportPreviewTimeInput.value), true);
+    });
+    [exportPreviewVideoPlayer, exportPreviewAudioPlayer].forEach((media) => {
+      media?.addEventListener("timeupdate", () => {
+        if (isExportPreviewPlaying()) {
+          setExportPreviewTime(media.currentTime || 0, true, { seek: false });
+        }
+      });
+      media?.addEventListener("seeked", () => {
+        renderExportPreviewFrame(currentExportPreviewTime());
+      });
+      media?.addEventListener("loadedmetadata", () => {
+        updateExportPreviewRangeMax();
+        setExportPreviewTime(currentExportPreviewTime(), true);
+      });
+      media?.addEventListener("ended", () => {
+        stopExportPreviewRenderLoop();
+        updateExportPreviewPlayButton();
+        setExportPreviewTime(currentExportPreviewTime(), true, { seek: false });
+      });
+      media?.addEventListener("pause", updateExportPreviewPlayButton);
+      media?.addEventListener("play", updateExportPreviewPlayButton);
+    });
+    setExportStartCurrentBtn?.addEventListener("click", setExportStartToCurrentPosition);
+    setExportEndCurrentBtn?.addEventListener("click", setExportEndToCurrentPosition);
+    [exportStartInput, exportEndInput].forEach((input) => {
+      input?.addEventListener("input", updateExportPreviewRangeMax);
+      input?.addEventListener("change", updateExportPreviewRangeMax);
+    });
     setExportEndFromAudioBtn.addEventListener("click", () => {
       const media = activeMediaPlayer();
       if (Number.isFinite(media?.duration) && media.duration > 0) {
         exportEndInput.value = String(round(media.duration, 2));
+        updateExportPreviewRangeMax();
       }
     });
     exportSrtBtn?.addEventListener("click", exportSrtFile);
