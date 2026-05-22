@@ -825,3 +825,299 @@ summary {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* --- Layout update: header controls aligned by bottom edge --- */
+.header-actions {
+  align-items: flex-end;
+}
+
+.header-actions > button,
+.header-actions > .file-button,
+.header-actions > label.file-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-language {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  margin: 0;
+}
+
+.header-language > span {
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.header-language select {
+  min-height: 44px;
+}
+
+/* --- Layer tools moved to lyric button list --- */
+.lyrics-layer-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: end;
+}
+
+.lyrics-layer-tools button {
+  min-height: 44px;
+}
+
+.layer-warning {
+  border: 1px solid rgba(207, 77, 104, 0.35);
+  border-radius: 12px;
+  padding: 0.65rem 0.75rem;
+  background: rgba(255, 237, 242, 0.9);
+  color: #b73550;
+  font-weight: 700;
+}
+
+/* --- Collapsible phrase preset --- */
+.preset-collapsible {
+  display: block;
+}
+
+.preset-collapsible > summary.preset-title {
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.preset-inner {
+  display: grid;
+  gap: 0.7rem;
+  padding-top: 0.75rem;
+}
+
+/* --- Current-time buttons under cue timing --- */
+.cue-time-button-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+/* --- Modals --- */
+.export-modal,
+.layer-settings-modal {
+  width: min(860px, 94vw);
+}
+
+.layer-settings-modal .manual-modal-body {
+  display: grid;
+  gap: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .lyrics-layer-tools,
+  .cue-time-button-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Fixed app header */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Align header controls along the same bottom line */
+.header-actions {
+  align-items: flex-end;
+}
+
+.header-language {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  margin: 0;
+  min-width: 10rem;
+}
+
+.header-language > span {
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.header-language select,
+.header-actions > button,
+.header-actions > .file-button {
+  min-height: 44px;
+}
+
+.header-actions > button,
+.header-actions > .file-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* Prevent whole-page scrolling: only the side setting panels scroll */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  flex: 0 0 auto;
+}
+
+.app-layout {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.left-panel,
+.right-panel {
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.center-panel,
+.preview-panel,
+.transport-panel {
+  min-height: 0;
+  overflow: hidden;
+}
+
+
+/* Lyric buttons no longer show automatic 001 / 002 / 003 number labels */
+.lyric-number {
+  display: none !important;
+}
+
+
+/* Font preview in font dropdowns */
+.font-preview-select {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.font-preview-select option {
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+.font-preview-sample {
+  width: 100%;
+  border: 1px dashed rgba(102, 141, 169, 0.55);
+  border-radius: 12px;
+  background: rgba(245, 250, 254, 0.82);
+  color: var(--text);
+  padding: 0.58rem 0.7rem;
+  font-size: 1.1rem;
+  line-height: 1.55;
+  letter-spacing: 0.03em;
+}
+
+
+/* Preview direct operation tools */
+.preview-panel {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.preview-tool-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0 0.25rem 0.75rem;
+  flex-wrap: wrap;
+}
+
+.preview-tool-button {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.preview-tool-button img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.preview-tool-button.active {
+  border-color: var(--accent-dark);
+  box-shadow: 0 0 0 3px rgba(74, 158, 216, 0.22);
+  transform: translateY(-1px);
+}
+
+.preview-tool-hint {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+#previewCanvas {
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
+}
+
+#previewCanvas.is-tool-dragging {
+  cursor: grabbing;
+}
+
+
+/* Undo / Redo buttons */
+.preview-tool-separator {
+  width: 1px;
+  height: 32px;
+  background: rgba(190, 213, 229, 0.95);
+  margin: 0 0.1rem;
+}
+
+.history-button {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 12px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+
+/* Text preview operation buttons */
+.preview-tool-button {
+  width: auto;
+  min-width: 4.8rem;
+  height: 42px;
+  padding: 0 0.8rem;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  background: #fff;
+  color: var(--text);
+}
+
+.preview-tool-button img {
+  display: none !important;
+}
+
+.preview-tool-button.active {
+  border-color: var(--accent-dark);
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  box-shadow: 0 0 0 3px rgba(74, 158, 216, 0.22);
+}

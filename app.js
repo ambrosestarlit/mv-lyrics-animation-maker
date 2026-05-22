@@ -74,6 +74,16 @@
   const canvasShell = $(".canvas-shell");
   const previewPanel = $(".preview-panel");
   const previewToolbar = $(".preview-toolbar");
+  const previewToolButtons = $("#previewToolButtons");
+  const previewPositionToolBtn = $("#previewPositionToolBtn");
+  const previewPanToolBtn = $("#previewPanToolBtn");
+  const previewRotateToolBtn = $("#previewRotateToolBtn");
+  const previewRotationPanToolBtn = $("#previewRotationPanToolBtn");
+  const previewScaleToolBtn = $("#previewScaleToolBtn");
+  const previewScalePanToolBtn = $("#previewScalePanToolBtn");
+  const previewToolHint = $("#previewToolHint");
+  const undoBtn = $("#undoBtn");
+  const redoBtn = $("#redoBtn");
   const ctx = canvas.getContext("2d", { alpha: true });
   const uiLanguageSelect = $("#uiLanguageSelect");
   const canvasAspectSelect = $("#canvasAspectSelect");
@@ -83,6 +93,16 @@
   const manualModalBody = $("#manualModalBody");
   const closeManualBtn = $("#closeManualBtn");
   const closeManualFooterBtn = $("#closeManualFooterBtn");
+  const openExportModalBtn = $("#openExportModalBtn");
+  const exportModal = $("#exportModal");
+  const exportModalTitle = $("#exportModalTitle");
+  const closeExportModalBtn = $("#closeExportModalBtn");
+  const closeExportModalFooterBtn = $("#closeExportModalFooterBtn");
+  const openLayerSettingsBtn = $("#openLayerSettingsBtn");
+  const layerSettingsModal = $("#layerSettingsModal");
+  const closeLayerSettingsBtn = $("#closeLayerSettingsBtn");
+  const closeLayerSettingsFooterBtn = $("#closeLayerSettingsFooterBtn");
+
 
   const audioInput = $("#audioInput");
   const audioChooseLabel = $("#audioChooseLabel");
@@ -108,6 +128,7 @@
   const clearPreviewBgImageBtn = $("#clearPreviewBgImageBtn");
 
   const defaultFontFamilyInput = $("#defaultFontFamilyInput");
+  const defaultFontPreview = $("#defaultFontPreview");
   const defaultFontSizeInput = $("#defaultFontSizeInput");
   const defaultFontSizeOutput = $("#defaultFontSizeOutput");
   const defaultDurationInput = $("#defaultDurationInput");
@@ -144,6 +165,9 @@
   const cueTextInput = $("#cueTextInput");
   const cueStartInput = $("#cueStartInput");
   const cueEndInput = $("#cueEndInput");
+  const setCueStartCurrentBtn = $("#setCueStartCurrentBtn");
+  const setCueEndCurrentBtn = $("#setCueEndCurrentBtn");
+
   const cueLayerInput = $("#cueLayerInput");
   const cueAnimationInput = $("#cueAnimationInput");
   const cueAlignInput = $("#cueAlignInput");
@@ -217,6 +241,9 @@
   const exportZipBtn = $("#exportZipBtn");
   const videoConverterDownloadBtn = $("#videoConverterDownloadBtn");
   const videoConverterHint = $(".video-converter-hint");
+  const simpleEditorDownloadBtn = $("#simpleEditorDownloadBtn");
+  const simpleEditorHint = $(".simple-editor-hint");
+
   const exportProgress = $("#exportProgress");
 
   const saveJsonBtn = $("#saveJsonBtn");
@@ -286,6 +313,7 @@
     cues: [],
     selectedCueId: null,
     lastCreatedCueId: null,
+    previewTool: "position",
     presets: readStoredPresets(),
     layers: defaultLayerSeeds(DEFAULT_UI_LANGUAGE),
     currentInputLayerId: "layer1",
@@ -306,6 +334,157 @@
   let renderLoopRunning = false;
   let suppressEditorEvents = false;
 
+  const HISTORY_LIMIT = 100;
+  let undoStack = [];
+  let redoStack = [];
+  let historyRestoring = false;
+
+  function cloneForHistory(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function makeHistorySnapshot() {
+    return {
+      lyrics: cloneForHistory(state.lyrics || []),
+      cues: cloneForHistory(state.cues || []),
+      selectedCueId: state.selectedCueId || null,
+      lastCreatedCueId: state.lastCreatedCueId || null
+    };
+  }
+
+  function snapshotsEqual(a, b) {
+    return JSON.stringify(a) === JSON.stringify(b);
+  }
+
+  function updateHistoryButtons() {
+    if (undoBtn) {
+      undoBtn.disabled = undoStack.length === 0;
+      undoBtn.title = t("undo");
+      undoBtn.setAttribute("aria-label", t("undo"));
+    }
+    if (redoBtn) {
+      redoBtn.disabled = redoStack.length === 0;
+      redoBtn.title = t("redo");
+      redoBtn.setAttribute("aria-label", t("redo"));
+    }
+  }
+
+  function pushHistorySnapshot(snapshot) {
+    if (historyRestoring || !snapshot) return;
+    const current = makeHistorySnapshot();
+    if (snapshotsEqual(snapshot, current)) return;
+    undoStack.push(snapshot);
+    if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
+    redoStack = [];
+    updateHistoryButtons();
+  }
+
+
+  function syncLyricsCueIds() {
+    const cueByLyricId = new Map((state.cues || []).map((cue) => [cue.lyricId, cue]));
+    (state.lyrics || []).forEach((lyric) => {
+      const linkedCue = cueByLyricId.get(lyric.id);
+      lyric.cueId = linkedCue?.id || null;
+      if (linkedCue) {
+        lyric.text = linkedCue.text;
+      }
+    });
+  }
+
+
+  function forceRefreshAfterHistoryRestore() {
+    const cue = selectedCue();
+
+    if (cue) {
+      syncTransformInputsFromCue(cue);
+    }
+
+    updateRangeOutputs();
+    updatePreviewRangeMax();
+
+    const time = Number(previewTimeInput?.value || previewTimeRange?.value || 0) || 0;
+
+    if (previewTimeInput) {
+      previewTimeInput.value = String(time);
+    }
+
+    if (previewTimeRange) {
+      previewTimeRange.value = String(time);
+    }
+
+    renderCurrentPreview();
+
+    requestAnimationFrame(() => {
+      renderCurrentPreview();
+    });
+  }
+
+  function restoreHistorySnapshot(snapshot) {
+    if (!snapshot) return;
+
+    historyRestoring = true;
+
+    try {
+      if (Array.isArray(snapshot.lyrics)) {
+        state.lyrics = cloneForHistory(snapshot.lyrics);
+      }
+
+      state.cues = cloneForHistory(snapshot.cues || []);
+      state.selectedCueId = snapshot.selectedCueId || null;
+      state.lastCreatedCueId = snapshot.lastCreatedCueId || null;
+
+      syncLyricsCueIds();
+      renderLyricButtons();
+      renderCueList();
+      syncCueEditor();
+      forceRefreshAfterHistoryRestore();
+      updatePreviewToolUi();
+    } catch (error) {
+      console.error("History restore failed:", error);
+    } finally {
+      historyRestoring = false;
+      updateHistoryButtons();
+    }
+  }
+
+  function undoLastAction() {
+    commitEditorHistoryCapture();
+    if (!undoStack.length) return;
+    const current = makeHistorySnapshot();
+    const previous = undoStack.pop();
+    redoStack.push(current);
+    restoreHistorySnapshot(previous);
+  }
+
+  function clearHistory() {
+    undoStack = [];
+    redoStack = [];
+    editorHistorySnapshot = null;
+    updateHistoryButtons();
+  }
+
+  function redoLastAction() {
+    commitEditorHistoryCapture();
+    if (!redoStack.length) return;
+    const current = makeHistorySnapshot();
+    const next = redoStack.pop();
+    undoStack.push(current);
+    restoreHistorySnapshot(next);
+  }
+
+  let editorHistorySnapshot = null;
+
+  function beginEditorHistoryCapture() {
+    if (historyRestoring || editorHistorySnapshot) return;
+    editorHistorySnapshot = makeHistorySnapshot();
+  }
+
+  function commitEditorHistoryCapture() {
+    if (!editorHistorySnapshot) return;
+    pushHistorySnapshot(editorHistorySnapshot);
+    editorHistorySnapshot = null;
+  }
+
   function isVideoMediaFile(mimeType = "", fileName = "") {
     return /^video\//i.test(mimeType || "") || /\.(mp4|m4v|mov)$/i.test(fileName || "");
   }
@@ -324,6 +503,190 @@
     audioPlayer?.classList.toggle("hidden", videoMode);
     canvasShell?.classList.toggle("has-video", videoMode);
   }
+
+
+  function getPreviewDisplayMetrics() {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      rect,
+      scaleX: CANVAS_WIDTH / Math.max(1, rect.width),
+      scaleY: CANVAS_HEIGHT / Math.max(1, rect.height)
+    };
+  }
+
+  function clientPointToCanvasPoint(clientX, clientY) {
+    const metrics = getPreviewDisplayMetrics();
+    return {
+      x: (clientX - metrics.rect.left) * metrics.scaleX,
+      y: (clientY - metrics.rect.top) * metrics.scaleY
+    };
+  }
+
+  function setPreviewTool(tool) {
+    const allowed = ["position", "pan", "rotate", "rotationPan", "scale", "scalePan"];
+    state.previewTool = allowed.includes(tool) ? tool : "position";
+    updatePreviewToolUi();
+  }
+
+  function updatePreviewToolUi() {
+    const tool = state.previewTool || "position";
+    [
+      previewPositionToolBtn,
+      previewPanToolBtn,
+      previewRotateToolBtn,
+      previewRotationPanToolBtn,
+      previewScaleToolBtn,
+      previewScalePanToolBtn
+    ].forEach((button) => {
+      if (!button) return;
+      button.classList.toggle("active", button.dataset.tool === tool);
+    });
+
+    const labels = {
+      position: t("previewToolPosition"),
+      pan: t("previewToolPan"),
+      rotate: t("previewToolRotate"),
+      rotationPan: t("previewToolRotationPan"),
+      scale: t("previewToolScale"),
+      scalePan: t("previewToolScalePan")
+    };
+
+    [
+      previewPositionToolBtn,
+      previewPanToolBtn,
+      previewRotateToolBtn,
+      previewRotationPanToolBtn,
+      previewScaleToolBtn,
+      previewScalePanToolBtn
+    ].forEach((button) => {
+      if (!button) return;
+      const label = labels[button.dataset.tool] || button.textContent;
+      button.textContent = label;
+      button.title = label;
+      button.setAttribute("aria-label", label);
+    });
+
+    if (previewToolHint) {
+      previewToolHint.textContent = selectedCue() ? t("previewToolHint") : t("previewToolNoCue");
+    }
+  }
+
+  function syncTransformInputsFromCue(cue, options = {}) {
+    if (!cue) return;
+    const live = Boolean(options.live);
+    suppressEditorEvents = !live;
+    const s = cue.settings || {};
+    cueXInput.value = String(Math.round(clamp(s.x ?? CANVAS_WIDTH / 2, 0, CANVAS_WIDTH)));
+    cueYInput.value = String(Math.round(clamp(s.y ?? CANVAS_HEIGHT / 2, 0, CANVAS_HEIGHT)));
+    cuePanXInput.value = String(Math.round(clamp(s.panX ?? 0, -CANVAS_WIDTH, CANVAS_WIDTH)));
+    cuePanYInput.value = String(Math.round(clamp(s.panY ?? 0, -CANVAS_HEIGHT, CANVAS_HEIGHT)));
+    cueScaleInput.value = String(Math.round(clamp(s.scale ?? 100, 10, 300)));
+    cueScalePanInput.value = String(Math.round(clamp(s.scalePan ?? 0, -300, 300)));
+    cueRotationInput.value = String(Math.round(clamp(s.rotation ?? 0, -180, 180)));
+    cueRotationPanInput.value = String(Math.round(clamp(s.rotationPan ?? 0, -360, 360)));
+    suppressEditorEvents = false;
+    updateRangeOutputs();
+
+    if (live) {
+      updateCueFromEditor();
+    }
+  }
+
+  let previewDragState = null;
+
+  function angleBetweenPoints(center, point) {
+    return Math.atan2(point.y - center.y, point.x - center.x) * 180 / Math.PI;
+  }
+
+  function distanceBetweenPoints(center, point) {
+    return Math.hypot(point.x - center.x, point.y - center.y);
+  }
+
+  function beginPreviewToolDrag(event) {
+    const cue = selectedCue();
+    if (!cue || !canvas || event.button !== 0) return;
+
+    const point = clientPointToCanvasPoint(event.clientX, event.clientY);
+    const settings = cue.settings || {};
+    const center = {
+      x: Number(settings.x ?? CANVAS_WIDTH / 2),
+      y: Number(settings.y ?? CANVAS_HEIGHT / 2)
+    };
+
+    previewDragState = {
+      pointerId: event.pointerId,
+      tool: state.previewTool || "position",
+      startPoint: point,
+      center,
+      startX: Number(settings.x ?? CANVAS_WIDTH / 2),
+      startY: Number(settings.y ?? CANVAS_HEIGHT / 2),
+      startPanX: Number(settings.panX ?? 0),
+      startPanY: Number(settings.panY ?? 0),
+      startScale: Number(settings.scale ?? 100),
+      startScalePan: Number(settings.scalePan ?? 0),
+      startRotation: Number(settings.rotation ?? 0),
+      startRotationPan: Number(settings.rotationPan ?? 0),
+      startAngle: angleBetweenPoints(center, point),
+      startDistance: Math.max(1, distanceBetweenPoints(center, point)),
+      historySnapshot: makeHistorySnapshot()
+    };
+
+    canvas.classList.add("is-tool-dragging");
+    canvas.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
+  }
+
+  function updatePreviewToolDrag(event) {
+    if (!previewDragState) return;
+
+    const cue = selectedCue();
+    if (!cue) return;
+
+    const point = clientPointToCanvasPoint(event.clientX, event.clientY);
+    const s = cue.settings || {};
+
+    if (previewDragState.tool === "position") {
+      s.x = Math.round(clamp(previewDragState.startX + (point.x - previewDragState.startPoint.x), 0, CANVAS_WIDTH));
+      s.y = Math.round(clamp(previewDragState.startY + (point.y - previewDragState.startPoint.y), 0, CANVAS_HEIGHT));
+    } else if (previewDragState.tool === "pan") {
+      s.panX = Math.round(clamp(previewDragState.startPanX + (point.x - previewDragState.startPoint.x), -CANVAS_WIDTH, CANVAS_WIDTH));
+      s.panY = Math.round(clamp(previewDragState.startPanY + (point.y - previewDragState.startPoint.y), -CANVAS_HEIGHT, CANVAS_HEIGHT));
+    } else if (previewDragState.tool === "rotate") {
+      const currentAngle = angleBetweenPoints(previewDragState.center, point);
+      let rotation = previewDragState.startRotation + (currentAngle - previewDragState.startAngle);
+      while (rotation > 180) rotation -= 360;
+      while (rotation < -180) rotation += 360;
+      s.rotation = Math.round(clamp(rotation, -180, 180));
+    } else if (previewDragState.tool === "rotationPan") {
+      const delta = point.x - previewDragState.startPoint.x;
+      s.rotationPan = Math.round(clamp(previewDragState.startRotationPan + delta * 0.5, -360, 360));
+    } else if (previewDragState.tool === "scale") {
+      const currentDistance = Math.max(1, distanceBetweenPoints(previewDragState.center, point));
+      const nextScale = previewDragState.startScale * (currentDistance / previewDragState.startDistance);
+      s.scale = Math.round(clamp(nextScale, 10, 300));
+    } else if (previewDragState.tool === "scalePan") {
+      const delta = point.x - previewDragState.startPoint.x;
+      s.scalePan = Math.round(clamp(previewDragState.startScalePan + delta * 0.5, -300, 300));
+    }
+
+    cue.settings = s;
+    syncTransformInputsFromCue(cue, { live: true });
+    event.preventDefault();
+  }
+
+  function endPreviewToolDrag(event) {
+    if (!previewDragState) return;
+    pushHistorySnapshot(previewDragState.historySnapshot);
+    try {
+      canvas.releasePointerCapture?.(previewDragState.pointerId);
+    } catch (_) {
+      // noop
+    }
+    previewDragState = null;
+    canvas.classList.remove("is-tool-dragging");
+    event?.preventDefault?.();
+  }
+
 
   function syncActiveMediaTime(time) {
     const media = activeMediaPlayer();
@@ -344,7 +707,9 @@
   const I18N = {
     ja: {
       appTitle: "MV Lyrics Animation Maker",
+      undo: "元に戻す", redo: "やり直し",
       appSubtitle: "音声に合わせて歌詞を打ち込み、透過PNG連番を書き出すMV作成支援ツール",
+      previewToolPosition: "位置", previewToolPan: "位置移動", previewToolRotate: "回転", previewToolRotationPan: "回転移動", previewToolScale: "サイズ", previewToolScalePan: "サイズ移動", previewToolHint: "選択中フレーズをドラッグで調整できます", previewToolNoCue: "先に入力済みフレーズを選択してください",
       language: "Language / 言語",
       manual: "取扱説明", manualTitle: "取扱説明", close: "閉じる", chooseFile: "ファイルを選択", noFileSelected: "選択されていません", selectedFile: "選択中: {name}",
       saveJson: "JSON保存", loadJson: "JSON読込", saveCache: "キャッシュ保存", loadCache: "キャッシュ復元",
@@ -353,7 +718,7 @@
       lyricsTxt: "歌詞TXT", lyricsHint: "TXTの1行を1フレーズとして歌詞ボタンにします。空行は自動除外します。",
       previewBgColor: "プレビュー背景色", bgFit: "背景画像の表示", fitCover: "画面いっぱい", fitContain: "全体表示", fitStretch: "引き伸ばし", previewBgImage: "プレビュー背景画像", bgScale: "背景画像サイズ", bgOffsetX: "背景画像移動X", bgOffsetY: "背景画像移動Y", clearBgImage: "背景画像を解除", bgHint: "背景色・背景画像はプレビュー確認用です。透過PNG書き出しには含まれません。",
       canvasAspect: "キャンバス比率", aspectLandscape: "16:9 横長", aspectPortrait: "9:16 縦長", transparentExport: "透過書き出し", customFont: "任意フォント追加", customFontList: "追加済みフォント", deleteCustomFont: "選択フォントを削除", customFontHint: "アップロードしたフォントはこのブラウザ内で利用できます。JSON/キャッシュ保存にも含まれます。", customFontLoaded: "フォントを追加しました: {name}", customFontLoadFailed: "フォントを読み込めませんでした。対応形式は ttf / otf / woff / woff2 です。", noCustomFonts: "追加フォントなし", selectFont: "フォントを選択",
-      defaultFont: "基本フォント", defaultSize: "基本サイズ", defaultDuration: "初期表示秒数", autoChain: "前フレーズ終了を自動調整", yes: "する", no: "しない", defaultAnimation: "初期アニメーション", defaultAlign: "初期文字揃え", applyDefaults: "全フレーズへ基本設定を反映", currentInputLayer: "現在の入力レイヤー", cueLayer: "表示レイヤー", layerSettingsTitle: "レイヤー設定", layerSettingsHint: "レイヤー名と色ラベルを変更できます。入力済みフレーズ一覧のL1 / L2表示にも使われます。", layerName: "レイヤー名", layerColor: "色ラベル",
+      defaultFont: "基本フォント", defaultSize: "基本サイズ", defaultDuration: "初期表示秒数", autoChain: "前フレーズ終了を自動調整", yes: "する", no: "しない", defaultAnimation: "初期アニメーション", defaultAlign: "初期文字揃え", applyDefaults: "全フレーズへ基本設定を反映", currentInputLayer: "現在の入力レイヤー", cueLayer: "表示レイヤー", layerSettingsTitle: "レイヤー設定", layerSettingsHint: "レイヤー名と色ラベルを変更できます。入力済みフレーズ一覧のL1 / L2表示にも使われます。", layerName: "レイヤー名", layerColor: "色ラベル", layerWarning: "※文字を複数同じ画面に表示したい場合は、必ずレイヤーを切り替えてからフレーズボタンを押してください。", setCueStartCurrent: "現在位置で開始", setCueEndCurrent: "現在位置で終了", simpleEditorDownload: "簡易編集アプリDL", simpleEditorHint: "連番・動画・音声・画像で簡易動画編集が可能なWindows用変換アプリです。",
       animNormal: "通常表示", animTypewriter: "タイプライター表示", animScaleReveal: "拡大しながら表示", animJumpTypewriter: "ジャンプしながらタイプライター表示", animJumpReveal: "ジャンプしながら表示", animJumpInOut: "登場時と退場時だけジャンプ",
       alignLeft: "左寄せ", alignCenter: "中央寄せ", alignRight: "右寄せ",
       lyricsNotLoaded: "歌詞未読込", clearList: "一覧クリア", lyricsButtonEmpty: "歌詞TXTを読み込むと、ここに1行ずつボタンが追加されます。", enteredEmpty: "入力済みフレーズはまだありません。音声またはMP4再生中に歌詞ボタンを押してください。",
@@ -368,7 +733,9 @@
     },
     en: {
       appTitle: "MV Lyrics Animation Maker",
+      undo: "Undo", redo: "Redo",
       appSubtitle: "A browser tool for timing lyrics to audio and exporting transparent PNG sequences.",
+      previewToolPosition: "Position", previewToolPan: "Position Pan", previewToolRotate: "Rotate", previewToolRotationPan: "Rotation Pan", previewToolScale: "Size", previewToolScalePan: "Size Pan", previewToolHint: "Drag the selected phrase in the preview to adjust it.", previewToolNoCue: "Select a placed phrase first.",
       language: "Language / 言語",
       manual: "Manual", manualTitle: "Manual", close: "Close", chooseFile: "Choose File", noFileSelected: "No file selected", selectedFile: "Selected: {name}",
       saveJson: "Save JSON", loadJson: "Load JSON", saveCache: "Save Cache", loadCache: "Restore Cache",
@@ -377,7 +744,7 @@
       lyricsTxt: "Lyrics TXT", lyricsHint: "Each line in the TXT file becomes one lyric button. Blank lines are ignored.",
       previewBgColor: "Preview Background Color", bgFit: "Background Image Fit", fitCover: "Fill Screen", fitContain: "Contain", fitStretch: "Stretch", previewBgImage: "Preview Background Image", bgScale: "Background Image Scale", bgOffsetX: "Background Image Offset X", bgOffsetY: "Background Image Offset Y", clearBgImage: "Clear Background Image", bgHint: "Background color and image are for preview only and are not included in transparent PNG export.",
       canvasAspect: "Canvas Aspect", aspectLandscape: "16:9 Landscape", aspectPortrait: "9:16 Portrait", transparentExport: "transparent export", customFont: "Add Custom Font", customFontList: "Custom Fonts", deleteCustomFont: "Delete Selected Font", customFontHint: "Uploaded fonts can be used in this browser and are included in JSON/cache saves.", customFontLoaded: "Font added: {name}", customFontLoadFailed: "Could not load the font. Supported formats: ttf / otf / woff / woff2.", noCustomFonts: "No custom fonts", selectFont: "Select a font",
-      defaultFont: "Default Font", defaultSize: "Default Size", defaultDuration: "Default Duration", autoChain: "Auto-adjust previous phrase end", yes: "On", no: "Off", defaultAnimation: "Default Animation", defaultAlign: "Default Alignment", applyDefaults: "Apply defaults to all phrases", currentInputLayer: "Current Input Layer", cueLayer: "Display Layer", layerSettingsTitle: "Layer Settings", layerSettingsHint: "You can rename each layer and change its color label. The same labels are shown as L1 / L2 in the placed phrase list.", layerName: "Layer Name", layerColor: "Color Label",
+      defaultFont: "Default Font", defaultSize: "Default Size", defaultDuration: "Default Duration", autoChain: "Auto-adjust previous phrase end", yes: "On", no: "Off", defaultAnimation: "Default Animation", defaultAlign: "Default Alignment", applyDefaults: "Apply defaults to all phrases", currentInputLayer: "Current Input Layer", cueLayer: "Display Layer", layerSettingsTitle: "Layer Settings", layerSettingsHint: "You can rename each layer and change its color label. The same labels are shown as L1 / L2 in the placed phrase list.", layerName: "Layer Name", layerColor: "Color Label", layerWarning: "※ To display multiple text phrases on the same screen, switch layers before pressing a phrase button.", setCueStartCurrent: "Set Start to Current Position", setCueEndCurrent: "Set End to Current Position", simpleEditorDownload: "Download Simple Editor App", simpleEditorHint: "A Windows app for simple video editing with image sequences, video, audio, and still images.",
       animNormal: "Normal", animTypewriter: "Typewriter", animScaleReveal: "Scale Reveal", animJumpTypewriter: "Jump + Typewriter", animJumpReveal: "Jump Reveal", animJumpInOut: "Jump on In/Out",
       alignLeft: "Left", alignCenter: "Center", alignRight: "Right",
       lyricsNotLoaded: "No lyrics loaded", clearList: "Clear List", lyricsButtonEmpty: "Load a lyrics TXT file to create one button per line here.", enteredEmpty: "No phrases placed yet. Press a lyric button while audio or MP4 is playing.",
@@ -393,7 +760,9 @@
     },
     ko: {
       appTitle: "MV Lyrics Animation Maker",
+      undo: "되돌리기", redo: "다시 실행",
       appSubtitle: "음성에 맞춰 가사를 배치하고 투명 PNG 시퀀스를 내보내는 MV 제작 지원 도구입니다.",
+      previewToolPosition: "위치", previewToolPan: "위치 이동", previewToolRotate: "회전", previewToolRotationPan: "회전 이동", previewToolScale: "크기", previewToolScalePan: "크기 이동", previewToolHint: "미리보기에서 선택한 프레이즈를 드래그해 조정할 수 있습니다.", previewToolNoCue: "먼저 입력된 프레이즈를 선택해 주세요.",
       language: "Language / 언어",
       manual: "사용 설명서", manualTitle: "사용 설명서", close: "닫기", chooseFile: "파일 선택", noFileSelected: "선택된 파일 없음", selectedFile: "선택 중: {name}",
       saveJson: "JSON 저장", loadJson: "JSON 불러오기", saveCache: "캐시 저장", loadCache: "캐시 복원",
@@ -402,7 +771,7 @@
       lyricsTxt: "가사 TXT", lyricsHint: "TXT의 한 줄을 하나의 프레이즈 버튼으로 만듭니다. 빈 줄은 자동으로 제외됩니다.",
       previewBgColor: "미리보기 배경색", bgFit: "배경 이미지 표시", fitCover: "화면 채우기", fitContain: "전체 표시", fitStretch: "늘이기", previewBgImage: "미리보기 배경 이미지", bgScale: "배경 이미지 크기", bgOffsetX: "배경 이미지 이동 X", bgOffsetY: "배경 이미지 이동 Y", clearBgImage: "배경 이미지 해제", bgHint: "배경색과 배경 이미지는 미리보기 확인용입니다. 투명 PNG 내보내기에는 포함되지 않습니다.",
       canvasAspect: "캔버스 비율", aspectLandscape: "16:9 가로형", aspectPortrait: "9:16 세로형", transparentExport: "투명 내보내기", customFont: "사용자 폰트 추가", customFontList: "추가된 폰트", deleteCustomFont: "선택한 폰트 삭제", customFontHint: "업로드한 폰트는 이 브라우저에서 사용할 수 있으며 JSON/캐시 저장에도 포함됩니다.", customFontLoaded: "폰트를 추가했습니다: {name}", customFontLoadFailed: "폰트를 불러올 수 없습니다. 지원 형식은 ttf / otf / woff / woff2입니다.", noCustomFonts: "추가 폰트 없음", selectFont: "폰트 선택",
-      defaultFont: "기본 폰트", defaultSize: "기본 크기", defaultDuration: "초기 표시 시간", autoChain: "이전 프레이즈 종료 자동 조정", yes: "켜기", no: "끄기", defaultAnimation: "초기 애니메이션", defaultAlign: "초기 정렬", applyDefaults: "모든 프레이즈에 기본 설정 적용", currentInputLayer: "현재 입력 레이어", cueLayer: "표시 레이어", layerSettingsTitle: "레이어 설정", layerSettingsHint: "레이어 이름과 색상 라벨을 변경할 수 있습니다. 입력된 프레이즈 목록의 L1 / L2 표시에도 사용됩니다.", layerName: "레이어 이름", layerColor: "색상 라벨",
+      defaultFont: "기본 폰트", defaultSize: "기본 크기", defaultDuration: "초기 표시 시간", autoChain: "이전 프레이즈 종료 자동 조정", yes: "켜기", no: "끄기", defaultAnimation: "초기 애니메이션", defaultAlign: "초기 정렬", applyDefaults: "모든 프레이즈에 기본 설정 적용", currentInputLayer: "현재 입력 레이어", cueLayer: "표시 레이어", layerSettingsTitle: "레이어 설정", layerSettingsHint: "레이어 이름과 색상 라벨을 변경할 수 있습니다. 입력된 프레이즈 목록의 L1 / L2 표시에도 사용됩니다.", layerName: "레이어 이름", layerColor: "색상 라벨", layerWarning: "※ 같은 화면에 여러 문자를 표시하려면 반드시 레이어를 전환한 뒤 프레이즈 버튼을 눌러 주세요.", setCueStartCurrent: "현재 위치로 시작 설정", setCueEndCurrent: "현재 위치로 종료 설정", simpleEditorDownload: "간이 편집 앱 DL", simpleEditorHint: "시퀀스 이미지, 영상, 음성, 이미지로 간단한 영상 편집이 가능한 Windows용 앱입니다.",
       animNormal: "일반 표시", animTypewriter: "타자기 표시", animScaleReveal: "확대하며 표시", animJumpTypewriter: "점프하며 타자기 표시", animJumpReveal: "점프하며 표시", animJumpInOut: "등장/퇴장 시에만 점프",
       alignLeft: "왼쪽 정렬", alignCenter: "가운데 정렬", alignRight: "오른쪽 정렬",
       lyricsNotLoaded: "가사 미불러옴", clearList: "목록 지우기", lyricsButtonEmpty: "가사 TXT를 불러오면 여기에 한 줄씩 버튼이 추가됩니다.", enteredEmpty: "아직 입력된 프레이즈가 없습니다. 오디오 또는 MP4 재생 중에 가사 버튼을 눌러 주세요.",
@@ -467,6 +836,7 @@
 
     updateManualContent();
     setText(openManualBtn, "manual");
+    setText(openExportModalBtn, "export");
     setText(".app-header h1", "appTitle");
     setText(".app-header p", "appSubtitle");
     setText("#langLabel", "language");
@@ -480,9 +850,8 @@
     if (leftSummaries[1]) leftSummaries[1].textContent = t("secDefaults");
     if (leftSummaries[2]) leftSummaries[2].textContent = t("secLyricsList");
     if (leftSummaries[3]) leftSummaries[3].textContent = t("secEntered");
-    const rightSummaries = document.querySelectorAll(".right-panel details > summary");
+    const rightSummaries = document.querySelectorAll(".right-panel > details > summary");
     if (rightSummaries[0]) rightSummaries[0].textContent = t("secSelected");
-    if (rightSummaries[1]) rightSummaries[1].textContent = t("secExport");
 
     setFieldLabel(audioInput, "audioFile");
     setText(audioChooseLabel, "chooseFile");
@@ -525,6 +894,9 @@
     renderCustomFontControls();
     setText(applyDefaultToSelectedBtn, "applyDefaults");
 
+    setFieldLabel(currentInputLayerSelect, "currentInputLayer");
+    setText(openLayerSettingsBtn, "layerSettingsTitle");
+    setText(document.querySelector(".layer-warning"), "layerWarning");
     setText(clearLyricsBtn, "clearList");
     setText(".preview-toolbar strong", "previewCanvas");
     updatePreviewCanvasInfo();
@@ -545,6 +917,8 @@
     setFieldLabel(cueTextInput, "lyricText");
     setFieldLabel(cueStartInput, "startSec");
     setFieldLabel(cueEndInput, "endSec");
+    setText(setCueStartCurrentBtn, "setCueStartCurrent");
+    setText(setCueEndCurrentBtn, "setCueEndCurrent");
     setFieldLabel(cueLayerInput, "cueLayer");
     setFieldLabel(cueAnimationInput, "animation");
     setSelectOptions(cueAnimationInput, { normal: t("animNormal"), typewriter: t("animTypewriter"), scaleReveal: t("animScaleReveal"), jumpTypewriter: t("animJumpTypewriter"), jumpReveal: t("animJumpReveal"), jumpInOut: t("animJumpInOut") });
@@ -560,7 +934,7 @@
     setFieldLabel(cueFadeInDurationInput, "fadeInSec"); setFieldLabel(cueFadeOutDurationInput, "fadeOutSec"); setFieldLabel(cueStrokeColorInput, "strokeColor"); setRangeLabel(cueStrokeWidthInput, "strokeWidth"); setFieldLabel(cueShadowColorInput, "shadowColor"); setRangeLabel(cueShadowBlurInput, "shadowBlur"); setFieldLabel(cueShadowOffsetXInput, "shadowX"); setFieldLabel(cueShadowOffsetYInput, "shadowY");
     setText(duplicateCueBtn, "duplicate"); setText(deleteCueBtn, "delete");
 
-    setFieldLabel(exportFpsInput, "fps"); setFieldLabel(exportPrefixInput, "prefix"); setFieldLabel(exportStartInput, "startSec"); setFieldLabel(exportEndInput, "endSec"); setText(setExportEndFromAudioBtn, "setEndFromAudio"); setText(exportSrtBtn, "exportSrt"); setText(exportZipBtn, "exportZip"); setText(videoConverterDownloadBtn, "videoConverterDownload"); setText(videoConverterHint, "videoConverterHint"); const layerSettingsTitleNode = document.querySelector("#layerSettingsTitle"); if (layerSettingsTitleNode) layerSettingsTitleNode.textContent = t("layerSettingsTitle"); const layerSettingsHintNode = document.querySelector(".layer-settings-hint"); if (layerSettingsHintNode) layerSettingsHintNode.textContent = t("layerSettingsHint"); renderLayerControls();
+    setText(exportModalTitle, "export"); setFieldLabel(exportFpsInput, "fps"); setFieldLabel(exportPrefixInput, "prefix"); setFieldLabel(exportStartInput, "startSec"); setFieldLabel(exportEndInput, "endSec"); setText(setExportEndFromAudioBtn, "setEndFromAudio"); setText(exportSrtBtn, "exportSrt"); setText(exportZipBtn, "exportZip"); setText(videoConverterDownloadBtn, "videoConverterDownload"); setText(videoConverterHint, "videoConverterHint"); setText(simpleEditorDownloadBtn, "simpleEditorDownload"); setText(simpleEditorHint, "simpleEditorHint"); const layerSettingsTitleNode = document.querySelector("#layerSettingsTitle"); if (layerSettingsTitleNode) layerSettingsTitleNode.textContent = t("layerSettingsTitle"); const layerSettingsHintNode = document.querySelector(".layer-settings-hint"); if (layerSettingsHintNode) layerSettingsHintNode.textContent = t("layerSettingsHint"); renderLayerControls();
   }
 
 
@@ -973,6 +1347,8 @@
     populateFontSelect(cueFontFamilyInput);
     defaultFontFamilyInput.value = defaultFont || state.defaults.fontFamily;
     cueFontFamilyInput.value = cueFont || (selectedCue()?.settings?.fontFamily || state.defaults.fontFamily);
+    applyFontPreviewToSelect(defaultFontFamilyInput);
+    applyFontPreviewToSelect(cueFontFamilyInput);
     updateStaticText();
     renderInlineStyleEditor();
     renderAll();
@@ -1172,6 +1548,7 @@
       const fontSelect = item.querySelector(".inline-style-font");
       populateFontSelect(fontSelect);
       fontSelect.value = style.fontFamily || cue.settings.fontFamily || state.defaults.fontFamily;
+      applyFontPreviewToSelect(fontSelect);
       const colorInput = item.querySelector(".inline-style-color");
       const sizeInput = item.querySelector(".inline-style-size");
       const sizeOutput = item.querySelector(".inline-style-size-output");
@@ -1330,6 +1707,17 @@
     });
   }
 
+  function applyFontPreviewToSelect(select) {
+    if (!select) return;
+    const fontFamily = select.value || FONT_OPTIONS[1].value;
+    select.classList.add("font-preview-select");
+    select.style.fontFamily = fontFamily;
+    if (select === defaultFontFamilyInput && defaultFontPreview) {
+      defaultFontPreview.style.fontFamily = fontFamily;
+      defaultFontPreview.textContent = "あいうえお ABC 123 가나다";
+    }
+  }
+
   function populateFontSelect(select) {
     const selected = select.value;
     select.innerHTML = "";
@@ -1337,9 +1725,12 @@
       const option = document.createElement("option");
       option.value = font.value;
       option.textContent = currentLang() === "ko" ? (font.labelKo || font.labelEn || font.label) : (currentLang() === "en" ? (font.labelEn || font.label) : font.label);
+      option.style.fontFamily = font.value;
+      option.style.fontSize = "1.05rem";
       select.append(option);
     });
     if (selected) select.value = selected;
+    applyFontPreviewToSelect(select);
   }
 
   function createCueStyle(templateCue = null) {
@@ -1423,6 +1814,7 @@
   function syncDefaultControls() {
     if (canvasAspectSelect) canvasAspectSelect.value = state.canvasAspect || "16:9";
     defaultFontFamilyInput.value = state.defaults.fontFamily;
+    applyFontPreviewToSelect(defaultFontFamilyInput);
     defaultFontSizeInput.value = String(state.defaults.fontSize);
     defaultFontSizeOutput.textContent = `${defaultFontSizeInput.value}px`;
     defaultDurationInput.value = String(state.defaults.duration);
@@ -1542,6 +1934,7 @@
 
   function updateDefaultStateFromControls() {
     state.defaults.fontFamily = defaultFontFamilyInput.value;
+    applyFontPreviewToSelect(defaultFontFamilyInput);
     state.defaults.fontSize = Math.round(clamp(defaultFontSizeInput.value, 10, 300));
     state.defaults.duration = round(clamp(defaultDurationInput.value, 0.1, 60), 2);
     state.defaults.animation = defaultAnimationInput.value;
@@ -1551,11 +1944,18 @@
     syncDefaultControls();
   }
 
+  function stripLeadingLyricNumber(line) {
+    return String(line || "")
+      .trim()
+      .replace(/^\d{3}(?:[\s\u3000:：\.．\)）\-＿_]+)?/, "")
+      .trim();
+  }
+
   function parseLyricsText(text) {
     return text
       .replace(/^\uFEFF/, "")
       .split(/\r?\n/)
-      .map((line) => line.trim())
+      .map((line) => stripLeadingLyricNumber(line))
       .filter(Boolean)
       .map((line, index) => ({
         id: uniqueId("lyric"),
@@ -1574,7 +1974,7 @@
     const cue = {
       id: uniqueId("cue"),
       lyricId: lyric.id,
-      text: lyric.text,
+      text: stripLeadingLyricNumber(lyric.text),
       start,
       end: round(start + duration, 2),
       createdAt: Date.now(),
@@ -1592,9 +1992,11 @@
     }
 
     lyric.cueId = cue.id;
+    pushHistorySnapshot(makeHistorySnapshot());
     state.cues.push(cue);
     sortCues();
     state.selectedCueId = cue.id;
+    updatePreviewToolUi();
     state.lastCreatedCueId = cue.id;
     updatePreviewTime(start, true);
     renderAll();
@@ -1603,6 +2005,7 @@
   function unassignLyric(lyric) {
     if (!lyric.cueId) return;
     const removingId = lyric.cueId;
+    pushHistorySnapshot(makeHistorySnapshot());
     state.cues = state.cues.filter((cue) => cue.id !== removingId);
     lyric.cueId = null;
     if (state.selectedCueId === removingId) {
@@ -1637,7 +2040,6 @@
       if (cue) button.classList.add("used");
       if (cue && cue.id === state.selectedCueId) button.classList.add("selected");
       button.innerHTML = `
-        <span class="lyric-number">${String(index + 1).padStart(3, "0")}</span>
         <span class="lyric-text"></span>
         <span class="lyric-status">${statusText}</span>
       `;
@@ -1690,6 +2092,7 @@
       button.append(topRow, textNode);
       button.addEventListener("click", () => {
         state.selectedCueId = cue.id;
+    updatePreviewToolUi();
         updatePreviewTime(cue.start, true);
         renderAll();
       });
@@ -1731,6 +2134,7 @@
     cueYInput.value = String(clamp(s.y, 0, CANVAS_HEIGHT));
     cueMaxWidthInput.value = String(clamp(s.maxWidth, 100, cueWritingModeInput.value === "vertical" ? CANVAS_HEIGHT : CANVAS_WIDTH));
     cueFontFamilyInput.value = s.fontFamily || FONT_OPTIONS[1].value;
+    applyFontPreviewToSelect(cueFontFamilyInput);
     cueFontSizeInput.value = String(clamp(s.fontSize, 10, 300));
     cueColorInput.value = s.color || "#ffffff";
     cueLineHeightInput.value = String(clamp(s.lineHeight, 0.5, 3));
@@ -1812,6 +2216,7 @@
     s.y = Math.round(clamp(cueYInput.value, 0, CANVAS_HEIGHT));
     s.maxWidth = Math.round(clamp(cueMaxWidthInput.value, 100, s.writingMode === "vertical" ? CANVAS_HEIGHT : CANVAS_WIDTH));
     s.fontFamily = cueFontFamilyInput.value;
+    applyFontPreviewToSelect(cueFontFamilyInput);
     s.fontSize = Math.round(clamp(cueFontSizeInput.value, 10, 300));
     s.color = cueColorInput.value;
     s.lineHeight = round(clamp(cueLineHeightInput.value, 0.5, 3), 2);
@@ -2989,6 +3394,47 @@
     }
   }
 
+
+  function openExportModal() {
+    exportModal?.classList.remove("hidden");
+  }
+
+  function closeExportModal() {
+    exportModal?.classList.add("hidden");
+  }
+
+  function openLayerSettingsModal() {
+    renderLayerControls();
+    layerSettingsModal?.classList.remove("hidden");
+  }
+
+  function closeLayerSettingsModal() {
+    layerSettingsModal?.classList.add("hidden");
+  }
+
+  function currentPreviewTime() {
+    return round(Number(previewTimeInput?.value) || 0, 2);
+  }
+
+  function setCueStartToCurrentPosition() {
+    const cue = selectedCue();
+    if (!cue) return;
+    const time = currentPreviewTime();
+    cueStartInput.value = String(time);
+    if (Number(cueEndInput.value) <= time) {
+      cueEndInput.value = String(round(time + Math.max(0.05, Number(state.defaults?.duration) || 3), 2));
+    }
+    updateCueFromEditor();
+  }
+
+  function setCueEndToCurrentPosition() {
+    const cue = selectedCue();
+    if (!cue) return;
+    const time = currentPreviewTime();
+    cueEndInput.value = String(Math.max(time, Number(cueStartInput.value || 0) + 0.05));
+    updateCueFromEditor();
+  }
+
   function bindEvents() {
     openManualBtn?.addEventListener("click", openManual);
     closeManualBtn?.addEventListener("click", closeManual);
@@ -2996,8 +3442,27 @@
     manualModal?.addEventListener("click", (event) => {
       if (event.target === manualModal) closeManual();
     });
+
+    openExportModalBtn?.addEventListener("click", openExportModal);
+    closeExportModalBtn?.addEventListener("click", closeExportModal);
+    closeExportModalFooterBtn?.addEventListener("click", closeExportModal);
+    exportModal?.addEventListener("click", (event) => {
+      if (event.target === exportModal) closeExportModal();
+    });
+
+    openLayerSettingsBtn?.addEventListener("click", openLayerSettingsModal);
+    closeLayerSettingsBtn?.addEventListener("click", closeLayerSettingsModal);
+    closeLayerSettingsFooterBtn?.addEventListener("click", closeLayerSettingsModal);
+    layerSettingsModal?.addEventListener("click", (event) => {
+      if (event.target === layerSettingsModal) closeLayerSettingsModal();
+    });
+
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") closeManual();
+      if (event.key === "Escape") {
+        closeManual();
+        closeExportModal();
+        closeLayerSettingsModal();
+      }
     });
 
     uiLanguageSelect?.addEventListener("change", () => {
@@ -3033,6 +3498,7 @@
       state.lyrics = parseLyricsText(text);
       state.cues = [];
       state.selectedCueId = null;
+    updatePreviewToolUi();
       state.lastCreatedCueId = null;
       renderAll();
     });
@@ -3041,6 +3507,7 @@
       state.lyrics = [];
       state.cues = [];
       state.selectedCueId = null;
+    updatePreviewToolUi();
       state.lastCreatedCueId = null;
       lyricsInput.value = "";
       updateFileChoiceStatus(lyricsChosenLabel, "");
@@ -3157,6 +3624,54 @@
     [defaultFontFamilyInput, defaultFontSizeInput, defaultDurationInput, defaultAnimationInput, defaultAlignInput, autoChainSelect, currentInputLayerSelect]
       .forEach((input) => input?.addEventListener("input", updateDefaultStateFromControls));
 
+    previewToolButtons?.addEventListener("click", (event) => {
+      const button = event.target.closest(".preview-tool-button");
+      if (!button) return;
+      setPreviewTool(button.dataset.tool);
+    });
+
+    canvas?.addEventListener("pointerdown", beginPreviewToolDrag);
+    canvas?.addEventListener("pointermove", updatePreviewToolDrag);
+    canvas?.addEventListener("pointerup", endPreviewToolDrag);
+    canvas?.addEventListener("pointercancel", endPreviewToolDrag);
+    canvas?.addEventListener("lostpointercapture", endPreviewToolDrag);
+
+    undoBtn?.addEventListener("click", undoLastAction);
+    redoBtn?.addEventListener("click", redoLastAction);
+
+    cueEditor?.addEventListener("focusin", beginEditorHistoryCapture);
+    cueEditor?.addEventListener("pointerdown", (event) => {
+      if (event.target?.matches?.("input, select, textarea, button")) {
+        beginEditorHistoryCapture();
+      }
+    });
+    cueEditor?.addEventListener("change", commitEditorHistoryCapture);
+    cueEditor?.addEventListener("focusout", (event) => {
+      if (!cueEditor.contains(event.relatedTarget)) {
+        commitEditorHistoryCapture();
+      }
+    });
+
+    window.addEventListener("keydown", (event) => {
+      const key = String(event.key || "").toLowerCase();
+      const isUndo = (event.ctrlKey || event.metaKey) && !event.shiftKey && key === "z";
+      const isRedo = (event.ctrlKey || event.metaKey) && (key === "y" || (event.shiftKey && key === "z"));
+      if (!isUndo && !isRedo) return;
+
+      const tag = document.activeElement?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea" || tag === "select") return;
+
+      event.preventDefault();
+      if (isUndo) undoLastAction();
+      if (isRedo) redoLastAction();
+    });
+
+
+    [defaultFontFamilyInput, cueFontFamilyInput].forEach((select) => {
+      select?.addEventListener("input", () => applyFontPreviewToSelect(select));
+      select?.addEventListener("change", () => applyFontPreviewToSelect(select));
+    });
+
     applyDefaultToSelectedBtn.addEventListener("click", applyDefaultsToSelected);
     addInlineStyleBtn?.addEventListener("click", addInlineStyleToSelectedCue);
 
@@ -3171,6 +3686,9 @@
       const media = activeMediaPlayer();
       updatePreviewTime(media?.currentTime || 0, true, false);
     });
+
+    setCueStartCurrentBtn?.addEventListener("click", setCueStartToCurrentPosition);
+    setCueEndCurrentBtn?.addEventListener("click", setCueEndToCurrentPosition);
 
     previewTimeRange.addEventListener("input", () => updatePreviewTime(previewTimeRange.value, true));
     previewTimeInput.addEventListener("input", () => updatePreviewTime(previewTimeInput.value, true));
@@ -3291,4 +3809,7 @@
   }
 
   init();
+
+  updateHistoryButtons();
+
 })();

@@ -1,4 +1,4 @@
-]<!doctype html>
+<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
@@ -16,7 +16,6 @@
       <p>音声に合わせて歌詞を打ち込み、透過PNG連番を書き出すMV作成支援ツール</p>
     </div>
     <div class="header-actions">
-      <button id="openManualBtn" type="button">取扱説明</button>
       <label class="field header-language">
         <span id="langLabel">Language / 言語</span>
         <select id="uiLanguageSelect">
@@ -25,6 +24,8 @@
           <option value="ko">한국어</option>
         </select>
       </label>
+      <button id="openManualBtn" type="button">取扱説明</button>
+      <button id="openExportModalBtn" type="button" class="primary">書き出し</button>
       <button id="saveJsonBtn" type="button">JSON保存</button>
       <label class="file-button">
         JSON読込
@@ -122,6 +123,7 @@
             <label class="field">
               <span>基本フォント</span>
               <select id="defaultFontFamilyInput"></select>
+              <div id="defaultFontPreview" class="font-preview-sample">あいうえお ABC 123 가나다</div>
             </label>
             <div class="range-field">
               <div class="range-head"><span>基本サイズ</span><output id="defaultFontSizeOutput"></output></div>
@@ -178,17 +180,6 @@
             <button id="deleteCustomFontBtn" type="button" class="danger">選択フォントを削除</button>
           </div>
           <p class="hint custom-font-hint">アップロードしたフォントはこのブラウザ内で利用できます。JSON/キャッシュ保存にも含まれます。</p>
-          <div class="grid-2">
-            <label class="field">
-              <span>現在の入力レイヤー</span>
-              <select id="currentInputLayerSelect"></select>
-            </label>
-          </div>
-          <div class="preset-box layer-manager-box">
-            <div class="preset-title" id="layerSettingsTitle">レイヤー設定</div>
-            <div id="layerSettingsList" class="layer-settings-list"></div>
-            <p class="hint layer-settings-hint">レイヤー名と色ラベルを変更できます。入力済みフレーズ一覧のL1 / L2表示にも使われます。</p>
-          </div>
           <button id="applyDefaultToSelectedBtn" type="button">全フレーズへ基本設定を反映</button>
         </div>
       </details>
@@ -196,6 +187,14 @@
       <details open>
         <summary>歌詞ボタン一覧</summary>
         <div class="control-stack">
+          <div class="lyrics-layer-tools">
+            <label class="field lyrics-layer-field">
+              <span>現在の入力レイヤー</span>
+              <select id="currentInputLayerSelect"></select>
+            </label>
+            <button id="openLayerSettingsBtn" type="button">レイヤー設定</button>
+          </div>
+          <p class="hint layer-warning">※文字を複数同じ画面に表示したい場合は、必ずレイヤーを切り替えてからフレーズボタンを押してください。</p>
           <div class="lyrics-toolbar">
             <span id="lyricsCountInfo">歌詞未読込</span>
             <button id="clearLyricsBtn" type="button">一覧クリア</button>
@@ -220,6 +219,19 @@
             <span>1920 × 1080 / export transparent</span>
           </div>
           <div id="activeCueInfo" class="active-cue-info">表示中の歌詞なし</div>
+        </div>
+
+        <div id="previewToolButtons" class="preview-tool-buttons" aria-label="Preview operation tools">
+          <button id="previewPositionToolBtn" type="button" class="preview-tool-button active" data-tool="position">位置</button>
+          <button id="previewPanToolBtn" type="button" class="preview-tool-button" data-tool="pan">位置移動</button>
+          <button id="previewRotateToolBtn" type="button" class="preview-tool-button" data-tool="rotate">回転</button>
+          <button id="previewRotationPanToolBtn" type="button" class="preview-tool-button" data-tool="rotationPan">回転移動</button>
+          <button id="previewScaleToolBtn" type="button" class="preview-tool-button" data-tool="scale">サイズ</button>
+          <button id="previewScalePanToolBtn" type="button" class="preview-tool-button" data-tool="scalePan">サイズ移動</button>
+          <span class="preview-tool-separator" aria-hidden="true"></span>
+          <button id="undoBtn" type="button" class="history-button" title="元に戻す">↶</button>
+          <button id="redoBtn" type="button" class="history-button" title="やり直し">↷</button>
+          <span id="previewToolHint" class="preview-tool-hint">選択中フレーズをドラッグで調整できます</span>
         </div>
         <div class="canvas-shell">
           <video id="previewVideoPlayer" class="preview-video-player hidden" controls playsinline preload="metadata"></video>
@@ -249,8 +261,9 @@
         <summary>選択中フレーズ設定</summary>
         <div id="selectedEmptyMessage" class="empty-message">入力済みフレーズを選択してください。</div>
         <div id="cueEditor" class="control-stack hidden">
-          <div class="preset-box">
-            <div class="preset-title">フレーズ設定プリセット</div>
+          <details class="preset-box preset-collapsible">
+            <summary class="preset-title">フレーズ設定プリセット</summary>
+            <div class="preset-inner">
             <div class="grid-2">
               <label class="field">
                 <span>プリセット名</span>
@@ -267,7 +280,8 @@
               <button id="deletePresetBtn" type="button" class="danger">削除</button>
             </div>
             <p class="hint">歌詞本文・開始秒・終了秒は含めず、見た目とアニメーション設定だけを保存します。</p>
-          </div>
+            </div>
+          </details>
 
           <label class="field">
             <span>歌詞テキスト</span>
@@ -283,6 +297,10 @@
               <span>終了秒</span>
               <input id="cueEndInput" type="number" min="0" step="0.01" />
             </label>
+          </div>
+          <div class="button-row cue-time-button-row">
+            <button id="setCueStartCurrentBtn" type="button">現在位置で開始</button>
+            <button id="setCueEndCurrentBtn" type="button">現在位置で終了</button>
           </div>
 
           <label class="field">
@@ -484,9 +502,47 @@
           </div>
         </div>
       </details>
+    </aside>
+  </main>
 
-      <details open>
-        <summary>書き出し</summary>
+
+  <div id="manualModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="manualModalTitle">
+    <div class="manual-modal">
+      <div class="manual-modal-header">
+        <h2 id="manualModalTitle">取扱説明</h2>
+        <button id="closeManualBtn" type="button" class="modal-close-button" aria-label="Close">×</button>
+      </div>
+      <div id="manualModalBody" class="manual-modal-body"></div>
+      <div class="manual-modal-footer">
+        <button id="closeManualFooterBtn" type="button">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="layerSettingsModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="layerSettingsTitle">
+    <div class="manual-modal layer-settings-modal">
+      <div class="manual-modal-header">
+        <h2 id="layerSettingsTitle">レイヤー設定</h2>
+        <button id="closeLayerSettingsBtn" type="button" class="modal-close-button" aria-label="Close">×</button>
+      </div>
+      <div class="manual-modal-body">
+        <div id="layerSettingsList" class="layer-settings-list"></div>
+        <p class="hint layer-settings-hint">レイヤー名と色ラベルを変更できます。入力済みフレーズ一覧のL1 / L2表示にも使われます。</p>
+      </div>
+      <div class="manual-modal-footer">
+        <button id="closeLayerSettingsFooterBtn" type="button">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="exportModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
+    <div class="manual-modal export-modal">
+      <div class="manual-modal-header">
+        <h2 id="exportModalTitle">書き出し</h2>
+        <button id="closeExportModalBtn" type="button" class="modal-close-button" aria-label="Close">×</button>
+      </div>
+      <div class="manual-modal-body">
         <div class="control-stack">
           <div class="grid-2">
             <label class="field">
@@ -517,27 +573,15 @@
             <a id="videoConverterDownloadBtn" class="download-button" href="AlphaVideoConverter-WPF.zip" download>動画変換アプリDL</a>
           </div>
           <p class="hint video-converter-hint">透過PNG連番ZIPを透過動画化(MOV)するためのWindows用変換アプリです。</p>
-          <div id="exportProgress" class="progress-text"></div>
           <div class="button-row export-download-row">
-            <a id="videoConverterDownloadBtn" class="download-button" href="SimpleVideoComposerWpf v1.0.zip" download>簡易編集アプリDL</a>
+            <a id="simpleEditorDownloadBtn" class="download-button" href="SimpleVideoComposerWpf v1.0.zip" download>簡易編集アプリDL</a>
           </div>
-          <p class="hint video-converter-hint">連番・動画・音声・画像で簡易動画編集が可能なWindows用変換アプリです。</p>
+          <p class="hint simple-editor-hint">連番・動画・音声・画像で簡易動画編集が可能なWindows用変換アプリです。</p>
           <div id="exportProgress" class="progress-text"></div>
         </div>
-      </details>
-    </aside>
-  </main>
-
-
-  <div id="manualModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="manualModalTitle">
-    <div class="manual-modal">
-      <div class="manual-modal-header">
-        <h2 id="manualModalTitle">取扱説明</h2>
-        <button id="closeManualBtn" type="button" class="modal-close-button" aria-label="Close">×</button>
       </div>
-      <div id="manualModalBody" class="manual-modal-body"></div>
       <div class="manual-modal-footer">
-        <button id="closeManualFooterBtn" type="button">閉じる</button>
+        <button id="closeExportModalFooterBtn" type="button">閉じる</button>
       </div>
     </div>
   </div>
